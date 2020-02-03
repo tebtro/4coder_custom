@@ -297,11 +297,6 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
         tebtro_draw_whitespaces(app, face_id, buffer_id, text_layout_id, &token_array, argb);
     }
     
-    // @note: Scope vertical line highlight
-    {
-        tebtro_draw_vertical_lines_scope_highlight(app, buffer_id, view_id, text_layout_id, rect, cursor_pos, (ARGB_Color *)&colors_back_cycle_adjusted, ArrayCount(colors_back_cycle_adjusted));
-    }
-    
     // NOTE(allen): Token colorizing
     if (token_array.tokens != 0) {
         tebtro_draw_cpp_token_colors(app, text_layout_id, buffer_id, &token_array);
@@ -386,6 +381,11 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
 #endif
         b32 has_highlight_range = tebtro_draw_highlight_range(app, view_id, buffer_id, text_layout_id, cursor_roundness,
                                                               argb_highlight, argb_at_highlight);
+    }
+    
+    // @note: Scope vertical line highlight
+    {
+        tebtro_draw_vertical_lines_scope_highlight(app, buffer_id, view_id, text_layout_id, rect, cursor_pos, (ARGB_Color *)&colors_back_cycle_adjusted, ArrayCount(colors_back_cycle_adjusted));
     }
     
     // @note Vim cursor and mark

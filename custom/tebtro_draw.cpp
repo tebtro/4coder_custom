@@ -142,17 +142,32 @@ tebtro_draw_cpp_token_colors(Application_Links *app, Text_Layout_ID text_layout_
         ARGB_Color argb = fcolor_resolve(color);
         if (token->kind == TokenBaseKind_Keyword) {
             String_Const_u8 lexeme = push_token_lexeme(app, scratch, buffer, token);            
-            if (string_match(lexeme, SCu8("void")) ||
-                string_match(lexeme, SCu8("char")) ||
+            if (string_match(lexeme, SCu8("void"))  ||
+                string_match(lexeme, SCu8("bool"))  ||
+                string_match(lexeme, SCu8("char"))  ||
                 string_match(lexeme, SCu8("short")) ||
-                string_match(lexeme, SCu8("int")) ||
-                string_match(lexeme, SCu8("long")) ||
+                string_match(lexeme, SCu8("int"))   ||
+                string_match(lexeme, SCu8("long"))  ||
                 string_match(lexeme, SCu8("float")) ||
                 string_match(lexeme, SCu8("double"))) {
                 // type color
                 argb = 0xFFBAA227;
             }
         }
+        else if (token->kind == TokenBaseKind_Operator) {
+            argb = 0xFFC7C1AD;
+        }
+#if 0
+        if (token->sub_kind == TokenCppKind_Compare || 
+            token->sub_kind == TokenCppKind_Eq      ||
+            token->sub_kind == TokenCppKind_EqEq) {
+            argb = 0xFFF2EBD3;
+        }
+        if (token->sub_kind == TokenCppKind_Minus ||
+            token->sub_kind == TokenCppKind_MinusMinus) {
+            argb = 0xFFF2EBD3;
+        }
+#endif
         paint_text_color(app, text_layout_id, Ii64_size(token->pos, token->size), argb);
         if (!token_it_inc_all(&it)) {
             break;
