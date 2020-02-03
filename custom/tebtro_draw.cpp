@@ -123,6 +123,99 @@ tebtro_draw_comment_highlights(Application_Links *app, Buffer_ID buffer_id, Text
 }
 
 // 
+// @note Cpp token colorizing
+// 
+
+function void
+tebtro_draw_cpp_token_colors(Application_Links *app, Text_Layout_ID text_layout_id, Buffer_ID buffer, Token_Array *array) {
+    Scratch_Block scratch(app);
+    
+    Range_i64 visible_range = text_layout_get_visible_range(app, text_layout_id);
+    i64 first_index = token_index_from_pos(array, visible_range.first);
+    Token_Iterator_Array it = token_iterator_index(0, array, first_index);
+    for (;;) {
+        Token *token = token_it_read(&it);
+        if (token->pos >= visible_range.one_past_last) {
+            break;
+        }
+        FColor color = get_token_color_cpp(*token);
+        ARGB_Color argb = fcolor_resolve(color);
+        if (token->kind == TokenBaseKind_Keyword) {
+            String_Const_u8 lexeme = push_token_lexeme(app, scratch, buffer, token);            
+            if (string_match(lexeme, SCu8("void")) ||
+                string_match(lexeme, SCu8("char")) ||
+                string_match(lexeme, SCu8("short")) ||
+                string_match(lexeme, SCu8("int")) ||
+                string_match(lexeme, SCu8("long")) ||
+                string_match(lexeme, SCu8("float")) ||
+                string_match(lexeme, SCu8("double"))) {
+                // type color
+                argb = 0xFFBAA227;
+            }
+        }
+        paint_text_color(app, text_layout_id, Ii64_size(token->pos, token->size), argb);
+        if (!token_it_inc_all(&it)) {
+            break;
+        }
+    }
+}
+
+function void
+tebtro_draw_cpp_identifier_colors(Application_Links *app, Text_Layout_ID text_layout_id, Buffer_ID buffer, Token_Array *array) {
+    ProfileScope(app, "draw_cpp_identifier_colors");
+    Scratch_Block scratch(app);
+    
+    Range_i64 visible_range = text_layout_get_visible_range(app, text_layout_id);
+    i64 first_index = token_index_from_pos(array, visible_range.first);
+    Token_Iterator_Array it = token_iterator_index(0, array, first_index);
+    
+    code_index_lock();
+    for (;;) {
+        Token *token = token_it_read(&it);
+        if (token->pos >= visible_range.one_past_last){
+            break;
+        }
+        if (token->kind == TokenBaseKind_Identifier) {
+            // @note Default is like for all other identifiers, so all other variable names.
+            ARGB_Color argb = fcolor_resolve(fcolor_id(defcolor_text_default));
+            
+            // @note lookup identifier
+            String_Const_u8 lexeme = push_token_lexeme(app, scratch, buffer, token);            
+            Identifier_Node *node = get_global_identifier(lexeme);
+            if (node != 0) {
+                switch (node->note_kind) {
+                    case CodeIndexNote_Type: {
+                        // argb = 0xFFFF0000;
+                        // j: argb = 0xFF90EE90;
+                        // c: argb = 0xFFA08C54;
+                        argb = 0xFFBAA227;
+                    } break;
+                    case CodeIndexNote_Function: {
+                        // argb = 0xFF00FF00;
+                        // j: argb = 0xFFFFFFFF;
+                        // c: argb = 0xFF915849;
+                        argb = 0xFF915849;
+                    } break;
+                    case CodeIndexNote_Macro: {
+                        // argb = 0xFF0000FF;
+                        // j: argb = 0xFFC8D4EC;
+                        // c: argb = 0xFF4D716B;
+                        argb = 0xFF388AD9;
+                    } break;
+                }
+            }
+            
+            paint_text_color(app, text_layout_id, Ii64_size(token->pos, token->size), argb);
+        }
+        if (!token_it_inc_all(&it)){
+            break;
+        }
+    }
+    code_index_unlock();
+}
+
+
+// 
 // @note Highlight token or (in comments) word under cursor.
 // 
 inline void

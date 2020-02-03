@@ -1,3 +1,42 @@
+#include "tebtro.h"
+
+// 
+// @note Identifier list
+// 
+
+function Identifier_Node *
+get_global_identifier(String_Const_u8 text) {
+    Identifier_Node *result = 0;
+    for (Identifier_Node *node = global_identifier_list.first;
+         node != 0;
+         node = node->next){
+        if (string_match(node->text, text)){
+            result = node;
+            break;
+        }
+    }
+    return(result);
+}
+
+internal void
+tebtro_add_global_identifier(String_Const_u8 text, Code_Index_Note_Kind note_kind) {
+    Identifier_Node *found = get_global_identifier(text);
+    if (found != 0) {
+        // @note Prioritize type because of struct/class constructors.
+        if (note_kind == CodeIndexNote_Type) {
+            found->note_kind = note_kind;
+        }
+        return;
+    }
+    
+    Identifier_Node *node = push_array(&global_identifier_arena, Identifier_Node, 1);
+    sll_queue_push(global_identifier_list.first, global_identifier_list.last, node);
+    global_identifier_list.count += 1;
+    node->text = push_string_copy(&global_identifier_arena, text);
+    node->note_kind = note_kind;
+}
+
+
 //
 // @note Project commands
 //

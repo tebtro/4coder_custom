@@ -304,10 +304,11 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
     
     // NOTE(allen): Token colorizing
     if (token_array.tokens != 0) {
-        draw_cpp_token_colors(app, text_layout_id, &token_array);
+        tebtro_draw_cpp_token_colors(app, text_layout_id, buffer_id, &token_array);
+        tebtro_draw_cpp_identifier_colors(app, text_layout_id, buffer_id, &token_array);
         
         // @note: Token under cursor highlight
-        {
+        if (is_active_view) {
             tebtro_draw_token_under_cursor_highlight(app, text_layout_id, buffer_id, &token_array, cursor_pos, cursor_roundness);
         }
         
@@ -583,6 +584,7 @@ function void
 tebtro_tick(Application_Links *app, Frame_Info frame_info){
     // :suppress_mouse
     // @note Vim suppress mouse if not moving
+#if 0
     if (vim_global_mouse_last_event_time > 0.0f) {
         vim_global_mouse_last_event_time -= frame_info.literal_dt;
         animate_in_n_milliseconds(app, (u32)(vim_global_mouse_last_event_time * 1000.0f));
@@ -590,6 +592,7 @@ tebtro_tick(Application_Links *app, Frame_Info frame_info){
     if (vim_global_mouse_last_event_time <= 0.0f) {
         set_mouse_suppression(true);
     }
+#endif
     
     
     Scratch_Block scratch(app);
@@ -627,6 +630,20 @@ tebtro_tick(Application_Links *app, Frame_Info frame_info){
         code_index_set_file(buffer_id, arena, index);
         code_index_unlock();
         buffer_clear_layout_cache(app, buffer_id);
+        
+        // @note Update global_identifier_list
+        if (global_identifier_arena.base_allocator == 0) {
+            global_identifier_arena = make_arena_system();
+        }
+        for (i32 i = 0; i < index->note_array.count; i += 1) {
+            Code_Index_Note *note = index->note_array.ptrs[i];
+            if (note->note_kind == CodeIndexNote_Type     ||
+                note->note_kind == CodeIndexNote_Function ||
+                note->note_kind == CodeIndexNote_Macro) {
+                
+                tebtro_add_global_identifier(note->text, note->note_kind);
+            }
+        }
     }
     
     buffer_modified_set_clear();
