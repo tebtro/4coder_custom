@@ -23,7 +23,10 @@ tebtro_add_global_identifier(String_Const_u8 text, Code_Index_Note_Kind note_kin
     Identifier_Node *found = get_global_identifier(text);
     if (found != 0) {
         // @note Prioritize type because of struct/class constructors.
-        if (note_kind == CodeIndexNote_Type) {
+        if (found->note_kind == CodeIndexNote_Function && note_kind == CodeIndexNote_Type) {
+            found->note_kind = note_kind;
+        }
+        else if (found->note_kind == CodeIndexNote_Function && note_kind == CodeIndexNote_Macro) {
             found->note_kind = note_kind;
         }
         return;
