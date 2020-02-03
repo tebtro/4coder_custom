@@ -1,0 +1,38 @@
+#
+# Ignore everything
+#
+*
+
+#
+# Unignore files in root folder
+#
+!.gitignore
+!README.md
+
+!config.4coder
+!project.4coder
+
+
+#
+# Ignore subfolders and unignore files in subfolders
+#
+!fonts/
+fonts/*
+!fonts/SourceCodePro-*
+
+!themes/
+themes/*
+!themes/theme-tebtro*
+
+!custom/
+custom/*
+
+
+!misc/
+!misc/*
+
+
+!custom/build.bat
+!custom/vim*
+!custom/space*
+!custom/tebtro*

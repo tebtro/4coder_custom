@@ -1,0 +1,75 @@
+// Created by: Tebtro
+
+// background color
+defcolor_back = 0xFF072626;
+// default foreground/text color
+defcolor_text_default = 0xFFA19C8C; // 0xFFBDB8A4;
+
+// mark color
+defcolor_mark = 0xFF808080;
+
+// cursor color
+defcolor_cursor = 0xFF90ee90;
+defcolor_at_cursor = defcolor_back;
+
+// highlight current cursor line background color
+defcolor_highlight_cursor_line = 0xFF191970;
+
+// highlight background color
+defcolor_highlight = 0xFF0000FF; // 0xFF0000FF;
+// highlight foreground/text color
+defcolor_at_highlight = defcolor_text_default; // 0xFFFFFFFF; // 0; // defcolor_back;
+
+// margin colors
+defcolor_margin        = 0xFF062121;
+defcolor_margin_hover  = 0xFF062121;
+defcolor_margin_active = 0xFF062121;
+
+// Line number margin colors
+defcolor_line_numbers_back = defcolor_back;
+defcolor_line_numbers_text = 0x40B3B3B3;
+
+// lister colors
+defcolor_list_item        = 0xFF262626;
+defcolor_list_item_hover  = 0xFF333333;
+defcolor_list_item_active = 0xFF5E5B05;
+
+// comment colors
+defcolor_comment = 0xAA3fdf1f;
+defcolor_comment_pop = {0xFF00A000, 0xFFA00000}; // @todo comment notation colors
+
+// token foreground/text colors
+defcolor_keyword = 0xCCCD950C;
+defcolor_str_constant = 0xCC0fdfaf; // 0xFF0fdfaf; // 0xFF24D7A8;
+defcolor_char_constant = defcolor_str_constant;
+defcolor_int_constant = 0xCC9FF1DE; // 0xFF9FF1DE;
+defcolor_float_constant = defcolor_int_constant;
+defcolor_bool_constant = defcolor_int_constant;
+
+defcolor_include = defcolor_str_constant;
+defcolor_preproc = 0xFFDAB98F;
+defcolor_special_character = 0xFFFF0000;
+defcolor_ghost_character = 0xFFBB0000;
+
+// fade foreground/text colors
+defcolor_paste = 0xFFFFBB00;
+defcolor_undo = 0xFF80005D;
+
+// highlight junk/white colors
+defcolor_highlight_junk = 0xFF3A0000;
+defcolor_highlight_white = 0xFF003A3A;
+
+// bar background colors
+defcolor_bar = 0xFFCCCCCC;
+defcolor_bar_active = 0xFFD3B58D;
+// bar foreground/text colors
+defcolor_base = 0xFF292715;
+// @todo Base_Active = 0xFF464746;
+
+// pop colors
+defcolor_pop1 = 0xFF03CF0C;
+defcolor_pop2 = 0xFFFF0000;
+
+// cycle colors for scope/parenthesis highlighting
+defcolor_back_cycle = {0x0800A100, 0x080000A1, 0x0CFF7F00, 0x0CFF0000};
+defcolor_text_cycle = {0xFF00FF00, 0xFFFF0000, 0xFF00DDFF, 0xFFF0F000};

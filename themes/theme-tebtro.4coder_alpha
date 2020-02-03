@@ -1,0 +1,70 @@
+name = "Tebtro";
+
+// background color
+Back = 0xFF072626;
+
+// foreground/text color
+Default = 0xFFA19C8C; // 0xFFBDB8A4;
+Mark = 0xFF808080;
+
+Margin = 0x20000000;
+Margin_Hover = 0x20000000;
+Margin_Active = 0x20000000;
+List_Item = 0xFF262626;
+List_Item_Hover = 0xFF333333;
+List_Item_Active = 0xFF5E5B05;
+
+// cursor background color
+Cursor = 0xFF90ee90;
+// cursor foreground/text color
+At_Cursor = Back;
+
+// cursor line background color
+Highlight_Cursor_Line = 0xFF191970;
+
+// highlight background color
+Highlight = 0xFF0000FF; // 0xFF0000FF;
+// highlight foreground/text color
+At_Highlight = 0; // 0; // 0xFFFFFFFF;
+
+// token foreground/text colors
+Comment = 0xAA3fdf1f;
+Keyword = 0xCCCD950C;
+Str_Constant = 0xCC0fdfaf; // 0xFF0fdfaf; // 0xFF24D7A8;
+Char_Constant = Str_Constant;
+Include = Str_Constant;
+Int_Constant = 0xCC9FF1DE; // 0xFF9FF1DE;
+Float_Constant = Int_Constant;
+Bool_Constant = Int_Constant;
+Preproc = 0xFFDAB98F;
+Special_Character = 0xFFFF0000;
+Ghost_Character = 0xFFBB0000;
+
+// fade foreground/text colors
+Paste = 0xFFFFBB00;
+Undo = 0xFF80005D;
+
+Highlight_Junk = 0xFF3A0000;
+Highlight_White = 0xFF003A3A;
+
+// bar background colors
+Bar = 0xFFCCCCCC;
+Bar_Active = 0xFFD3B58D;
+// bar foreground/text colors
+Base = 0xFF292715;
+Base_Active = 0xFF464746;
+
+Pop1 = 0xFF03CF0C;
+Pop2 = 0xFFFF0000;
+
+
+// cycle colors for scope/parenthesis highlighting
+Back_Cycle_1 = 0x0800A100;
+Back_Cycle_2 = 0x080000A1;
+Back_Cycle_3 = 0x0CFF7F00;
+Back_Cycle_4 = 0x0CFF0000;
+
+Text_Cycle_1 = 0xFF00FF00;
+Text_Cycle_2 = 0xFFFF0000;
+Text_Cycle_3 = 0xFF00DDFF;
+Text_Cycle_4 = 0xFFF0F000;
