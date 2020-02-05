@@ -20,6 +20,7 @@ CUSTOM_ID(colors, defcolor_list_item_active);
 CUSTOM_ID(colors, defcolor_cursor);
 CUSTOM_ID(colors, defcolor_at_cursor);
 CUSTOM_ID(colors, defcolor_highlight_cursor_line);
+CUSTOM_ID(colors, defcolor_highlight_token_under_cursor);
 CUSTOM_ID(colors, defcolor_highlight);
 CUSTOM_ID(colors, defcolor_at_highlight);
 CUSTOM_ID(colors, defcolor_mark);

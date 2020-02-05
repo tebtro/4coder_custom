@@ -50,7 +50,6 @@ function void
 vim_setup_mode_and_chord_color_tables(Application_Links *app) {
     Arena *arena = &global_theme_arena;
     Vim_Global_State *state = &vim_global_state;
-    Color_Table *table;
     
     for (int i = 0; i < ArrayCount(vim_global_state.color_tables_array); ++i) {
         vim_global_state.color_tables_array[i] = make_color_table(app, arena);
@@ -60,6 +59,7 @@ vim_setup_mode_and_chord_color_tables(Application_Links *app) {
         }
     }
     
+    Color_Table *table;
     
     // @note mode normal
     table = &state->color_tables.mode_normal;
@@ -67,6 +67,7 @@ vim_setup_mode_and_chord_color_tables(Application_Links *app) {
     // @note mode insert
     table = &state->color_tables.mode_insert;
     table->arrays[defcolor_highlight_cursor_line] = make_colors(arena, 0x1100FF00);
+    table->arrays[defcolor_highlight_token_under_cursor] = make_colors(arena, 0x331A9828);
     
     // @note mode visual
     table = &state->color_tables.mode_visual;
@@ -78,6 +79,7 @@ vim_setup_mode_and_chord_color_tables(Application_Links *app) {
     table->arrays[defcolor_cursor]    = make_colors(arena, 0xFF9500C2);
     table->arrays[defcolor_at_cursor] = make_colors(arena, 0xFFFFFFFF);
     table->arrays[defcolor_highlight_cursor_line] = make_colors(arena, 0x22D90BCC);
+    table->arrays[defcolor_highlight_token_under_cursor] = make_colors(arena, 0x33D90BCC);
     
     // @note chord replace single
     table = &state->color_tables.chord_replace_single;
@@ -88,16 +90,19 @@ vim_setup_mode_and_chord_color_tables(Application_Links *app) {
     table = &state->color_tables.chord_delete;
     table->arrays[defcolor_cursor] = make_colors(arena, 0xFFFF0000);
     table->arrays[defcolor_highlight_cursor_line] = make_colors(arena, 0x22FF0000);
+    table->arrays[defcolor_highlight_token_under_cursor] = make_colors(arena, 0x44A8281A);
     
     // @note chord change
     table = &state->color_tables.chord_change;
     table->arrays[defcolor_cursor] = make_colors(arena, 0xFFFF9800);
     table->arrays[defcolor_highlight_cursor_line] = make_colors(arena, 0x22E9710C);
+    table->arrays[defcolor_highlight_token_under_cursor] = make_colors(arena, 0x29E9710C);
     
     // @note chord yank
     table = &state->color_tables.chord_yank;
     table->arrays[defcolor_cursor] = make_colors(arena, 0xFFFFFF00);
-    table->arrays[defcolor_highlight_cursor_line] = make_colors(arena, 0x22CCCC00);
+    table->arrays[defcolor_highlight_cursor_line] = make_colors(arena, 0x20CCCC00);
+    table->arrays[defcolor_highlight_token_under_cursor] = make_colors(arena, 0x27CCCC00);
 }
 
 

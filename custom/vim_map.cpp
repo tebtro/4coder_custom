@@ -165,10 +165,17 @@ vim_setup_mapping(Mapping *mapping) {
         
         Bind(vim_move_to_file_start, KeyCode_K, KeyCode_Control);
         Bind(vim_move_to_file_end,   KeyCode_J, KeyCode_Control);
-        // @todo Instead of 0 and $ ?
-        // Bind(vim_move_to_line_start, KeyCode_H, KeyCode_Control);
-        // Bind(vim_move_to_line_end,   KeyCode_L, KeyCode_Control);
+        
+#if 0
+        Bind(vim_move_to_line_start__or__vim_execute_command_count_add_predecimal_0, KeyCode_0);
+        Bind(vim_move_to_line_end, KeyCode_4, KeyCode_Shift);
+#else
+        Bind(vim_execute_command_count_add_predecimal_0, KeyCode_0);
+        Bind(vim_move_to_line_start, KeyCode_H, KeyCode_Alt);
+        Bind(vim_move_to_line_end,   KeyCode_L, KeyCode_Alt);
+#endif
         // @todo Should these be just in normal mode
+        // @todo Remove whitespaces from the combined lines indentation
         // Bind(vim_combine_with_previous_line, KeyCode_H, KeyCode_Control);
         // Bind(vim_combine_with_next_line,     KeyCode_L, KeyCode_Control);
         
@@ -188,27 +195,23 @@ vim_setup_mapping(Mapping *mapping) {
         Bind(vim_move_left_word_start,  KeyCode_B);
         Bind(vim_move_left_word_end,    KeyCode_G);
         
-        Bind(vim_move_right_one_after_whitespace,  KeyCode_W, KeyCode_Shift);
-        Bind(vim_move_right_one_before_whitespace, KeyCode_E, KeyCode_Shift);
-        Bind(vim_move_left_one_before_whitespace,  KeyCode_B, KeyCode_Shift);
-        Bind(vim_move_left_one_after_whitespace,   KeyCode_G, KeyCode_Shift);
+        Bind(vim_move_right_token_start, KeyCode_W, KeyCode_Shift);
+        Bind(vim_move_right_token_end,   KeyCode_E, KeyCode_Shift);
+        Bind(vim_move_left_token_start,  KeyCode_B, KeyCode_Shift);
+        Bind(vim_move_left_token_end,    KeyCode_G, KeyCode_Shift);
         
-        Bind(vim_move_right_token_start, KeyCode_W, KeyCode_Alt);
-        Bind(vim_move_right_token_end,   KeyCode_E, KeyCode_Alt);
-        Bind(vim_move_left_token_start,  KeyCode_B, KeyCode_Alt);
-        Bind(vim_move_left_token_end,    KeyCode_G, KeyCode_Alt);
+        Bind(vim_move_right_one_after_whitespace,  KeyCode_W, KeyCode_Alt);
+        Bind(vim_move_right_one_before_whitespace, KeyCode_E, KeyCode_Alt);
+        Bind(vim_move_left_one_before_whitespace,  KeyCode_B, KeyCode_Alt);
+        Bind(vim_move_left_one_after_whitespace,   KeyCode_G, KeyCode_Alt);
         
-        
+        // @note Find/Till character search commands
         Bind(vim_enter_chord_move_right_to_found,     KeyCode_F);
         Bind(vim_enter_chord_move_right_before_found, KeyCode_T);
         Bind(vim_enter_chord_move_left_to_found,      KeyCode_F, KeyCode_Shift);
         Bind(vim_enter_chord_move_left_before_found,  KeyCode_T, KeyCode_Shift);
         
-        Bind(vim_move_to_line_start__or__vim_execute_command_count_add_predecimal_0, KeyCode_0);
-        Bind(vim_move_to_line_end, KeyCode_4, KeyCode_Shift);
-        
         Bind(vim_goto_line, KeyCode_G, KeyCode_Control);
-        
         
         // @note :cursor_mark
         // @todo Proper vim marks
@@ -348,8 +351,8 @@ vim_setup_mapping(Mapping *mapping) {
         Bind(vim_visual_select_token_or_word_under_cursor, KeyCode_T, KeyCode_Alt);
         
         // :search
-        Bind(vim_search_visual_selection,         KeyCode_Equal);
-        Bind(vim_reverse_search_visual_selection, KeyCode_Equal, KeyCode_Alt);
+        Bind(vim_search_visual_selection,         KeyCode_Equal); // KeyCode_Plus
+        Bind(vim_reverse_search_visual_selection, KeyCode_Equal, KeyCode_Alt); // KeyCode_Plus
         
         // @todo bind(context, '"', MDFR_NONE, enter_chord_switch_registers);
         

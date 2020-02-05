@@ -265,7 +265,8 @@ tebtro_draw_token_under_cursor_highlight(Application_Links *app, Text_Layout_ID 
     
     // @note Draw background
     {
-        ARGB_Color argb = 0xFF1A2898; // 0xFF1A30AC; // 0xFF1A303C; // 0xFF1C3039;
+        // 0xFF1A2898; // 0xFF1A30AC; // 0xFF1A303C; // 0xFF1C3039;
+        ARGB_Color argb = fcolor_resolve(fcolor_id(defcolor_highlight_token_under_cursor));
         draw_character_block(app, text_layout_id, range, cursor_roundness, argb);
     }
     
