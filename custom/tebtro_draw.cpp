@@ -126,6 +126,85 @@ tebtro_draw_comment_highlights(Application_Links *app, Buffer_ID buffer_id, Text
 // @note Cpp token colorizing
 // 
 
+// @todo Use this and move the keyword stuff to here.
+function FColor
+tebtro_get_token_color_cpp(Token token){
+    Managed_ID color = defcolor_text_default;
+    switch (token.kind){
+        case TokenBaseKind_Preprocessor:
+        {
+            color = defcolor_preproc;
+        }break;
+        case TokenBaseKind_Keyword:
+        {            
+            color = defcolor_keyword;
+        }break;
+        case TokenBaseKind_Comment:
+        {
+            color = defcolor_comment;
+        }break;
+        case TokenBaseKind_LiteralString:
+        {
+            color = defcolor_str_constant;
+        }break;
+        case TokenBaseKind_LiteralInteger:
+        {
+            color = defcolor_int_constant;
+        }break;
+        case TokenBaseKind_LiteralFloat:
+        {
+            color = defcolor_float_constant;
+        }break;
+        default:
+        {
+            switch (token.sub_kind){
+                case TokenCppKind_LiteralTrue:
+                case TokenCppKind_LiteralFalse:
+                {
+                    color = defcolor_bool_constant;
+                }break;
+                case TokenCppKind_LiteralCharacter:
+                case TokenCppKind_LiteralCharacterWide:
+                case TokenCppKind_LiteralCharacterUTF8:
+                case TokenCppKind_LiteralCharacterUTF16:
+                case TokenCppKind_LiteralCharacterUTF32:
+                {
+                    color = defcolor_char_constant;
+                }break;
+                case TokenCppKind_PPIncludeFile:
+                {
+                    color = defcolor_include;
+                }break;
+            }
+        }break;
+    }
+    return(fcolor_id(color));
+}
+
+function void
+tebtro_draw_cpp_token_colors__only_comments(Application_Links *app, Text_Layout_ID text_layout_id, Buffer_ID buffer, Token_Array *array) {
+    Scratch_Block scratch(app);
+    
+    Range_i64 visible_range = text_layout_get_visible_range(app, text_layout_id);
+    i64 first_index = token_index_from_pos(array, visible_range.first);
+    Token_Iterator_Array it = token_iterator_index(0, array, first_index);
+    for (;;) {
+        Token *token = token_it_read(&it);
+        if (token->pos >= visible_range.one_past_last) {
+            break;
+        }
+        FColor color = fcolor_id(defcolor_text_default);
+        if (token->kind == TokenBaseKind_Comment) {
+            color = fcolor_id(defcolor_comment);
+        }
+        ARGB_Color argb = fcolor_resolve(color);
+        paint_text_color(app, text_layout_id, Ii64_size(token->pos, token->size), argb);
+        if (!token_it_inc_all(&it)) {
+            break;
+        }
+    }
+}
+
 function void
 tebtro_draw_cpp_token_colors(Application_Links *app, Text_Layout_ID text_layout_id, Buffer_ID buffer, Token_Array *array) {
     Scratch_Block scratch(app);
@@ -150,8 +229,8 @@ tebtro_draw_cpp_token_colors(Application_Links *app, Text_Layout_ID text_layout_
                 string_match(lexeme, SCu8("long"))  ||
                 string_match(lexeme, SCu8("float")) ||
                 string_match(lexeme, SCu8("double"))) {
-                // type color
-                argb = 0xFFBAA227;
+                // :type_color
+                argb = 0xFF7DD695; // argb = 0xFFBAA227;
             }
         }
         else if (token->kind == TokenBaseKind_Operator) {
@@ -199,15 +278,15 @@ tebtro_draw_cpp_identifier_colors(Application_Links *app, Text_Layout_ID text_la
             Identifier_Node *node = get_global_identifier(lexeme);
             if (node != 0) {
                 switch (node->note_kind) {
-                    case CodeIndexNote_Type: {
+                    case CodeIndexNote_Type: { // :type_color
                         // argb = 0xFFFF0000;
-                        // j: argb = 0xFF90EE90;
+                        // j: argb = 0xFF7DD695;
                         // c: argb = 0xFFA08C54;
-                        argb = 0xFFBAA227;
+                        argb = 0xFF7DD695; // argb = 0xFFBAA227;
                     } break;
                     case CodeIndexNote_Function: {
                         // argb = 0xFF00FF00;
-                        // j: argb = 0xFFFFFFFF;
+                        // argb = 0xFFBDB8A4; // default text color
                         // c: argb = 0xFF915849;
                         argb = 0xFF915849;
                     } break;

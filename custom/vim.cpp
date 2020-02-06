@@ -22,7 +22,7 @@ character_is_newline(char c) {
 
 #define VIM_GET_VIEW_ID_VIEW_SCOPE_BUFFER_ID_AND_VIM_STATE(app) \
 View_ID view_id = get_this_ctx_view((app), Access_Always); \
-Buffer_ID buffer_id = view_get_buffer(app, view_id, Access_ReadVisible); \
+Buffer_ID buffer_id = view_get_buffer((app), view_id, Access_ReadVisible); \
 Managed_Scope view_scope = view_get_managed_scope((app), view_id); \
 Vim_View_State *vim_state = scope_attachment((app), view_scope, view_vim_state_id, Vim_View_State);
 
@@ -33,13 +33,13 @@ Vim_View_State *vim_state = scope_attachment((app), view_scope, view_vim_state_i
 
 #define VIM_GET_VIEW_ID_AND_BUFFER_ID(app) \
 View_ID view_id = get_this_ctx_view((app), Access_Always); \
-Buffer_ID buffer_id = view_get_buffer(app, view_id, Access_ReadVisible);
+Buffer_ID buffer_id = view_get_buffer((app), view_id, Access_ReadVisible);
 
 // @note View for macro
 #define for_views(app, it) \
-for (View_ID it = get_view_next(app, 0, Access_Always); \
+for (View_ID it = get_view_next((app), 0, Access_Always); \
 it != 0;                                           \
-it = get_view_next(app, it, Access_Always))
+it = get_view_next((app), it, Access_Always))
 
 
 //

@@ -299,8 +299,12 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
     
     // NOTE(allen): Token colorizing
     if (token_array.tokens != 0) {
+#if 1
         tebtro_draw_cpp_token_colors(app, text_layout_id, buffer_id, &token_array);
         tebtro_draw_cpp_identifier_colors(app, text_layout_id, buffer_id, &token_array);
+#else
+        tebtro_draw_cpp_token_colors__only_comments(app, text_layout_id, buffer_id, &token_array);
+#endif
         
         // @note: Token under cursor highlight
         if (is_active_view) {
