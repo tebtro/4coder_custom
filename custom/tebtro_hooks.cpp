@@ -606,25 +606,13 @@ tebtro_tick(Application_Links *app, Frame_Info frame_info){
         // Maybe switch to an enum.
         state.do_cpp_parse = true;
         generic_parse_full_input_breaks(index, &state, max_i32);
+        Code_Index_Identifier_Hash_Table *identifier_table = scope_attachment(app, scope, attachment_code_index_identifier_table, Code_Index_Identifier_Hash_Table);
+        *identifier_table = code_index_identifier_table_from_array(app, buffer_id, state.arena, index->note_array);
         
         code_index_lock();
         code_index_set_file(buffer_id, arena, index);
         code_index_unlock();
         buffer_clear_layout_cache(app, buffer_id);
-        
-        // @note Update global_identifier_list
-        if (global_identifier_arena.base_allocator == 0) {
-            global_identifier_arena = make_arena_system();
-        }
-        for (i32 i = 0; i < index->note_array.count; i += 1) {
-            Code_Index_Note *note = index->note_array.ptrs[i];
-            if (note->note_kind == CodeIndexNote_Type     ||
-                note->note_kind == CodeIndexNote_Function ||
-                note->note_kind == CodeIndexNote_Macro) {
-                
-                tebtro_add_global_identifier(note->text, note->note_kind);
-            }
-        }
     }
     
     buffer_modified_set_clear();

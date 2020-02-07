@@ -286,7 +286,6 @@ tebtro_draw_cpp_identifier_colors(Application_Links *app, Text_Layout_ID text_la
     i64 first_index = token_index_from_pos(array, visible_range.first);
     Token_Iterator_Array it = token_iterator_index(0, array, first_index);
     
-    code_index_lock();
     for (;;) {
         Token *token = token_it_read(&it);
         if (token->pos >= visible_range.one_past_last){
@@ -298,27 +297,41 @@ tebtro_draw_cpp_identifier_colors(Application_Links *app, Text_Layout_ID text_la
             
             // @note lookup identifier
             String_Const_u8 lexeme = push_token_lexeme(app, scratch, buffer, token);
-            Identifier_Node *node = get_global_identifier(lexeme);
-            if (node != 0) {
-                switch (node->note_kind) {
-                    case CodeIndexNote_Type: { // :type_color
-                        // argb = 0xFFFF0000;
-                        // j: argb = 0xFF7DD695;
-                        // c: argb = 0xFFA08C54;
-                        argb = 0xFF7DD695; // argb = 0xFFBAA227;
-                    } break;
-                    case CodeIndexNote_Function: {
-                        // argb = 0xFF00FF00;
-                        // argb = 0xFFBDB8A4; // default text color
-                        // c: argb = 0xFF915849;
-                        argb = 0xFF915849;
-                    } break;
-                    case CodeIndexNote_Macro: {
-                        // argb = 0xFF0000FF;
-                        // j: argb = 0xFFC8D4EC;
-                        // c: argb = 0xFF4D716B;
-                        argb = 0xFF388AD9;
-                    } break;
+            u64 hash = djb2(lexeme);
+            
+            b32 found = false;
+            for (Buffer_ID buffer_it = get_buffer_next(app, 0, Access_Always);
+                 (!found && buffer_it != 0);
+                 buffer_it = get_buffer_next(app, buffer_it, Access_Always)) {
+                Managed_Scope scope = buffer_get_managed_scope(app, buffer_it);
+                Code_Index_Identifier_Hash_Table *identifier_table = scope_attachment(app, scope, attachment_code_index_identifier_table, Code_Index_Identifier_Hash_Table);
+                if (!identifier_table)  continue;
+                if (identifier_table->count == 0)  continue;
+                Code_Index_Identifier_Node *node = code_index_identifier_table_lookup(identifier_table, hash);
+                if (node != 0) {
+                    switch (node->note_kind) {
+                        case CodeIndexNote_Type: { // :type_color
+                            // argb = 0xFFFF0000;
+                            // j: argb = 0xFF7DD695;
+                            // c: argb = 0xFFA08C54;
+                            argb = 0xFF7DD695; // argb = 0xFFBAA227;
+                            found = true;
+                        } break;
+                        case CodeIndexNote_Function: {
+                            // argb = 0xFF00FF00;
+                            // argb = 0xFFBDB8A4; // default text color
+                            // c: argb = 0xFF915849;
+                            argb = 0xFF915849;
+                            found = true;
+                        } break;
+                        case CodeIndexNote_Macro: {
+                            // argb = 0xFF0000FF;
+                            // j: argb = 0xFFC8D4EC;
+                            // c: argb = 0xFF4D716B;
+                            argb = 0xFF388AD9;
+                            found = true;
+                        } break;
+                    }
                 }
             }
             
@@ -328,7 +341,6 @@ tebtro_draw_cpp_identifier_colors(Application_Links *app, Text_Layout_ID text_la
             break;
         }
     }
-    code_index_unlock();
 }
 
 

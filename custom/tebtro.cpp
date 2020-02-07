@@ -2,7 +2,7 @@
 
 //
 // @note Buffer commands
-// 
+//
 
 internal void
 tebtro_clean_all_lines(Application_Links *app, Buffer_ID buffer) {
@@ -83,43 +83,106 @@ CUSTOM_DOC("Removes trailing whitespace from all lines in the current buffer.") 
 }
 
 
-// 
+//
 // @note Identifier list
-// 
+//
 
-function Identifier_Node *
-get_global_identifier(String_Const_u8 text) {
-    Identifier_Node *result = 0;
-    for (Identifier_Node *node = global_identifier_list.first;
-         node != 0;
-         node = node->next){
-        if (string_match(node->text, text)){
-            result = node;
-            break;
-        }
-    }
-    return(result);
-}
-
-internal void
-tebtro_add_global_identifier(String_Const_u8 text, Code_Index_Note_Kind note_kind) {
-    Identifier_Node *found = get_global_identifier(text);
-    if (found != 0) {
-        // @note Prioritize type because of struct/class constructors.
-        if (found->note_kind == CodeIndexNote_Function && note_kind == CodeIndexNote_Type) {
-            found->note_kind = note_kind;
-        }
-        else if (found->note_kind == CodeIndexNote_Function && note_kind == CodeIndexNote_Macro) {
-            found->note_kind = note_kind;
-        }
-        return;
+function u64
+djb2(String_Const_u8 str) {
+    u64 hash = 5381;
+    int c;
+    
+    for (int i = 0; i < str.size; ++i) {
+        c = (int)(str.str[i]);
+        hash = ((hash << 5) + hash) + c;
+        // hash * 33 + c
     }
     
-    Identifier_Node *node = push_array(&global_identifier_arena, Identifier_Node, 1);
-    sll_queue_push(global_identifier_list.first, global_identifier_list.last, node);
-    global_identifier_list.count += 1;
-    node->text = push_string_copy(&global_identifier_arena, text);
-    node->note_kind = note_kind;
+    return hash;
+}
+
+function Code_Index_Identifier_Node *
+code_index_identifier_table_lookup(Code_Index_Identifier_Hash_Table *table, u64 hash) {
+    i32 bucket = hash % table->count;
+    
+    if (table->table[bucket] == 0) {
+        return 0;
+    }
+    
+    Code_Index_Identifier_Node *node = table->table[bucket];
+    
+    while (node) {
+        if (node->hash == hash) {
+            return node;
+        }
+        node = node->next;
+    }
+    
+    return 0;
+}
+
+function Code_Index_Identifier_Hash_Table
+code_index_identifier_table_from_array(Application_Links *app, Buffer_ID buffer_id, Arena *arena, Code_Index_Note_Ptr_Array note_array) {
+    Code_Index_Identifier_Hash_Table result = {};
+    
+    result.count = 1000;
+    result.table = push_array_zero(arena, Code_Index_Identifier_Node *, result.count);
+    
+    for (i32 i = 0; i < note_array.count; ++i) {
+        u64 hash = djb2(note_array.ptrs[i]->text);
+        
+#if 0
+        b32 skip = false;
+        for (Buffer_ID buffer_it = get_buffer_next(app, 0, Access_Always);
+             !skip && buffer_it != 0;
+             buffer_it = get_buffer_next(app, buffer_it, Access_Always)) {
+            Managed_Scope scope = buffer_get_managed_scope(app, buffer_it);
+            Code_Index_Identifier_Hash_Table *identifier_table = scope_attachment(app, scope, attachment_code_index_identifier_table, Code_Index_Identifier_Hash_Table);
+            if (!identifier_table)  continue;
+            if (identifier_table->count == 0)  continue;
+            Code_Index_Identifier_Node *found = code_index_identifier_table_lookup(identifier_table, hash);
+            if (found != 0) {
+                Code_Index_Note_Kind note_kind = note_array.ptrs[i]->note_kind;
+                if (found->note_kind == CodeIndexNote_Function && note_kind == CodeIndexNote_Type) {
+                    found->note_kind = note_kind;
+                    skip = true;
+                }
+                else if (found->note_kind == CodeIndexNote_Function && note_kind == CodeIndexNote_Macro) {
+                    found->note_kind = note_kind;
+                    skip = true;
+                }
+            }
+        }
+        if (skip)  continue;
+#endif
+        
+        Code_Index_Identifier_Node *node = push_array(arena, Code_Index_Identifier_Node, 1);
+        node->hash = hash;
+        node->note_kind = note_array.ptrs[i]->note_kind;
+        node->next = 0;
+        
+        i32 bucket = node->hash % result.count;
+        if (result.table[bucket] != 0) {
+#if 0
+            Code_Index_Identifier_Node *found = result.table[bucket];
+            if (found->hash == node->hash) {
+                if (found->note_kind == CodeIndexNote_Function && node->note_kind == CodeIndexNote_Type) {
+                    found->note_kind = node->note_kind;
+                }
+                else if (found->note_kind == CodeIndexNote_Function && node->note_kind == CodeIndexNote_Macro) {
+                    found->note_kind = node->note_kind;
+                }
+                continue;
+            }
+            else {
+            }
+#endif
+            node->next = result.table[bucket];
+        }
+        result.table[bucket] = node;
+    }
+    
+    return result;
 }
 
 
@@ -177,7 +240,7 @@ static Project_List_Item global_tebtro_project_list[3] = {
     { "4coder_experimental", "D:\\Programme\\4coder_experimental\\project.4coder" },
 };
 
-function Project_List_Item 
+function Project_List_Item
 get_project_from_user(Application_Links *app, Project_List_Item *project_list, i32 project_count, String_Const_u8 query) {
     Scratch_Block scratch(app, Scratch_Share);
     Lister *lister = begin_lister(app, scratch);
