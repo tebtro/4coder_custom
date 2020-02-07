@@ -1,5 +1,88 @@
 #include "tebtro.h"
 
+//
+// @note Buffer commands
+// 
+
+internal void
+tebtro_clean_all_lines(Application_Links *app, Buffer_ID buffer) {
+    ProfileScope(app, "clean all lines");
+    
+    Scratch_Block scratch(app);
+    Batch_Edit *batch_first = 0;
+    Batch_Edit *batch_last = 0;
+    
+    i64 line_count = buffer_get_line_count(app, buffer);
+    for (i64 line_number = 1; line_number <= line_count; line_number += 1) {
+        i64 line_start = get_line_side_pos(app, buffer, line_number, Side_Min);
+        i64 line_end = get_line_side_pos(app, buffer, line_number, Side_Max);
+        u8 prev = buffer_get_char(app, buffer, line_end - 1);
+        b32 has_cr_character = false;
+        b32 has_tail_whitespace = false;
+        if (prev == '\r') {
+            has_cr_character = true;
+            if (line_end - 2 >= line_start) {
+                prev = buffer_get_char(app, buffer, line_end - 2);
+                has_tail_whitespace = character_is_whitespace(prev);
+            }
+        }
+        else {
+            has_tail_whitespace = character_is_whitespace(prev);
+        }
+        if (has_tail_whitespace) {
+            String_Const_u8 line = push_buffer_range(app, scratch, buffer, Ii64(line_start, line_end));
+            if (line.size > 0) {
+                // @note Dont remove whitespaces from :empty_lines
+                {
+                    b32 is_all_whitespace = true;
+                    for (int i = 0; i < line.size; ++i) {
+                        if (!character_is_whitespace(line.str[i])) {
+                            is_all_whitespace = false;
+                            break;
+                        }
+                    }
+                    if (is_all_whitespace)  continue;
+                }
+                
+                i64 end_offset = line.size;
+                i64 i = line.size - 1;
+                if (has_cr_character) {
+                    end_offset -= 1;
+                    i -= 1;
+                }
+                i64 start_offset = 0;
+                for (; i >= 0; i -= 1) {
+                    if (!character_is_whitespace(line.str[i])) {
+                        start_offset = i + 1;
+                        break;
+                    }
+                }
+                
+                i64 start = start_offset + line_start;
+                i64 end   = end_offset   + line_start;
+                
+                Batch_Edit *batch = push_array(scratch, Batch_Edit, 1);
+                sll_queue_push(batch_first, batch_last, batch);
+                batch->edit.text = SCu8();
+                batch->edit.range = Ii64(start, end);
+            }
+        }
+    }
+    
+    if (batch_first != 0) {
+        buffer_batch_edit(app, buffer, batch_first);
+    }
+}
+
+CUSTOM_COMMAND_SIG(tebtro_clean_all_lines)
+CUSTOM_DOC("Removes trailing whitespace from all lines in the current buffer.") {
+    View_ID view_id = get_active_view(app, Access_ReadWriteVisible);
+    Buffer_ID buffer_id = view_get_buffer(app, view_id, Access_ReadWriteVisible);
+    
+    tebtro_clean_all_lines(app, buffer_id);
+}
+
+
 // 
 // @note Identifier list
 // 

@@ -110,8 +110,8 @@ vim_draw_whitespaces_in_range(Application_Links *app, View_ID view_id, Face_ID f
         }
         
         String_Const_u8 lexeme = {};
-        if (token->kind == TokenBaseKind_Whitespace || 
-            token->kind == TokenBaseKind_Comment    || 
+        if (token->kind == TokenBaseKind_Whitespace ||
+            token->kind == TokenBaseKind_Comment    ||
             token->kind == TokenBaseKind_LiteralString) {
             // lexeme = push_token_lexeme(app, scratch, (Buffer_ID)it.user_id, token);
             Range_i64 token_range = Ii64_size(token->pos, token->size);
@@ -214,9 +214,9 @@ draw_file_bar(Application_Links *app, View_ID view_id, b32 is_active, Buffer_ID 
     draw_fancy_line(app, face_id, fcolor_zero(), &list, p);
 }
 
-// 
+//
 // @note Draw line numbers
-// 
+//
 function void
 draw_line_number_relative_margin(Application_Links *app, View_ID view_id, Buffer_ID buffer_id, Face_ID face_id, Text_Layout_ID text_layout_id, Rect_f32 margin) {
     Rect_f32 prev_clip = draw_set_clip(app, margin);

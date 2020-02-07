@@ -1,4 +1,27 @@
 //
+// @note Background and margin
+// 
+
+// @todo Display red margin color if the buffer is read-only
+// @todo Hover margin color
+
+function Rect_f32
+draw_background_and_margin(Application_Links *app, View_ID view, b32 is_active_view, b32 keyboard_macro_is_recording) {
+    FColor margin_color = get_panel_margin_color(is_active_view?UIHighlight_Active:UIHighlight_None);
+    FColor back_color = fcolor_id(defcolor_back);
+    
+    ARGB_Color margin_argb = fcolor_resolve(margin_color);
+    ARGB_Color back_argb = fcolor_resolve(back_color);
+    
+    if (is_active_view && keyboard_macro_is_recording) {
+        margin_argb = 0xFFDC143C; // crimson red: 0xFFDC143C
+    }
+    
+    return(draw_background_and_margin(app, view, margin_argb, back_argb));
+}
+
+
+//
 // @note Comment notation test
 //
 // @todo(tebtro): Hello todo!

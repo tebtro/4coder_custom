@@ -375,12 +375,12 @@ CUSTOM_COMMAND_SIG(vim_mode_insert_finish_escape_sequence) {
             return;
         }
     }
-	User_Input input = get_current_input(app);
+    User_Input input = get_current_input(app);
     String_Const_u8 insert = SCu8("k");
     if (has_modifier(&input.event.key.modifiers, KeyCode_Shift)) {
         insert = SCu8("K");
     }
-	write_text(app, insert);
+    write_text(app, insert);
 }
 
 // @note mode replace
@@ -1157,7 +1157,7 @@ vim_isearch_token_or_word(Application_Links *app, Scan_Direction scan) {
     
     Scratch_Block scratch(app);
     String_Const_u8 query = push_buffer_range(app, scratch, buffer_id, range);
-    isearch(app, scan, range.first, query);    
+    isearch(app, scan, range.first, query);
 }
 CUSTOM_COMMAND_SIG(vim_search_token_or_word) {
     vim_isearch_token_or_word(app, Scan_Forward);
@@ -1725,7 +1725,7 @@ CUSTOM_COMMAND_SIG(vim_visual_comment_line_range) {
     VIM_GET_VIEW_ID_VIEW_SCOPE_BUFFER_ID_AND_VIM_STATE(app);
     Range_i64 pos_range = vim_state->selection_range;
     
-    History_Group group = history_group_begin(app, buffer_id);    
+    History_Group group = history_group_begin(app, buffer_id);
     Range_i64 line_range = get_line_range_from_pos_range(app, buffer_id, pos_range);
     for (i64 line = line_range.start; line < line_range.one_past_last; ++line) {
         i64 line_start_pos = get_line_start_pos(app, buffer_id, line);
@@ -1744,7 +1744,7 @@ CUSTOM_COMMAND_SIG(vim_visual_uncomment_line_range) {
     VIM_GET_VIEW_ID_VIEW_SCOPE_BUFFER_ID_AND_VIM_STATE(app);
     Range_i64 pos_range = vim_state->selection_range;
     
-    History_Group group = history_group_begin(app, buffer_id);    
+    History_Group group = history_group_begin(app, buffer_id);
     Range_i64 line_range = get_line_range_from_pos_range(app, buffer_id, pos_range);
     for (i64 line = line_range.start; line < line_range.one_past_last; ++line) {
         i64 line_start_pos = get_line_start_pos(app, buffer_id, line);
@@ -2566,7 +2566,7 @@ CUSTOM_COMMAND_SIG(vim_toggle_hide_build_panel) {
         vim_center_all_views(app);
         
         vim_is_build_panel_hidden = true;
-    } 
+    }
     else {
         if (vim_is_build_panel_expanded) {
             vim_maximize_build_panel(app, build_view_id, false);
@@ -3276,36 +3276,37 @@ isearch(Application_Links *app, Scan_Direction start_scan, i64 first_pos, String
 }
 #endif // !VIM_USE_DEFAULT_ISEARCH
 
+
 #if !defined(VIM_USE_DEFAULT_QUERY_REPLACE_BASE)
 #error "You need to #if 0 out the default 4coder query_replace_base function in 4coder_base_commands.cpp to use the vim custom one. And define VIM_USE_DEFAULT_QUERY_REPLACE_BASE 0."
 #endif
 #if !VIM_USE_DEFAULT_QUERY_REPLACE_BASE
 
 function void
-query_replace_base(Application_Links *app, View_ID view, Buffer_ID buffer_id, i64 pos, String_Const_u8 r, String_Const_u8 w) {
+query_replace_base(Application_Links *app, View_ID view, Buffer_ID buffer_id, i64 pos, String_Const_u8 r, String_Const_u8 w){
     i64 new_pos = 0;
     seek_string_forward(app, buffer_id, pos - 1, 0, r, &new_pos);
     
-    i64 buffer_size = buffer_get_size(app, buffer_id);
-    
     User_Input in = {};
-    for (;new_pos < buffer_size;) {
+    for (;;){
         Range_i64 match = Ii64(new_pos, new_pos + r.size);
         isearch__update_highlight(app, view, match);
         vim_scroll_cursor_line(app, 0);
         
         in = get_next_input(app, EventProperty_AnyKey, EventProperty_MouseButton);
-        if (in.abort || match_key_code(&in, KeyCode_Escape) || !is_unmodified_key(&in.event)) {
+        if (in.abort || match_key_code(&in, KeyCode_Escape) || !is_unmodified_key(&in.event)){
             break;
         }
         
-        if (match_key_code(&in, KeyCode_Y) ||
-            match_key_code(&in, KeyCode_Return) ||
-            match_key_code(&in, KeyCode_Tab)) {
+        i64 size = buffer_get_size(app, buffer_id);
+        if (match.max <= size &&
+            (match_key_code(&in, KeyCode_Y) ||
+             match_key_code(&in, KeyCode_Return) ||
+             match_key_code(&in, KeyCode_Tab))){
             buffer_replace_range(app, buffer_id, match, w);
             pos = match.start + w.size;
         }
-        else {
+        else{
             pos = match.max;
         }
         
@@ -3314,7 +3315,7 @@ query_replace_base(Application_Links *app, View_ID view, Buffer_ID buffer_id, i6
     
     view_disable_highlight_range(app, view);
     
-    if (in.abort) {
+    if (in.abort){
         return;
     }
     
@@ -3322,45 +3323,3 @@ query_replace_base(Application_Links *app, View_ID view, Buffer_ID buffer_id, i6
 }
 #endif // !VIM_USE_DEFAULT_QUERY_REPLACE_BASE
 
-
-#if !defined(VIM_USE_DEFAULT_LISTER__WRITE_CHARACTER__FILE_PATH)
-#error "You need to #if 0 out the default 4coder lister__write_character__file_path function in 4coder_lists.cpp to use the vim custom one. And define VIM_USE_DEFAULT_LISTER__WRITE_CHARACTER__FILE_PATH 0."
-#endif
-#if !VIM_USE_DEFAULT_LISTER__WRITE_CHARACTER__FILE_PATH
-function Lister_Activation_Code
-lister__write_character__file_path(Application_Links *app){
-    Lister_Activation_Code result = ListerActivation_Continue;
-    View_ID view = get_this_ctx_view(app, Access_Always);
-    Lister *lister = view_get_lister(view);
-    if (lister != 0){
-        User_Input in = get_current_input(app);
-        String_Const_u8 string = to_writable(&in);
-        if (string.str != 0 && string.size > 0){
-            lister_append_text_field(lister, string);
-            if (character_is_slash(string.str[0])) {
-                if (string_find_first(string, 0, ':') != 0) {
-                    // @note Change drive
-                    String_u8 new_hot = lister->text_field;
-                    set_hot_directory(app, new_hot.string);
-                    // @todo: refresh_handler resets the text_field.
-                    lister_call_refresh_handler(app, lister);
-                    lister->text_field = new_hot;
-                }
-                else {
-                    // @note Ask to create folder
-                    lister->out.text_field = lister->text_field.string;
-                    result = ListerActivation_Finished;
-                }
-            }
-            else{
-                String_Const_u8 front_name = string_front_of_path(lister->text_field.string);
-                lister_set_key(lister, front_name);
-            }
-            lister->item_index = 0;
-            lister_zero_scroll(lister);
-            lister_update_filtered_list(app, lister);
-        }
-    }
-    return(result);
-}
-#endif // !VIM_USE_DEFAULT_LISTER__WRITE_CHARACTER__FILE_PATH

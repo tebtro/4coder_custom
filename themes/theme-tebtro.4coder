@@ -30,10 +30,10 @@ defcolor_margin_active = 0xFF062121;
 defcolor_line_numbers_back = defcolor_back;
 defcolor_line_numbers_text = 0x40B3B3B3;
 
-// lister colors
-defcolor_list_item        = 0xFF262626;
-defcolor_list_item_hover  = 0xFF333333;
-defcolor_list_item_active = 0xFF5E5B05;
+// lister colors {margin_color, background_color}
+defcolor_list_item        = {0xFF262626, defcolor_back};
+defcolor_list_item_hover  = {0xFF333333, 0xFF051A1A}; // 0xFF0E4D4D
+defcolor_list_item_active = {0xFF5E5B05, 0xFF093333};
 
 // comment colors
 defcolor_comment = 0xAA3fdf1f;
