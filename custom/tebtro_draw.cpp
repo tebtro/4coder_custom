@@ -1,6 +1,6 @@
 //
 // @note Background and margin
-// 
+//
 
 // @todo Display red margin color if the buffer is read-only
 // @todo Hover margin color
@@ -121,8 +121,8 @@ tebtro_draw_comment_highlights(Application_Links *app, Buffer_ID buffer_id, Text
                                     }
                                 }
                                 
-                                if (tail.str[i] == '.' || tail.str[i] == '/' || tail.str[i] == '\\') { 
-                                    goto break_needle_matching; 
+                                if (tail.str[i] == '.' || tail.str[i] == '/' || tail.str[i] == '\\') {
+                                    goto break_needle_matching;
                                 }
                                 if (character_is_whitespace(tail.str[i]))  break;
                             }
@@ -145,9 +145,9 @@ tebtro_draw_comment_highlights(Application_Links *app, Buffer_ID buffer_id, Text
     }
 }
 
-// 
+//
 // @note Cpp token colorizing
-// 
+//
 
 // @todo Use this and move the keyword stuff to here.
 function FColor
@@ -159,7 +159,7 @@ tebtro_get_token_color_cpp(Token token){
             color = defcolor_preproc;
         }break;
         case TokenBaseKind_Keyword:
-        {            
+        {
             color = defcolor_keyword;
         }break;
         case TokenBaseKind_Comment:
@@ -243,7 +243,7 @@ tebtro_draw_cpp_token_colors(Application_Links *app, Text_Layout_ID text_layout_
         FColor color = get_token_color_cpp(*token);
         ARGB_Color argb = fcolor_resolve(color);
         if (token->kind == TokenBaseKind_Keyword) {
-            String_Const_u8 lexeme = push_token_lexeme(app, scratch, buffer, token);            
+            String_Const_u8 lexeme = push_token_lexeme(app, scratch, buffer, token);
             if (string_match(lexeme, SCu8("void"))  ||
                 string_match(lexeme, SCu8("bool"))  ||
                 string_match(lexeme, SCu8("char"))  ||
@@ -260,7 +260,7 @@ tebtro_draw_cpp_token_colors(Application_Links *app, Text_Layout_ID text_layout_
             argb = 0xFFC7C1AD;
         }
 #if 0
-        if (token->sub_kind == TokenCppKind_Compare || 
+        if (token->sub_kind == TokenCppKind_Compare ||
             token->sub_kind == TokenCppKind_Eq      ||
             token->sub_kind == TokenCppKind_EqEq) {
             argb = 0xFFF2EBD3;
@@ -297,7 +297,7 @@ tebtro_draw_cpp_identifier_colors(Application_Links *app, Text_Layout_ID text_la
             ARGB_Color argb = fcolor_resolve(fcolor_id(defcolor_text_default));
             
             // @note lookup identifier
-            String_Const_u8 lexeme = push_token_lexeme(app, scratch, buffer, token);            
+            String_Const_u8 lexeme = push_token_lexeme(app, scratch, buffer, token);
             Identifier_Node *node = get_global_identifier(lexeme);
             if (node != 0) {
                 switch (node->note_kind) {
@@ -332,9 +332,9 @@ tebtro_draw_cpp_identifier_colors(Application_Links *app, Text_Layout_ID text_la
 }
 
 
-// 
+//
 // @note Highlight token or (in comments) word under cursor.
-// 
+//
 inline void
 tebtro_draw_token_under_cursor_highlight(Application_Links *app, Text_Layout_ID text_layout_id, Buffer_ID buffer_id, Token_Array *token_array, i64 cursor_pos, f32 cursor_roundness) {
     if (token_array == 0 || token_array->tokens == 0)  return;
@@ -388,22 +388,42 @@ tebtro_draw_token_under_cursor_highlight(Application_Links *app, Text_Layout_ID 
 // @note Draw highlight range
 //
 inline b32
-tebtro_draw_highlight_range(Application_Links *app, View_ID view_id, Buffer_ID buffer, Text_Layout_ID text_layout_id, f32 roundness,
-                            ARGB_Color argb_highlight, ARGB_Color argb_at_highlight) {
+tebtro_draw_search_highlight(Application_Links *app, View_ID view_id, Buffer_ID buffer_id, Text_Layout_ID text_layout_id, f32 roundness,
+                             ARGB_Color argb_highlight, ARGB_Color argb_at_highlight) {
+    Scratch_Block scratch(app);
+    
     b32 has_highlight_range = false;
     Managed_Scope scope = view_get_managed_scope(app, view_id);
     Buffer_ID *highlight_buffer = scope_attachment(app, scope, view_highlight_buffer, Buffer_ID);
     if (*highlight_buffer != 0) {
-        if (*highlight_buffer != buffer) {
+        if (*highlight_buffer != buffer_id) {
             view_disable_highlight_range(app, view_id);
         }
-        else
-        {
+        else {
             has_highlight_range = true;
             Managed_Object *highlight = scope_attachment(app, scope, view_highlight_range, Managed_Object);
             Marker marker_range[2];
             if (managed_object_load_data(app, *highlight, 0, 2, marker_range)) {
                 Range_i64 range = Ii64(marker_range[0].pos, marker_range[1].pos);
+                
+                // @note Draw all search items in visible range
+                Range_i64 visible_range = text_layout_get_visible_range(app, text_layout_id);
+                String_Const_u8 needle = push_buffer_range(app, scratch, buffer_id, range);
+                String_Match_List matches = buffer_find_all_matches(app, scratch, buffer_id, 0, visible_range, needle, &character_predicate_alpha_numeric_underscore_utf8, Scan_Forward);
+                String_Match *match = matches.first;
+                for (int i = 0; i < matches.count; ++i) {
+                    Range_i64 match_range = match->range;
+                    
+                    ARGB_Color argb_match = 0x22DDEE00;
+                    ARGB_Color argb_at_match = 0xFFF3FaFF;
+                    
+                    draw_character_block(app, text_layout_id, match_range, roundness, argb_match);
+                    paint_text_color(app, text_layout_id, match_range, argb_at_match);
+                    
+                    match = match->next;
+                }
+                
+                // @note Draw active search item
                 draw_character_block(app, text_layout_id, range, roundness, argb_highlight);
                 paint_text_color(app, text_layout_id, range, argb_at_highlight);
             }
@@ -490,7 +510,7 @@ tebtro_draw_brace_highlight(Application_Links *app, Buffer_ID buffer_id, Text_La
 
 //
 // @note Draw scope brace annotations
-// 
+//
 // @note: https://github.com/ryanfleury/4coder_fleury
 //        4coder_fleury_brace.cpp
 //
@@ -501,7 +521,7 @@ tebtro_draw_brace_highlight(Application_Links *app, Buffer_ID buffer_id, Text_La
 // Vec2_f32 close_scope_pos = { close_scope_rect.x0 + 12, close_scope_rect.y0 };
 // @todo Smaller font size, centered in buffer font line height.
 // @todo The string start pos and the scope start pos should be treated differently, because sometimes the string is rendering over the function name if theres the return type on the line before.
-// 
+//
 inline void
 tebtro_draw_scope_close_brace_annotations(Application_Links *app, View_ID view_id, Rect_f32 view_rect, Buffer_ID buffer_id, Text_Layout_ID text_layout_id, Face_ID face_id, i64 cursor_pos, ARGB_Color *colors, i32 color_count) {
     Face_Metrics face_metrics = get_face_metrics(app, face_id);
@@ -768,7 +788,7 @@ tebtro_draw_scope_close_brace_annotations(Application_Links *app, View_ID view_i
 
 //
 // @note Draw scope vertical lines
-// 
+//
 // @note: https://github.com/ryanfleury/4coder_fleury
 //        4coder_fleury_brace.cpp
 inline void
@@ -854,9 +874,9 @@ tebtro_draw_vertical_lines_scope_highlight(Application_Links *app, Buffer_ID buf
 //
 // @note: https://github.com/ryanfleury/4coder_fleury
 //        4coder_fleury.cpp
-// 
+//
 // @todo Maybe we don't want the text at the beginning: "error Cxxxx: "
-//        
+//
 inline void
 tebtro_draw_error_annotations(Application_Links *app, Buffer_ID buffer_id, Text_Layout_ID text_layout_id, Face_ID face_id, Buffer_ID jump_buffer_id) {
     Heap *heap = &global_heap;
@@ -944,10 +964,10 @@ tebtro_draw_error_annotations(Application_Links *app, Buffer_ID buffer_id, Text_
 
 //
 // @note Draw comment divider horizontal lines
-// 
+//
 // @note: https://github.com/ryanfleury/4coder_fleury
 //        4coder_fleury_divider_comments.cpp
-// 
+//
 
 inline void
 tebtro_draw_divider_line_at_pos(Application_Links *app, Face_ID face_id, Rect_f32 view_rect, Text_Layout_ID text_layout_id, i64 pos, b32 y_at_line_top = true, b32 x_at_pos = true) {
