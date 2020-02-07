@@ -37,6 +37,24 @@ CUSTOM_COMMAND_SIG(enter_space_mode_chord_w){
 }
 
 
+CUSTOM_COMMAND_SIG(interactive_open_or_new__or__switch_buffer) {
+    if (current_project.loaded) {
+        interactive_switch_buffer(app);
+    }
+    else {
+        interactive_open_or_new(app);
+    }
+}
+CUSTOM_COMMAND_SIG(interactive_open_or_new__or__switch_buffer__in_other) {
+    if (current_project.loaded) {
+        interactive_switch_buffer(app);
+    }
+    else {
+        interactive_open_or_new_in_other(app);
+    }
+}
+
+
 //
 // @note vim commands
 //
@@ -60,6 +78,8 @@ CUSTOM_COMMAND_SIG(enter_space_mode_chord_w){
 #define vim_interactive_fuzzy_find_in_other  vim_chord_command<interactive_fuzzy_find_in_other>
 #define vim_interactive_open_or_new__or__fuzzy_find  vim_chord_command<interactive_open_or_new__or__fuzzy_find>
 #define vim_interactive_open_or_new__or__fuzzy_find__in_other  vim_chord_command<interactive_open_or_new__or__fuzzy_find__in_other>
+#define vim_interactive_open_or_new__or__switch_buffer  vim_chord_command<interactive_open_or_new__or__switch_buffer>
+#define vim_interactive_open_or_new__or__switch_buffer__in_other  vim_chord_command<interactive_open_or_new__or__switch_buffer__in_other>
 
 #define vim_interactive_open_or_new_in_other  vim_chord_command<interactive_open_or_new_in_other>
 

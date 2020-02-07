@@ -189,7 +189,7 @@ vim_setup_mapping(Mapping *mapping) {
         Bind(vim_move_down_by_page_half, KeyCode_J, KeyCode_Shift, KeyCode_Alt);
         
         
-        // @note Move web and g commands
+        // @note Move webg
         Bind(vim_move_right_word_start, KeyCode_W);
         Bind(vim_move_right_word_end,   KeyCode_E);
         Bind(vim_move_left_word_start,  KeyCode_B);
@@ -419,37 +419,47 @@ vim_setup_mapping(Mapping *mapping) {
         
         // :move_commands
         // @note move hjkl
-        Bind(move_up,    KeyCode_K, KeyCode_Alt);
-        Bind(move_down,  KeyCode_J, KeyCode_Alt);
-        Bind(move_left,  KeyCode_H, KeyCode_Alt);
-        Bind(move_right, KeyCode_L, KeyCode_Alt);
+        Bind(vim_move_up,    KeyCode_K, KeyCode_Alt);
+        Bind(vim_move_down,  KeyCode_J, KeyCode_Alt);
+        Bind(vim_move_left,  KeyCode_H, KeyCode_Alt);
+        Bind(vim_move_right, KeyCode_L, KeyCode_Alt);
         
-        // @note move web @todo d?
+        Bind(vim_move_to_file_start, KeyCode_K, KeyCode_Control);
+        Bind(vim_move_to_file_end,   KeyCode_J, KeyCode_Control);
+        
+        Bind(vim_move_to_line_start, KeyCode_H, KeyCode_Alt, KeyCode_Control);
+        Bind(vim_move_to_line_end,   KeyCode_L, KeyCode_Alt, KeyCode_Control);
+        
+        Bind(vim_move_up_by_whitespace,   KeyCode_K, KeyCode_Alt, KeyCode_Control);
+        Bind(vim_move_down_by_whitespace, KeyCode_J, KeyCode_Alt, KeyCode_Control);
+        
+        Bind(vim_move_up_by_page,   KeyCode_K, KeyCode_Shift, KeyCode_Control);
+        Bind(vim_move_down_by_page, KeyCode_J, KeyCode_Shift, KeyCode_Control);
+        
+        Bind(vim_move_up_by_page_half,   KeyCode_K, KeyCode_Shift, KeyCode_Alt, KeyCode_Control);
+        Bind(vim_move_down_by_page_half, KeyCode_J, KeyCode_Shift, KeyCode_Alt, KeyCode_Control);
+        
+        // @note move webg
         Bind(vim_move_right_word_start, KeyCode_W, KeyCode_Alt);
         Bind(vim_move_right_word_end,   KeyCode_E, KeyCode_Alt);
         Bind(vim_move_left_word_start,  KeyCode_B, KeyCode_Alt);
-        // Bind(vim_move_left_word_end,    KeyCode_B, KeyCode_Control);
+        Bind(vim_move_left_word_end,    KeyCode_G, KeyCode_Alt);
         
-        Bind(vim_move_right_one_after_whitespace,  KeyCode_W, KeyCode_Shift, KeyCode_Control);
-        Bind(vim_move_right_one_before_whitespace, KeyCode_E, KeyCode_Shift, KeyCode_Control);
-        Bind(vim_move_left_one_before_whitespace,  KeyCode_B, KeyCode_Shift, KeyCode_Control);
-        // Bind(vim_move_left_one_after_whitespace,   KeyCode_B, KeyCode_Shift, KeyCode_Control);
+        Bind(vim_move_right_token_start, KeyCode_W, KeyCode_Shift, KeyCode_Control);
+        Bind(vim_move_right_token_end,   KeyCode_E, KeyCode_Shift, KeyCode_Control);
+        Bind(vim_move_left_token_start,  KeyCode_B, KeyCode_Shift, KeyCode_Control);
+        Bind(vim_move_left_token_end,    KeyCode_G, KeyCode_Shift, KeyCode_Control);
         
-        Bind(vim_move_right_token_start, KeyCode_W, KeyCode_Alt, KeyCode_Control);
-        Bind(vim_move_right_token_end,   KeyCode_E, KeyCode_Alt, KeyCode_Control);
-        Bind(vim_move_left_token_start,  KeyCode_B, KeyCode_Alt, KeyCode_Control);
-        // Bind(vim_move_left_token_end,    KeyCode_B, KeyCode_Alt, KeyCode_Control);
+        Bind(vim_move_right_one_after_whitespace,  KeyCode_W, KeyCode_Alt, KeyCode_Control);
+        Bind(vim_move_right_one_before_whitespace, KeyCode_E, KeyCode_Alt, KeyCode_Control);
+        Bind(vim_move_left_one_before_whitespace,  KeyCode_B, KeyCode_Alt, KeyCode_Control);
+        Bind(vim_move_left_one_after_whitespace,   KeyCode_G, KeyCode_Alt, KeyCode_Control);
         
         
         Bind(vim_enter_chord_move_right_to_found,     KeyCode_F, KeyCode_Control);
         Bind(vim_enter_chord_move_right_before_found, KeyCode_T, KeyCode_Control);
         Bind(vim_enter_chord_move_left_to_found,      KeyCode_F, KeyCode_Shift, KeyCode_Control);
         Bind(vim_enter_chord_move_left_before_found,  KeyCode_T, KeyCode_Shift, KeyCode_Control);
-        
-        Bind(vim_move_to_line_start, KeyCode_0, KeyCode_Control);
-        Bind(vim_move_to_line_end,   KeyCode_4, KeyCode_Shift, KeyCode_Control);
-        Bind(vim_move_to_line_start, KeyCode_H, KeyCode_Control);
-        Bind(vim_move_to_line_end,   KeyCode_L, KeyCode_Control);
         
         
         // @note other commands

@@ -47,8 +47,16 @@ space_mode_setup_mapping(Mapping *mapping) {
     SelectMap(mapid_space_mode_chord_f); {
         ParentMap(mapid_vim_escape_to_normal_mode);
         
+#if 0
         Bind(vim_interactive_open_or_new__or__fuzzy_find,           KeyCode_F);
         Bind(vim_interactive_open_or_new__or__fuzzy_find__in_other, KeyCode_F, KeyCode_Alt);
+#else
+        Bind(vim_interactive_open_or_new__or__switch_buffer,           KeyCode_F);
+        Bind(vim_interactive_open_or_new__or__switch_buffer__in_other, KeyCode_F, KeyCode_Alt);
+        
+        Bind(vim_interactive_open_or_new__or__fuzzy_find,           KeyCode_Z);
+        Bind(vim_interactive_open_or_new__or__fuzzy_find__in_other, KeyCode_Z, KeyCode_Alt);
+#endif
         Bind(vim_interactive_fuzzy_find,          KeyCode_F, KeyCode_Control);
         Bind(vim_interactive_fuzzy_find_in_other, KeyCode_F, KeyCode_Alt, KeyCode_Control);
         Bind(vim_interactive_open_or_new,          KeyCode_O);
