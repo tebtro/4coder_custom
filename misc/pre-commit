@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# Redirect output to stderr.
+exec 1>&2
+
+if grep -inr 'nocheckin' custom/;
+then
+	cat <<\EOF
+Error: Found a nocheckin inside the source code!
+EOF
+	exit 1
+fi
