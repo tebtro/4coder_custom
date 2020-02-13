@@ -276,9 +276,13 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
     
     Token_Array token_array = get_token_array_from_buffer(app, buffer_id);
     
-    // NOTE(allen): Scope highlight
+    // @note: Scope highlight
     if (global_config.use_scope_highlight) {
+#if USE_RANGE_COLOR_START_DEFAULT
         draw_scope_highlight(app, buffer_id, text_layout_id, cursor_pos, colors_back_cycle.vals, colors_back_cycle.count);
+#else
+        tebtro_draw_scope_highlight(app, buffer_id, text_layout_id, cursor_pos, colors_back_cycle.vals, colors_back_cycle.count);
+#endif
     }
     
     // NOTE(allen): Line highlight
@@ -355,9 +359,13 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
         tebtro_draw_error_annotations(app, buffer_id, text_layout_id, face_id, compilation_buffer);
     }
     
-    // NOTE(allen): Color parens
+    // @note: Color parens
     if (global_config.use_paren_helper) {
+#if USE_RANGE_COLOR_START_DEFAULT
         draw_paren_highlight(app, buffer_id, text_layout_id, cursor_pos, colors_text_cycle.vals, colors_text_cycle.count);
+#else
+        tebtro_draw_paren_highlight(app, buffer_id, text_layout_id, cursor_pos, colors_text_cycle.vals, colors_text_cycle.count);
+#endif
     }
     // @note: Color braces
     {

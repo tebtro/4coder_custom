@@ -125,6 +125,8 @@
 
 #include "4coder_default_hooks.cpp"
 
+#define USE_RANGE_COLOR_START_DEFAULT 0
+
 //
 // general
 //

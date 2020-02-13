@@ -512,11 +512,109 @@ tebtro_draw_whitespaces(Application_Links *app, Face_ID face_id, Buffer_ID buffe
 //
 // @note Draw brace highlight
 //
+function void
+tebtro_draw_enclosures(Application_Links *app, Text_Layout_ID text_layout_id, Buffer_ID buffer,
+                       i64 pos, u32 flags, Range_Highlight_Kind kind,
+                       ARGB_Color *back_colors, i32 back_count,
+                       ARGB_Color *fore_colors, i32 fore_count) {
+    Scratch_Block scratch(app);
+    Range_i64_Array ranges = get_enclosure_ranges(app, scratch, buffer, pos, flags);
+    
+    for (i32 i = ranges.count - 1; i >= 0; i -= 1){
+        Range_i64 range = ranges.ranges[i];
+        if (kind == RangeHighlightKind_LineHighlight){
+            Range_i64 r[2] = {};
+            if (i > 0){
+                Range_i64 inner_range = ranges.ranges[i - 1];
+                Range_i64 lines = get_line_range_from_pos_range(app, buffer, range);
+                Range_i64 inner_lines = get_line_range_from_pos_range(app, buffer, inner_range);
+                inner_lines.min = clamp_bot(lines.min, inner_lines.min);
+                inner_lines.max = clamp_top(inner_lines.max, lines.max);
+                inner_lines.min -= 1;
+                inner_lines.max += 1;
+                if (lines.min <= inner_lines.min){
+                    r[0] = Ii64(lines.min, inner_lines.min);
+                }
+                if (inner_lines.max <= lines.max){
+                    r[1] = Ii64(inner_lines.max, lines.max);
+                }
+            }
+            else{
+                r[0] = get_line_range_from_pos_range(app, buffer, range);
+            }
+            for (i32 j = 0; j < 2; j += 1){
+                if (r[j].min == 0){
+                    continue;
+                }
+                Range_i64 line_range = r[j];
+                if (back_colors != 0){
+                    i32 back_index = i%back_count;
+                    draw_line_highlight(app, text_layout_id, line_range, back_colors[back_index]);
+                }
+                if (fore_colors != 0){
+                    i32 fore_index = i%fore_count;
+                    Range_i64 pos_range = get_pos_range_from_line_range(app, buffer, line_range);
+                    paint_text_color(app, text_layout_id, pos_range, fore_colors[fore_index]);
+                }
+            }
+        }
+        else{
+            if (back_colors != 0){
+                i32 back_index = i%back_count;
+                draw_character_block(app, text_layout_id, range.min, 0.f, back_colors[back_index]);
+                draw_character_block(app, text_layout_id, range.max - 1, 0.f, back_colors[back_index]);
+            }
+            if (fore_colors != 0){
+                i32 fore_index = i%fore_count;
+                paint_text_color_pos(app, text_layout_id, range.min, fore_colors[fore_index]);
+                paint_text_color_pos(app, text_layout_id, range.max - 1, fore_colors[fore_index]);
+            }
+        }
+    }
+}
+
 inline void
 tebtro_draw_brace_highlight(Application_Links *app, Buffer_ID buffer_id, Text_Layout_ID text_layout_id, i64 pos, ARGB_Color *colors, i32 color_count) {
     Scratch_Block scratch(app);
     Range_i64_Array ranges = get_enclosure_ranges(app, scratch, buffer_id, pos, RangeHighlightKind_CharacterHighlight);
+#if USE_RANGE_COLOR_START_DEFAULT
     draw_enclosures(app, text_layout_id, buffer_id, pos, FindNest_Scope, RangeHighlightKind_CharacterHighlight, 0, 0, colors, color_count);
+#else
+    tebtro_draw_enclosures(app, text_layout_id, buffer_id, pos, FindNest_Scope, RangeHighlightKind_CharacterHighlight, 0, 0, colors, color_count);
+#endif
+}
+
+function void
+tebtro_draw_paren_highlight(Application_Links *app, Buffer_ID buffer, Text_Layout_ID text_layout_id,
+                            i64 pos, ARGB_Color *colors, i32 color_count){
+    Token_Array token_array = get_token_array_from_buffer(app, buffer);
+    if (token_array.tokens != 0){
+        Token_Iterator_Array it = token_iterator_pos(0, &token_array, pos);
+        Token *token = token_it_read(&it);
+        if (token != 0 && token->kind == TokenBaseKind_ParentheticalOpen){
+            pos = token->pos + token->size;
+        }
+        else{
+            if (token_it_dec_all(&it)){
+                token = token_it_read(&it);
+                if (token->kind == TokenBaseKind_ParentheticalClose &&
+                    pos == token->pos + token->size){
+                    pos = token->pos;
+                }
+            }
+        }
+    }
+    tebtro_draw_enclosures(app, text_layout_id, buffer,
+                           pos, FindNest_Paren, RangeHighlightKind_CharacterHighlight,
+                           0, 0, colors, color_count);
+}
+
+function void
+tebtro_draw_scope_highlight(Application_Links *app, Buffer_ID buffer, Text_Layout_ID text_layout_id,
+                            i64 pos, ARGB_Color *colors, i32 color_count){
+    tebtro_draw_enclosures(app, text_layout_id, buffer,
+                           pos, FindNest_Scope, RangeHighlightKind_LineHighlight,
+                           colors, color_count, 0, 0);
 }
 
 
@@ -870,7 +968,11 @@ tebtro_draw_vertical_lines_scope_highlight(Application_Links *app, Buffer_ID buf
 #if 0
         u32 color = finalize_color(defcolor_comment, 0);
 #else
+#if USE_RANGE_COLOR_START_DEFAULT
         u32 color = colors[color_index % color_count];
+#else
+        u32 color = colors[i % color_count];
+#endif
         ++color_index;
 #endif
         color &= 0x00ffffff;
