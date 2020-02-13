@@ -888,6 +888,34 @@ inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_set_mark) {
 inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_cursor_mark_swap) {
     cursor_mark_swap(app);
 }
+inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_cursor_mark_swap_scope_range) {
+    Scratch_Block scratch(app);
+    i64 cursor_pos = view_get_cursor_pos(app, view_id);
+    String_Const_u8 string = push_buffer_range(app, scratch, buffer_id, Ii64(cursor_pos, cursor_pos+1));
+    if (string.size != 1)  return;
+    if (string.str[0] == '{') {
+        ++cursor_pos;
+    }
+    else if (string.str[0] == '}') {}
+    else {
+        cursor_mark_swap(app);
+        return;
+    }
+    
+    Range_i64 range = {};
+    if (!find_surrounding_nest(app, buffer_id, cursor_pos, FindNest_Scope, &range))  return;
+    
+    // :cursor_mark
+    if (string.str[0] == '{') {
+        view_set_cursor_and_preferred_x(app, view_id, seek_pos(range.one_past_last-1));
+        view_set_mark(app, view_id, seek_pos(range.first));
+    }
+    else {
+        view_set_cursor_and_preferred_x(app, view_id, seek_pos(range.first));
+        view_set_mark(app, view_id, seek_pos(range.one_past_last-1));
+    }
+    vim_scroll_cursor_line(app, 0, view_id);
+}
 
 CUSTOM_COMMAND_SIG(vim_center_all_views) {
     Buffer_ID comp_buffer = get_comp_buffer(app);
@@ -1005,6 +1033,7 @@ CUSTOM_COMMAND_SIG(vim_command_execute_ntimes) {
 
 #define vim_set_mark  vim_command_execute_ntimes<_vim_set_mark>
 #define vim_cursor_mark_swap  vim_command_execute_ntimes<_vim_cursor_mark_swap>
+#define vim_cursor_mark_swap_scope_range  vim_command_execute_ntimes<_vim_cursor_mark_swap_scope_range>
 
 
 //

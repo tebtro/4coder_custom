@@ -217,6 +217,7 @@ vim_setup_mapping(Mapping *mapping) {
         // @todo Proper vim marks
         Bind(vim_set_mark,         KeyCode_M); // Should we be able to set mark in visual mode
         Bind(vim_cursor_mark_swap, KeyCode_S);
+        Bind(vim_cursor_mark_swap_scope_range, KeyCode_S, KeyCode_Alt);
         // @todo
         // Bind(vim_save_cursor_mark_pos,    KeyCode_S, KeyCode_Alt);
         // Bind(vim_restore_cursor_mark_pos, KeyCode_S, KeyCode_Shift);
