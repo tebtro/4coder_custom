@@ -254,7 +254,7 @@ BUFFER_HOOK_SIG(tebtro_begin_buffer) {
 }
 
 function void
-tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, Buffer_ID buffer_id, Text_Layout_ID text_layout_id, Rect_f32 rect, Frame_Info frame_info){
+tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, Buffer_ID buffer_id, Text_Layout_ID text_layout_id, Rect_f32 rect, Frame_Info frame_info, Vim_View_State *vim_state) {
     ProfileScope(app, "render buffer");
     
     View_ID active_view = get_active_view(app, Access_Always);
@@ -428,6 +428,11 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
         tebtro_draw_scope_close_brace_annotations(app, view_id, rect, buffer_id, text_layout_id, face_id, cursor_pos, (ARGB_Color *)&color, color_count);
     }
     
+    // @note: Function parameter helper
+    if (vim_state->mode == vim_mode_insert) {
+        Fleury4RenderFunctionHelper(app, view_id, buffer_id, text_layout_id, cursor_pos);
+    }
+    
     draw_set_clip(app, prev_clip);
 }
 
@@ -562,7 +567,7 @@ tebtro_render_caller(Application_Links *app, Frame_Info frame_info, View_ID view
     }
     
     // NOTE(allen): draw the buffer
-    tebtro_render_buffer(app, view_id, face_id, buffer_id, text_layout_id, region, frame_info);
+    tebtro_render_buffer(app, view_id, face_id, buffer_id, text_layout_id, region, frame_info, vim_state_ptr);
     
     text_layout_free(app, text_layout_id);
     draw_set_clip(app, prev_clip);
