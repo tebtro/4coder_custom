@@ -212,6 +212,8 @@ vim_setup_mapping(Mapping *mapping) {
         Bind(vim_enter_chord_move_left_before_found,  KeyCode_T, KeyCode_Shift);
         
         Bind(vim_goto_line, KeyCode_G, KeyCode_Control);
+        Bind(vim_goto_line, KeyCode_G, KeyCode_Alt);
+        // Bind(vim_enter_chord_g, KeyCode_G, KeyCode_Control);
         
         // @note :cursor_mark
         // @todo Proper vim marks
@@ -226,7 +228,15 @@ vim_setup_mapping(Mapping *mapping) {
         Bind(vim_select_token_or_word_under_cursor, KeyCode_T, KeyCode_Alt);
         Bind(vim_visual_select_token_or_word_under_cursor, KeyCode_T, KeyCode_Alt, KeyCode_Shift);
         
-        //@note :search
+        // @note scope selection
+        Bind(vim_select_next_scope_absolute,       KeyCode_N);
+        Bind(vim_select_prev_scope_absolute,       KeyCode_M);
+        Bind(vim_select_next_scope_after_current,  KeyCode_N, KeyCode_Shift);
+        Bind(vim_select_prev_top_most_scope,       KeyCode_M, KeyCode_Shift);
+        Bind(vim_select_surrounding_scope_maximal, KeyCode_N, KeyCode_Control);
+        Bind(vim_select_surrounding_scope,         KeyCode_M, KeyCode_Control);
+        
+        // @note :search
         // @todo
         // Bind(vim_search, KeyCode_ForwardSlash);
         // Bind(vim_search_reverse, KeyCode_?); @keycode_missing
@@ -278,6 +288,11 @@ vim_setup_mapping(Mapping *mapping) {
         Bind(project_fkey_command, KeyCode_F15);
         Bind(project_fkey_command, KeyCode_F16);
         
+        // @note Lister commands
+        Bind(if_read_only_goto_position_same_panel, KeyCode_Return);
+        Bind(if_read_only_goto_position,            KeyCode_Return, KeyCode_Alt);
+        Bind(view_jump_list_with_lister,            KeyCode_Return, KeyCode_Control);
+        
         // @note :paste
         Bind(vim_paste_after_and_indent, KeyCode_P);
         Bind(vim_paste_before_and_indent, KeyCode_P, KeyCode_Shift);
@@ -286,6 +301,10 @@ vim_setup_mapping(Mapping *mapping) {
         // @note delete
         Bind(vim_enter_chord_delete, KeyCode_D);
         Bind(vim_delete_line, KeyCode_D, KeyCode_Shift);
+        
+        // @note Jumps
+        Bind(vim_jump_to_definition, KeyCode_D, KeyCode_Control);
+        Bind(vim_jump_to_definition, KeyCode_D, KeyCode_Alt);
         
         // @note copy/yank
         Bind(vim_enter_chord_yank, KeyCode_Y);
@@ -590,6 +609,27 @@ vim_setup_mapping(Mapping *mapping) {
     SelectMap(mapid_vim_chord_g);
     {
         ParentMap(mapid_vim_escape_to_normal_mode);
+        
+#if 0 // :vim_listers
+        //
+        // @note Jumps
+        //
+        Bind(vim_goto_line, KeyCode_G);
+        Bind(vim_jump_to_definition, KeyCode_J);
+        // @todo jump_to_definition_under_cursor
+        
+        //
+        // @note Listers
+        //
+        Bind(vim_list_all_functions_all_buffers, KeyCode_F);
+        Bind(vim_list_all_substring_locations_case_insensitive, KeyCode_S);
+        
+        Bind(vim_list_all_locations, KeyCode_L);
+        Bind(vim_list_all_locations_of_selection, KeyCode_V);
+        Bind(vim_list_all_locations_of_identifier, KeyCode_I);
+        Bind(vim_list_all_locations_of_type_definition, KeyCode_D);
+        Bind(vim_list_all_locations_of_type_definition_of_identifier, KeyCode_T);
+#endif
     }
     
     SelectMap(mapid_vim_chord_z);

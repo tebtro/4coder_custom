@@ -620,6 +620,26 @@ CUSTOM_COMMAND_SIG(vim_exec_pending_action_on_line_range) {
 
 
 //
+// @note Vim lister commands
+//
+
+// @note Jumpers
+#define vim_jump_to_definition vim_chord_command<jump_to_definition>
+
+#if 0 // :vim_listers
+// @note Listers
+#define vim_list_all_locations_of_type_definition vim_chord_command<list_all_locations_of_type_definition>
+#define vim_list_all_locations_of_identifier vim_chord_command<list_all_locations_of_identifier>
+#define vim_list_all_locations_of_type_definition_of_identifier vim_chord_command<list_all_locations_of_type_definition_of_identifier>
+
+#define vim_list_all_locations_of_selection vim_chord_command<list_all_locations_of_selection>
+#define vim_list_all_locations vim_chord_command<list_all_locations>
+#define vim_list_all_substring_locations_case_insensitive vim_chord_command<list_all_substring_locations_case_insensitive>
+
+#define vim_list_all_functions_all_buffers vim_chord_command<list_all_functions_all_buffers>
+#endif
+
+//
 // @note vim movement commands
 //
 
@@ -917,6 +937,27 @@ inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_cursor_mark_swap_scope_range) {
     vim_scroll_cursor_line(app, 0, view_id);
 }
 
+
+inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_select_next_scope_absolute) {
+    select_next_scope_absolute(app);
+}
+inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_select_prev_scope_absolute) {
+    select_prev_scope_absolute(app);
+}
+inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_select_next_scope_after_current) {
+    select_next_scope_after_current(app);
+}
+inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_select_prev_top_most_scope) {
+    select_prev_top_most_scope(app);
+}
+inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_select_surrounding_scope_maximal) {
+    select_surrounding_scope_maximal(app);
+}
+inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_select_surrounding_scope) {
+    select_surrounding_scope(app);
+}
+
+
 CUSTOM_COMMAND_SIG(vim_center_all_views) {
     Buffer_ID comp_buffer = get_comp_buffer(app);
     View_ID build_view_id  = get_first_view_with_buffer(app, comp_buffer);
@@ -1034,6 +1075,14 @@ CUSTOM_COMMAND_SIG(vim_command_execute_ntimes) {
 #define vim_set_mark  vim_command_execute_ntimes<_vim_set_mark>
 #define vim_cursor_mark_swap  vim_command_execute_ntimes<_vim_cursor_mark_swap>
 #define vim_cursor_mark_swap_scope_range  vim_command_execute_ntimes<_vim_cursor_mark_swap_scope_range>
+
+
+#define vim_select_next_scope_absolute        vim_command_execute_ntimes<_vim_select_next_scope_absolute>
+#define vim_select_prev_scope_absolute        vim_command_execute_ntimes<_vim_select_prev_scope_absolute>
+#define vim_select_next_scope_after_current   vim_command_execute_ntimes<_vim_select_next_scope_after_current>
+#define vim_select_prev_top_most_scope        vim_command_execute_ntimes<_vim_select_prev_top_most_scope>
+#define vim_select_surrounding_scope_maximal  vim_command_execute_ntimes<_vim_select_surrounding_scope_maximal>
+#define vim_select_surrounding_scope          vim_command_execute_ntimes<_vim_select_surrounding_scope>
 
 
 //

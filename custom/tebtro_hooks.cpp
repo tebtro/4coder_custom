@@ -339,24 +339,24 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
         draw_line_highlight(app, text_layout_id, line_number, 0x5FD90BCC);
     }
     
-    Buffer_ID compilation_buffer = get_comp_buffer(app);
     if (global_config.use_error_highlight || global_config.use_jump_highlight) {
-        // NOTE(allen): Error highlight
+        Buffer_ID compilation_buffer = get_comp_buffer(app);
+        
         if (global_config.use_error_highlight) {
+            // @note: Error highlight
             draw_jump_highlights(app, buffer_id, text_layout_id, compilation_buffer, fcolor_id(defcolor_highlight_junk));
+            
+            // @note: Draw error annotations
+            tebtro_draw_error_annotations(app, buffer_id, text_layout_id, face_id, compilation_buffer);
         }
         
-        // NOTE(allen): Jump highlight
+        // @note: Jump highlight
         if (global_config.use_jump_highlight) {
             Buffer_ID jump_buffer = get_locked_jump_buffer(app);
             if (jump_buffer != compilation_buffer) {
                 draw_jump_highlights(app, buffer_id, text_layout_id, jump_buffer, fcolor_id(defcolor_highlight_white));
             }
         }
-    }
-    // @note Draw error annotations
-    if (1) {
-        tebtro_draw_error_annotations(app, buffer_id, text_layout_id, face_id, compilation_buffer);
     }
     
     // @note: Color parens
