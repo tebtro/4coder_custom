@@ -437,6 +437,17 @@ vim_setup_mapping(Mapping *mapping) {
         Bind(backspace_char, KeyCode_Backspace);
         Bind(delete_char, KeyCode_Delete);
         
+        // @note other commands
+        Bind(vim_enter_chord_z, KeyCode_Z, KeyCode_Control);
+        
+        // :autocomplete
+        Bind(word_complete,              KeyCode_N, KeyCode_Control);
+        Bind(word_complete_drop_down,    KeyCode_N, KeyCode_Alt);
+        
+        Bind(auto_indent_range,          KeyCode_Tab, KeyCode_Alt);
+        Bind(auto_indent_line_at_cursor, KeyCode_Tab, KeyCode_Alt, KeyCode_Shift);
+        
+        
         // :move_commands
         // @note move hjkl
         Bind(vim_move_up,    KeyCode_K, KeyCode_Alt);
@@ -480,17 +491,6 @@ vim_setup_mapping(Mapping *mapping) {
         Bind(vim_enter_chord_move_right_before_found, KeyCode_T, KeyCode_Control);
         Bind(vim_enter_chord_move_left_to_found,      KeyCode_F, KeyCode_Shift, KeyCode_Control);
         Bind(vim_enter_chord_move_left_before_found,  KeyCode_T, KeyCode_Shift, KeyCode_Control);
-        
-        
-        // @note other commands
-        Bind(vim_enter_chord_z, KeyCode_Z, KeyCode_Control);
-        
-        // :autocomplete
-        Bind(word_complete,              KeyCode_N, KeyCode_Control);
-        Bind(word_complete_drop_down,    KeyCode_N, KeyCode_Alt);
-        
-        Bind(auto_indent_range,          KeyCode_Tab, KeyCode_Alt);
-        Bind(auto_indent_line_at_cursor, KeyCode_Tab, KeyCode_Alt, KeyCode_Shift);
     }
     
 #if 0

@@ -44,6 +44,11 @@ vim_draw_highlight_range(Application_Links *app, View_ID view_id, Text_Layout_ID
 // @note(tebtro): - Shows overloaded functions.
 //                - Better positioning where it is rendered.
 
+global b32 global_show_function_helper = true;
+CUSTOM_COMMAND_SIG(toggle_show_function_helper) {
+    global_show_function_helper = !global_show_function_helper;
+}
+
 static Range_i64_Array
 Fleury4GetLeftParens(Application_Links *app, Arena *arena, Buffer_ID buffer, i64 pos, u32 flags) {
     Range_i64_Array array = {};

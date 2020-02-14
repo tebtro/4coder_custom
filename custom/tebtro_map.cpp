@@ -27,8 +27,11 @@ tebtro_setup_mapping(Mapping *mapping) {
     SelectMap(mapid_vim_mode_insert);
     {
         // :autocomplete
-        Bind(word_complete,              KeyCode_Tab, KeyCode_Shift);
-        Bind(word_complete_drop_down,    KeyCode_Tab, KeyCode_Control);
+        Bind(word_complete,               KeyCode_Tab, KeyCode_Shift);
+        Bind(word_complete_drop_down,     KeyCode_Tab, KeyCode_Control);
+        
+        Bind(toggle_show_function_helper, KeyCode_Space, KeyCode_Control);
+        Bind(toggle_show_function_helper, KeyCode_Space, KeyCode_Alt);
     }
 }
 
