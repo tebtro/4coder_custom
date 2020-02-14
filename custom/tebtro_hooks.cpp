@@ -430,7 +430,7 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
     
     // @note: Function parameter helper
     if (vim_state->mode == vim_mode_insert) {
-        Fleury4RenderFunctionHelper(app, view_id, buffer_id, text_layout_id, cursor_pos);
+        vim_render_function_helper(app, view_id, buffer_id, text_layout_id, cursor_pos);
     }
     
     draw_set_clip(app, prev_clip);
