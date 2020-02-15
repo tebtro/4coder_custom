@@ -119,6 +119,7 @@ vim_render_function_helper(Application_Links *app, View_ID view_id, Buffer_ID bu
     Token_Iterator_Array it = token_iterator_pos(0, &token_array, pos);
     Token *token = token_it_read(&it);
     
+#if 0
     // @note(tebtro): Clamp/Make sure the cursor pos is inside the paren range and not one past last or something?
     if(token != 0 && token->kind == TokenBaseKind_ParentheticalOpen) {
         pos = token->pos + token->size;
@@ -133,6 +134,7 @@ vim_render_function_helper(Application_Links *app, View_ID view_id, Buffer_ID bu
             }
         }
     }
+#endif
     
     
     Rect_f32 view_rect = view_get_screen_rect(app, view_id);
@@ -151,6 +153,7 @@ vim_render_function_helper(Application_Links *app, View_ID view_id, Buffer_ID bu
         it = token_iterator_pos(0, &token_array, ranges.ranges[range_index].min);
         token_it_dec_non_whitespace(&it);
         token = token_it_read(&it);
+        if (!token)  continue;
         if(token->kind != TokenBaseKind_Identifier)  continue;
         
         Range_i64 function_name_range = Ii64(token->pos, token->pos+token->size);
