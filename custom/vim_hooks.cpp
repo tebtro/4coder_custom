@@ -399,7 +399,7 @@ BUFFER_HOOK_SIG(vim_new_file){
             "#ifndef %.*s\n"
             "\n\n\n\n\n"
             "#define %.*s\n"
-            "#endif //%.*s\n",
+            "#endif//%.*s\n",
             string_expand(guard),
             string_expand(guard),
             string_expand(guard));

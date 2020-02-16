@@ -110,8 +110,13 @@ struct Vim_Global_State {
 
 global Vim_Global_State vim_global_state = {};
 
+
+// :view_changed_flash_line
 global f32 vim_global_view_changed_time = 0.0f;
+
+// :suppress_mouse
 global f32 vim_global_mouse_last_event_time = 0.0f;
+global b32 vim_global_enable_mouse_suppression = true;
 
 
 #define VIM_H

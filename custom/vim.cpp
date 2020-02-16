@@ -1213,6 +1213,14 @@ CUSTOM_COMMAND_SIG(vim_visual_select_token_or_word_under_cursor) {
 // @note action commands
 //
 
+// :suppress_mouse
+CUSTOM_COMMAND_SIG(vim_toggle_mouse_suppression) {
+    vim_global_enable_mouse_suppression = !vim_global_enable_mouse_suppression;
+    set_mouse_suppression(vim_global_enable_mouse_suppression);
+    
+    vim_enter_mode_normal(app);
+}
+
 #if 0
 // :search
 #define vim_search          vim_window_command<search>

@@ -86,6 +86,7 @@ CUSTOM_COMMAND_SIG(interactive_open_or_new__or__switch_buffer__in_other) {
 
 #define vim_open_file_in_quotes  vim_chord_command<open_file_in_quotes>
 #define vim_reopen  vim_chord_command<reopen>
+#define vim_delete_file_query  vim_chord_command<delete_file_query>
 #define vim_rename_file_query  vim_chord_command<rename_file_query>
 #define vim_make_directory_query  vim_chord_command<make_directory_query>
 
@@ -115,7 +116,7 @@ static Whichkey_Command whichkey_buffer_commands[2] = {
     },
 };
 // :filecommands
-static Whichkey_Command whichkey_file_commands[11] = {
+static Whichkey_Command whichkey_file_commands[12] = {
     {
         "fuzzy find file", "F",
         vim_interactive_open_or_new__or__fuzzy_find, 0, 0
@@ -141,10 +142,6 @@ static Whichkey_Command whichkey_file_commands[11] = {
         vim_open_file_in_quotes, 0, 0
     },
     {
-        "reopen current file without asking", "CTRL + R",
-        vim_reopen, 0, 0
-    },
-    {
         "save file", "S",
         vim_save_buffer, 0, 0
     },
@@ -153,8 +150,16 @@ static Whichkey_Command whichkey_file_commands[11] = {
         vim_save_all_dirty_buffers, 0, 0
     },
     {
+        "reopen current file without asking", "CTRL + R",
+        vim_reopen, 0, 0
+    },
+    {
         "rename file query", "CTRL + N",
         vim_rename_file_query, 0, 0
+    },
+    {
+        "delete file query", "CTRL + D",
+        vim_delete_file_query, 0, 0
     },
     {
         "make directory query", "CTRL + M",

@@ -3,14 +3,6 @@ space_mode_setup_mapping(Mapping *mapping) {
     MappingScope();
     SelectMapping(mapping);
     
-    SelectMap(mapid_vim_escape_to_normal_mode);
-    {
-        ParentMap(mapid_vim_unbound);
-        
-        // @todo Annoying windows window popup
-        // Bind(vim_enter_mode_normal, KeyCode_Space, KeyCode_Alt);
-    }
-    
     // @note set vim normal mode bind to enter space mode
     SelectMap(mapid_vim_mode_normal); {
         Bind(enter_space_mode, KeyCode_Space);
@@ -66,12 +58,13 @@ space_mode_setup_mapping(Mapping *mapping) {
         // Bind(vim_open_matching_file_cpp_in_other,   KeyCode_C, KeyCode_Alt);
         Bind(vim_open_file_in_quotes, KeyCode_Equal, KeyCode_Shift);
         
-        Bind(vim_reopen, KeyCode_R, KeyCode_Control);
-        
         Bind(vim_save_buffer, KeyCode_S);
         Bind(vim_save_all_dirty_buffers, KeyCode_S, KeyCode_Shift);
         
+        
+        Bind(vim_reopen,               KeyCode_R, KeyCode_Control);
         Bind(vim_rename_file_query,    KeyCode_N, KeyCode_Control);
+        Bind(vim_delete_file_query,    KeyCode_D, KeyCode_Control);
         Bind(vim_make_directory_query, KeyCode_M, KeyCode_Control);
     }
     

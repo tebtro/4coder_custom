@@ -166,14 +166,8 @@ vim_setup_mapping(Mapping *mapping) {
         Bind(vim_move_to_file_start, KeyCode_K, KeyCode_Control);
         Bind(vim_move_to_file_end,   KeyCode_J, KeyCode_Control);
         
-#if 0
         Bind(vim_move_to_line_start__or__vim_execute_command_count_add_predecimal_0, KeyCode_0);
         Bind(vim_move_to_line_end, KeyCode_4, KeyCode_Shift);
-#else
-        Bind(vim_execute_command_count_add_predecimal_0, KeyCode_0);
-        Bind(vim_move_to_line_start, KeyCode_H, KeyCode_Alt);
-        Bind(vim_move_to_line_end,   KeyCode_L, KeyCode_Alt);
-#endif
         // @todo Should these be just in normal mode
         // @todo Remove whitespaces from the combined lines indentation
         // Bind(vim_combine_with_previous_line, KeyCode_H, KeyCode_Control);
@@ -211,6 +205,9 @@ vim_setup_mapping(Mapping *mapping) {
         Bind(vim_enter_chord_move_left_to_found,      KeyCode_F, KeyCode_Shift);
         Bind(vim_enter_chord_move_left_before_found,  KeyCode_T, KeyCode_Shift);
         
+        Bind(vim_enter_chord_z, KeyCode_Z);
+        Bind(vim_enter_chord_z, KeyCode_Z, KeyCode_Control);
+        
         Bind(vim_goto_line, KeyCode_G, KeyCode_Control);
         Bind(vim_goto_line, KeyCode_G, KeyCode_Alt);
         // Bind(vim_enter_chord_g, KeyCode_G, KeyCode_Control);
@@ -228,6 +225,7 @@ vim_setup_mapping(Mapping *mapping) {
         Bind(vim_select_token_or_word_under_cursor, KeyCode_T, KeyCode_Alt);
         Bind(vim_visual_select_token_or_word_under_cursor, KeyCode_T, KeyCode_Alt, KeyCode_Shift);
         
+#if 0
         // @note scope selection
         Bind(vim_select_next_scope_absolute,       KeyCode_N);
         Bind(vim_select_prev_scope_absolute,       KeyCode_M);
@@ -235,6 +233,7 @@ vim_setup_mapping(Mapping *mapping) {
         Bind(vim_select_prev_top_most_scope,       KeyCode_M, KeyCode_Shift);
         Bind(vim_select_surrounding_scope_maximal, KeyCode_N, KeyCode_Control);
         Bind(vim_select_surrounding_scope,         KeyCode_M, KeyCode_Control);
+#endif
         
         // @note :search
         // @todo
@@ -256,9 +255,7 @@ vim_setup_mapping(Mapping *mapping) {
         Bind(replace_in_buffer, KeyCode_Q, KeyCode_Shift, KeyCode_Control);
         Bind(query_replace_identifier,     KeyCode_Q, KeyCode_Control);
         
-        
-        Bind(vim_enter_chord_z, KeyCode_Z);
-        Bind(vim_enter_chord_z, KeyCode_Z, KeyCode_Control);
+        Bind(vim_toggle_mouse_suppression, KeyCode_Space, KeyCode_Alt);
         
         Bind(vim_status_command, KeyCode_Period);
         Bind(vim_status_command, KeyCode_Period, KeyCode_Shift);
@@ -314,7 +311,7 @@ vim_setup_mapping(Mapping *mapping) {
         Bind(vim_delete_char, KeyCode_X);
         
         // @note Modes and chords
-        Bind(vim_enter_mode_insert,  KeyCode_I);
+        Bind(vim_enter_mode_insert,            KeyCode_I);
         Bind(vim_enter_mode_insert_after,      KeyCode_A);
         Bind(vim_enter_mode_insert_line_start, KeyCode_I, KeyCode_Shift);
         Bind(vim_enter_mode_insert_line_end,   KeyCode_A, KeyCode_Shift);

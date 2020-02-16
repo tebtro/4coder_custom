@@ -578,15 +578,15 @@ function void
 tebtro_tick(Application_Links *app, Frame_Info frame_info){
     // :suppress_mouse
     // @note Vim suppress mouse if not moving
-#if 0
-    if (vim_global_mouse_last_event_time > 0.0f) {
-        vim_global_mouse_last_event_time -= frame_info.literal_dt;
-        animate_in_n_milliseconds(app, (u32)(vim_global_mouse_last_event_time * 1000.0f));
+    if (vim_global_enable_mouse_suppression) {
+        if (vim_global_mouse_last_event_time > 0.0f) {
+            vim_global_mouse_last_event_time -= frame_info.literal_dt;
+            animate_in_n_milliseconds(app, (u32)(vim_global_mouse_last_event_time * 1000.0f));
+        }
+        if (vim_global_mouse_last_event_time <= 0.0f) {
+            set_mouse_suppression(true);
+        }
     }
-    if (vim_global_mouse_last_event_time <= 0.0f) {
-        set_mouse_suppression(true);
-    }
-#endif
     
     
     Scratch_Block scratch(app);

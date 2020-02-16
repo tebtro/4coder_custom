@@ -27,8 +27,8 @@ custom_layer_init(Application_Links *app) {
     tebtro_set_all_hooks(app);
     
     vim_setup_mapping(&framework_mapping);
-    tebtro_setup_mapping(&framework_mapping);
     space_mode_setup_mapping(&framework_mapping);
+    tebtro_setup_mapping(&framework_mapping);
 }
 
 #endif // TEBTRO_BINDINGS_CPP
