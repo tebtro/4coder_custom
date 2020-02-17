@@ -271,10 +271,3 @@ CUSTOM_COMMAND_SIG(switch_project) {
 }
 
 
-//
-// @note File commands
-//
-
-CUSTOM_COMMAND_SIG(interactive_open_or_new_in_other) {
-    change_active_panel_send_command(app, interactive_open_or_new);
-}

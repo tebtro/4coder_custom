@@ -13,6 +13,7 @@ CUSTOM_COMMAND_SIG(vim_scroll_cursor_line_to_view_center);
 // @note helpers
 //
 CUSTOM_COMMAND_SIG(nop) {}
+#define vim_nop  vim_chord_command<nop>
 
 inline b32
 character_is_newline(char c) {
@@ -162,6 +163,7 @@ vim_enter_mode(Application_Links *app,
 // chord_bar
 CUSTOM_COMMAND_SIG(vim_enter_mode_normal) {
     // @todo @incomplete
+    global_show_function_helper = true;
     vim_enter_mode(app, vim_mode_normal, mapid_vim_mode_normal, &vim_global_state.color_tables.mode_normal);
     
 #if VIM_WINDOWS_AUTO_DISABLE_CAPSLOCK
@@ -1210,8 +1212,9 @@ CUSTOM_COMMAND_SIG(vim_visual_select_token_or_word_under_cursor) {
 }
 
 //
-// @note action commands
+// @note Action commands
 //
+#define vim_exit_4coder  vim_window_command<exit_4coder>
 
 // :suppress_mouse
 CUSTOM_COMMAND_SIG(vim_toggle_mouse_suppression) {
@@ -2463,9 +2466,47 @@ CUSTOM_COMMAND_SIG(vim_set_big_face_size) {
 // @note File commands
 //
 
-#define vim_exit_4coder  vim_window_command<exit_4coder>
-#define vim_interactive_open_or_new  vim_window_command<interactive_open_or_new>
-#define vim_open_matching_file_cpp  vim_window_command<open_matching_file_cpp>
+#define vim_interactive_open_or_new            vim_window_command<interactive_open_or_new>
+#define vim_interactive_open_or_new__in_other  vim_chord_command<interactive_open_or_new_in_other>
+#define vim_interactive_fuzzy_find            vim_chord_command<interactive_fuzzy_find>
+#define vim_interactive_fuzzy_find__in_other  vim_chord_command<interactive_fuzzy_find_in_other>
+#define vim_interactive_open_or_new__or__fuzzy_find            vim_chord_command<interactive_open_or_new__or__fuzzy_find>
+#define vim_interactive_open_or_new__or__fuzzy_find__in_other  vim_chord_command<interactive_open_or_new__or__fuzzy_find__in_other>
+#define vim_interactive_open_or_new__or__switch_buffer            vim_chord_command<interactive_open_or_new__or__switch_buffer>
+#define vim_interactive_open_or_new__or__switch_buffer__in_other  vim_chord_command<interactive_open_or_new__or__switch_buffer__in_other>
+
+// @todo vim_open_matchin_file_cpp
+#define vim_open_matching_file_cpp__in_other  vim_window_command<open_matching_file_cpp>
+// @todo vim_open_file_in_quotes
+#define vim_open_file_in_quotes__in_other  vim_chord_command<open_file_in_quotes>
+
+
+#define vim_reopen  vim_chord_command<reopen>
+#define vim_delete_file_query  vim_chord_command<delete_file_query>
+#define vim_rename_file_query  vim_chord_command<rename_file_query>
+#define vim_make_directory_query  vim_chord_command<make_directory_query>
+
+
+CUSTOM_COMMAND_SIG(interactive_open_or_new_in_other) {
+    change_active_panel_send_command(app, interactive_open_or_new);
+}
+
+CUSTOM_COMMAND_SIG(interactive_open_or_new__or__switch_buffer) {
+    if (current_project.loaded) {
+        interactive_switch_buffer(app);
+    }
+    else {
+        interactive_open_or_new(app);
+    }
+}
+CUSTOM_COMMAND_SIG(interactive_open_or_new__or__switch_buffer__in_other) {
+    if (current_project.loaded) {
+        interactive_switch_buffer(app);
+    }
+    else {
+        interactive_open_or_new_in_other(app);
+    }
+}
 
 inline void
 vim_save_buffer(Application_Links *app, Scratch_Block *scratch, Buffer_ID buffer_id, String_Const_u8 postfix) {
@@ -2523,6 +2564,18 @@ CUSTOM_COMMAND_SIG(vim_kill_current_buffer) {
 //
 // @note Project commands (build, debug, ...)
 //
+
+#define vim_switch_project  vim_chord_command<switch_project>
+
+#define vim_load_project                  vim_chord_command<load_project>
+#define vim_setup_new_project             vim_chord_command<setup_new_project>
+#define vim_project_go_to_root_directory  vim_chord_command<project_go_to_root_directory>
+#define vim_project_command_lister  vim_chord_command<project_command_lister>
+
+#define vim_goto_next_jump   vim_window_command<goto_next_jump>
+#define vim_goto_prev_jump   vim_window_command<goto_prev_jump>
+#define vim_goto_first_jump  vim_window_command<goto_first_jump>
+
 
 function View_ID
 vim_open_build_view(Application_Links *app) {

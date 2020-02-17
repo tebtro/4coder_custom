@@ -50,13 +50,16 @@ space_mode_setup_mapping(Mapping *mapping) {
         Bind(vim_interactive_open_or_new__or__fuzzy_find__in_other, KeyCode_Z, KeyCode_Alt);
 #endif
         Bind(vim_interactive_fuzzy_find,          KeyCode_F, KeyCode_Control);
-        Bind(vim_interactive_fuzzy_find_in_other, KeyCode_F, KeyCode_Alt, KeyCode_Control);
+        Bind(vim_interactive_fuzzy_find__in_other, KeyCode_F, KeyCode_Alt, KeyCode_Control);
         Bind(vim_interactive_open_or_new,          KeyCode_O);
-        Bind(vim_interactive_open_or_new_in_other, KeyCode_O, KeyCode_Alt);
+        Bind(vim_interactive_open_or_new__in_other, KeyCode_O, KeyCode_Alt);
         
-        Bind(vim_open_matching_file_cpp, KeyCode_C);
-        // Bind(vim_open_matching_file_cpp_in_other,   KeyCode_C, KeyCode_Alt);
-        Bind(vim_open_file_in_quotes, KeyCode_Equal, KeyCode_Shift);
+        // Bind(vim_open_matching_file_cpp, KeyCode_C);
+        Bind(vim_open_matching_file_cpp__in_other,   KeyCode_C, KeyCode_Alt);
+        
+        // Bind(vim_open_file_in_quotes, KeyCode_Q);
+        Bind(vim_open_file_in_quotes__in_other, KeyCode_Q, KeyCode_Alt);
+        
         
         Bind(vim_save_buffer, KeyCode_S);
         Bind(vim_save_all_dirty_buffers, KeyCode_S, KeyCode_Shift);

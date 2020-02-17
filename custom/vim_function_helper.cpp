@@ -144,6 +144,8 @@ vim_render_function_helper(Application_Links *app, View_ID view_id, Buffer_ID bu
     Face_ID face = get_face_id(app, 0);
 #endif
     Face_Metrics metrics = get_face_metrics(app, face);
+    Rect_f32 region = view_get_buffer_region(app, view_id);
+    u64 max_char_fit = (u64)((region.x1 - region.x0) / metrics.normal_advance) - 1;
     
     
     Scratch_Block scratch(app);
@@ -251,14 +253,26 @@ vim_render_function_helper(Application_Links *app, View_ID view_id, Buffer_ID bu
                 }
                 
                 // @note Search backward for return type
-                // String_Const_u8 return_type_string;
                 it = token_iterator_pos(0, &find_token_array, function_def_range.min);
+                // String_Const_u8 return_type_string;
                 if (token_it_dec_non_whitespace(&it)) {
                     token = token_it_read(&it);
+                    u64 return_type_size = 0;
+                    // @note Parse pointer
+                    if (token && (token->kind == TokenBaseKind_Operator)
+                        && token->sub_kind == TokenCppKind_Star) {
+                        if (token_it_dec_non_whitespace(&it)) {
+                            token = token_it_read(&it);
+                            return_type_size += 1;
+                        }
+                    }
+                    
+                    // @note Parse identifier
                     if (token && (token->kind == TokenBaseKind_Keyword ||
                                   token->kind == TokenBaseKind_Identifier)) {
-                        if ((u64)token->size+1 > longest_return_type_size) {
-                            longest_return_type_size = token->size+1;
+                        return_type_size += token->size+1;
+                        if (return_type_size > longest_return_type_size) {
+                            longest_return_type_size = return_type_size;
                         }
                         function_def_range.min = token->pos;
                         // return_type_string = push_token_lexeme(app, scratch, buffer_id, token);
@@ -296,10 +310,53 @@ vim_render_function_helper(Application_Links *app, View_ID view_id, Buffer_ID bu
                     String_Const_u8 pre_highlight_def = Fleury4CopyStringButOnlyAllowOneSpace(scratch, pre_highlight_def_untrimmed);
                     String_Const_u8 post_highlight_def = Fleury4CopyStringButOnlyAllowOneSpace(scratch, post_highlight_def_untrimmed);
                     
+                    
+                    u64 char_count = 0;
                     Fancy_Line *line = push_fancy_line(scratch, &block, face);
-                    push_fancy_string(scratch, line, fcolor_id(defcolor_comment,     0), pre_highlight_def);
+                    
+                    // @cleanup @todo Pull this out into a function!
+                    
+                    char_count += pre_highlight_def.size;
+                    if (char_count > max_char_fit) {
+                        u64 overhead = char_count - max_char_fit;
+                        u64 original_size = pre_highlight_def.size;
+                        pre_highlight_def.size -= overhead;
+                        push_fancy_string(scratch, line, fcolor_id(defcolor_comment, 0), pre_highlight_def);
+                        pre_highlight_def.str += pre_highlight_def.size;
+                        pre_highlight_def.size = overhead;
+                        
+                        line = push_fancy_line(scratch, &block, face);
+                        char_count = overhead;
+                    }
+                    push_fancy_string(scratch, line, fcolor_id(defcolor_comment, 0), pre_highlight_def);
+                    
+                    char_count += highlight_param.size;
+                    if (char_count > max_char_fit) {
+                        u64 overhead = char_count - max_char_fit;
+                        u64 original_size = highlight_param.size;
+                        highlight_param.size -= overhead;
+                        push_fancy_string(scratch, line, fcolor_id(defcolor_comment_pop, 1), highlight_param);
+                        highlight_param.str += highlight_param.size;
+                        highlight_param.size = overhead;
+                        
+                        line = push_fancy_line(scratch, &block, face);
+                        char_count = overhead;
+                    }
                     push_fancy_string(scratch, line, fcolor_id(defcolor_comment_pop, 1), highlight_param);
-                    push_fancy_string(scratch, line, fcolor_id(defcolor_comment,     0), post_highlight_def);
+                    
+                    char_count += post_highlight_def.size;
+                    if (char_count > max_char_fit) {
+                        u64 overhead = char_count - max_char_fit;
+                        u64 original_size = post_highlight_def.size;
+                        post_highlight_def.size -= overhead;
+                        push_fancy_string(scratch, line, fcolor_id(defcolor_comment, 0), post_highlight_def);
+                        post_highlight_def.str += post_highlight_def.size;
+                        post_highlight_def.size = overhead;
+                        
+                        line = push_fancy_line(scratch, &block, face);
+                        char_count = overhead;
+                    }
+                    push_fancy_string(scratch, line, fcolor_id(defcolor_comment, 0), post_highlight_def);
                 }
             }
         }
@@ -307,7 +364,6 @@ vim_render_function_helper(Application_Links *app, View_ID view_id, Buffer_ID bu
         //
         // @note Position and render the fancy string block
         //
-        Rect_f32 region = view_get_buffer_region(app, view_id);
         Buffer_Scroll scroll = view_get_buffer_scroll(app, view_id);
         Buffer_Point buffer_point = scroll.position;
         i64 cursor_pos = view_get_cursor_pos(app, view_id);
@@ -326,8 +382,10 @@ vim_render_function_helper(Application_Links *app, View_ID view_id, Buffer_ID bu
                 }
             }
         }
+        f32 return_type_offset = ((longest_return_type_size) * metrics.normal_advance);
+        if (return_type_offset > target_point.x)  return_type_offset = target_point.x - (metrics.normal_advance*1.3f);
         Vec2_f32 text_position = {
-            target_point.x - (longest_return_type_size * metrics.normal_advance),
+            target_point.x - return_type_offset + (metrics.normal_advance*0.3f),
             target_point.y,
         };
         text_position -= buffer_point.pixel_shift;

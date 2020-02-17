@@ -37,60 +37,6 @@ CUSTOM_COMMAND_SIG(enter_space_mode_chord_w){
 }
 
 
-CUSTOM_COMMAND_SIG(interactive_open_or_new__or__switch_buffer) {
-    if (current_project.loaded) {
-        interactive_switch_buffer(app);
-    }
-    else {
-        interactive_open_or_new(app);
-    }
-}
-CUSTOM_COMMAND_SIG(interactive_open_or_new__or__switch_buffer__in_other) {
-    if (current_project.loaded) {
-        interactive_switch_buffer(app);
-    }
-    else {
-        interactive_open_or_new_in_other(app);
-    }
-}
-
-
-//
-// @note vim commands
-//
-#define vim_nop  vim_chord_command<nop>
-
-#define vim_project_command_lister  vim_chord_command<project_command_lister>
-
-#define vim_switch_project  vim_chord_command<switch_project>
-
-#define vim_load_project                  vim_chord_command<load_project>
-#define vim_setup_new_project             vim_chord_command<setup_new_project>
-#define vim_project_go_to_root_directory  vim_chord_command<project_go_to_root_directory>
-
-#define vim_goto_next_jump   vim_window_command<goto_next_jump>
-#define vim_goto_prev_jump   vim_window_command<goto_prev_jump>
-#define vim_goto_first_jump  vim_window_command<goto_first_jump>
-
-
-// @note file chords
-#define vim_interactive_fuzzy_find           vim_chord_command<interactive_fuzzy_find>
-#define vim_interactive_fuzzy_find_in_other  vim_chord_command<interactive_fuzzy_find_in_other>
-#define vim_interactive_open_or_new__or__fuzzy_find  vim_chord_command<interactive_open_or_new__or__fuzzy_find>
-#define vim_interactive_open_or_new__or__fuzzy_find__in_other  vim_chord_command<interactive_open_or_new__or__fuzzy_find__in_other>
-#define vim_interactive_open_or_new__or__switch_buffer  vim_chord_command<interactive_open_or_new__or__switch_buffer>
-#define vim_interactive_open_or_new__or__switch_buffer__in_other  vim_chord_command<interactive_open_or_new__or__switch_buffer__in_other>
-
-#define vim_interactive_open_or_new_in_other  vim_chord_command<interactive_open_or_new_in_other>
-
-
-#define vim_open_file_in_quotes  vim_chord_command<open_file_in_quotes>
-#define vim_reopen  vim_chord_command<reopen>
-#define vim_delete_file_query  vim_chord_command<delete_file_query>
-#define vim_rename_file_query  vim_chord_command<rename_file_query>
-#define vim_make_directory_query  vim_chord_command<make_directory_query>
-
-
 //
 // @note Space mode commands lister
 //
@@ -131,15 +77,15 @@ static Whichkey_Command whichkey_file_commands[12] = {
     },
     {
         "open or create file in other view", "ALT + O",
-        vim_interactive_open_or_new_in_other, 0, 0
+        vim_interactive_open_or_new__in_other, 0, 0
     },
     {
-        "open corresponding file (cpp / h)", "C",
-        vim_open_matching_file_cpp, 0, 0
+        "open corresponding file (cpp / h)", "ALT + C",
+        vim_open_matching_file_cpp__in_other, 0, 0
     },
     {
-        "open file in quotes", "*",
-        vim_open_file_in_quotes, 0, 0
+        "open file in quotes", "ALT + Q",
+        vim_open_file_in_quotes__in_other, 0, 0
     },
     {
         "save file", "S",
