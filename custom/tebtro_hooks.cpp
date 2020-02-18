@@ -435,7 +435,8 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
     
 #if CODE_PEEK
     // @note: Code peek
-    {
+    if (is_active_view) {
+        global_last_cursor_rect = text_layout_character_on_screen(app, text_layout_id, cursor_pos);
         Fleury4RenderCodePeek(app, view_id, face_id, text_layout_id, buffer_id, frame_info);
     }
 #endif

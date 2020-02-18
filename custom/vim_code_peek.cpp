@@ -15,6 +15,8 @@ struct CodePeekMatch
     Code_Index_Note_Kind kind;
 };
 
+static Rect_f32 global_last_cursor_rect;
+
 static b32 global_code_peek_open = 0;
 static int global_code_peek_match_count = 0;
 static CodePeekMatch global_code_peek_matches[16] = {0};
@@ -374,15 +376,8 @@ Fleury4RenderCodePeek(Application_Links *app, View_ID view_id, Text_Layout_ID te
         }
         
         Rect_f32 rect = {0};
-#if 0
         rect.x0 = (float)((int)global_last_cursor_rect.x0 + 16);
         rect.y0 = (float)((int)global_last_cursor_rect.y0 + 16);
-#else
-        i64 cursor_pos = view_get_cursor_pos(app, view_id);
-        Rect_f32 cursor_rect = text_layout_character_on_screen(app, text_layout_id, cursor_pos);
-        rect.x0 = (float)((int)cursor_rect.x0 + 16);
-        rect.y0 = (float)((int)cursor_rect.y0 + 16);
-#endif
         rect.x1 = (float)((int)rect.x0 + 800);
         rect.y1 = (float)((int)rect.y0 + 600*global_code_peek_open_transition);
         
