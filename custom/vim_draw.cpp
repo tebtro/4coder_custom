@@ -1,4 +1,43 @@
 //
+// @note Draw vertical line range highlight
+//
+// @note: https://github.com/ryanfleury/4coder_fleury
+//        4coder_fleury_cursor.cpp
+//
+static void
+vim_draw_vertical_line_highlight_range(Application_Links *app, View_ID view_id, Text_Layout_ID text_layout_id, Range_i64 range, ARGB_Color argb_color, f32 width_multiplier = 0.05f) {
+    Rect_f32 view_rect = view_get_screen_rect(app, view_id);
+    Rect_f32 clip = draw_set_clip(app, view_rect);
+    
+    Rect_f32 min_rect = text_layout_character_on_screen(app, text_layout_id, range.min);
+    Rect_f32 max_rect = text_layout_character_on_screen(app, text_layout_id, range.max);
+    
+    f32 lower_bound_y;
+    f32 upper_bound_y;
+    if(min_rect.y0 < max_rect.y0) {
+        lower_bound_y = min_rect.y0;
+        upper_bound_y = max_rect.y1;
+    }
+    else {
+        lower_bound_y = max_rect.y0;
+        upper_bound_y = min_rect.y1;
+    }
+    
+    Face_ID face_id = get_face_id(app, 0);
+    Face_Metrics metrics = get_face_metrics(app, face_id);
+    f32 width = metrics.normal_advance * width_multiplier;
+    draw_rectangle(app, Rf32(view_rect.x0, lower_bound_y, view_rect.x0 + width, upper_bound_y), 3.f, argb_color);
+    
+    draw_set_clip(app, clip);
+}
+
+static void
+vim_draw_vertical_line_highlight_range(Application_Links *app, View_ID view_id, Text_Layout_ID text_layout_id, Range_i64 range, FColor color, f32 width_multiplier = 0.05f) {
+    ARGB_Color argb = fcolor_resolve(color);
+    vim_draw_vertical_line_highlight_range(app, view_id, text_layout_id, range, argb, width_multiplier);
+}
+
+//
 // @note Draw cursor mark
 //
 function void
@@ -13,7 +52,6 @@ vim_draw_cursor_mark(Application_Links *app, View_ID view_id, b32 is_active_view
     i64 mark_pos = view_get_mark_pos(app, view_id);
     // @note cursor
     if (is_active_view && is_mode_insert) {
-        // @todo roundness draw_rectangle
         draw_character_i_bar(app, text_layout_id, cursor_pos, fcolor_id(defcolor_cursor));
     }
     else if (is_active_view) {

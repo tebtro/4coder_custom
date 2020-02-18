@@ -1,10 +1,3 @@
-#if 0
-static Vec2_f32 global_smooth_cursor_position = {0};
-static b32 global_power_mode_enabled = 0;
-#include "4coder_fleury_smooth_cursor.cpp"
-Fleury4RenderCursor(app, view_id, is_active_view, buffer_id, text_layout_id, cursor_roundness, mark_thickness, frame_info);
-#endif
-
 #ifdef FLEURY_CALC
 #include <stdlib.h>
 #include <string.h>
@@ -12,6 +5,15 @@ Fleury4RenderCursor(app, view_id, is_active_view, buffer_id, text_layout_id, cur
 #include "4coder_fleury_ubiquitous.cpp"
 #include "4coder_fleury_plot.cpp"
 #include "4coder_fleury_calc.cpp"
+#endif
+
+#define FLEURY_CURSOR 0
+#if FLEURY_CURSOR
+static Rect_f32 global_cursor_rect = {0};
+static Rect_f32 global_mark_rect = {0};
+static Rect_f32 global_last_cursor_rect = {0};
+static Rect_f32 global_last_mark_rect = {0};
+#include "4coder_fleury_cursor.cpp"
 #endif
 
 
@@ -262,7 +264,7 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
     Rect_f32 prev_clip = draw_set_clip(app, rect);
     
     i64 cursor_pos = view_correct_cursor(app, view_id);
-    view_correct_mark(app, view_id);
+    i64 mark_pos   = view_correct_mark(app, view_id);
     
     // NOTE(allen): Cursor shape
     Face_Metrics face_metrics = get_face_metrics(app, face_id);
@@ -400,6 +402,12 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
         tebtro_draw_vertical_lines_scope_highlight(app, buffer_id, view_id, text_layout_id, rect, cursor_pos, (ARGB_Color *)&colors_back_cycle_adjusted, ArrayCount(colors_back_cycle_adjusted));
     }
     
+    
+    // @note Vertical line highlight range
+    {
+        ARGB_Color argb_cursor_mark_range = 0x77CCCCCC; // 0xFF010808
+        vim_draw_vertical_line_highlight_range(app, view_id, text_layout_id, Ii64(cursor_pos, mark_pos), argb_cursor_mark_range);
+    }
     // @note Vim cursor and mark
     vim_draw_cursor_mark(app, view_id, is_active_view, buffer_id, text_layout_id, cursor_roundness, mark_thickness);
     // @note Vim visual mode draw selection whitespaces
@@ -407,6 +415,9 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
         ARGB_Color argb = 0xAF004FCF;
         vim_draw_visual_mode_whitespaces(app, view_id, face_id, buffer_id, text_layout_id, &token_array, argb);
     }
+#if FLEURY_CURSOR
+    Fleury4RenderCursor(app, view_id, is_active_view, buffer_id, text_layout_id, cursor_roundness, mark_thickness, frame_info);
+#endif
     
     // @note: Divider comments
     {
