@@ -7,14 +7,6 @@
 #include "4coder_fleury_calc.cpp"
 #endif
 
-#define FLEURY_CURSOR 0
-#if FLEURY_CURSOR
-static Rect_f32 global_cursor_rect = {0};
-static Rect_f32 global_mark_rect = {0};
-static Rect_f32 global_last_cursor_rect = {0};
-static Rect_f32 global_last_mark_rect = {0};
-#include "4coder_fleury_cursor.cpp"
-#endif
 
 
 CUSTOM_COMMAND_SIG(tebtro_startup)
@@ -415,9 +407,6 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
         ARGB_Color argb = 0xAF004FCF;
         vim_draw_visual_mode_whitespaces(app, view_id, face_id, buffer_id, text_layout_id, &token_array, argb);
     }
-#if FLEURY_CURSOR
-    Fleury4RenderCursor(app, view_id, is_active_view, buffer_id, text_layout_id, cursor_roundness, mark_thickness, frame_info);
-#endif
     
     // @note: Divider comments
     {
@@ -443,6 +432,13 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
     if (vim_state->mode == vim_mode_insert && global_show_function_helper) {
         vim_render_function_helper(app, view_id, buffer_id, text_layout_id, cursor_pos);
     }
+    
+#if CODE_PEEK
+    // @note: Code peek
+    {
+        Fleury4RenderCodePeek(app, view_id, face_id, text_layout_id, buffer_id, frame_info);
+    }
+#endif
     
     draw_set_clip(app, prev_clip);
 }

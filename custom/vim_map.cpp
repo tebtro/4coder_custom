@@ -343,6 +343,13 @@ vim_setup_mapping(Mapping *mapping) {
         
         Bind(auto_indent_range, KeyCode_Tab);
         Bind(auto_indent_line_at_cursor, KeyCode_Tab, KeyCode_Shift);
+#if CODE_PEEK
+        // @note Code peek
+        Bind(vim_code_peek,       KeyCode_Tab);
+        Bind(vim_close_code_peek, KeyCode_Tab, KeyCode_Shift);
+        Bind(vim_code_peek_go_same_panel, KeyCode_Backspace);
+        Bind(vim_code_peek_go,            KeyCode_Backspace, KeyCode_Alt);
+#endif
         
         // @note Build and Debug
         Bind(vim_save_all_dirty_buffers_and_build, KeyCode_M, KeyCode_Alt);

@@ -135,6 +135,12 @@
 #define USE_RANGE_COLOR_START_DEFAULT 1
 
 
+#define CODE_PEEK 1
+#if CODE_PEEK
+#include "vim_code_peek.cpp"
+#endif
+
+
 //
 // vim
 //

@@ -883,7 +883,7 @@ tebtro_draw_scope_close_brace_annotations(Application_Links *app, View_ID view_i
         
         if (!is_out_of_bounds)  continue;
 #if 1
-        u32 flags = 1; // @note Rotate 90 degree clockwise
+        u32 flags = GlyphFlag_Rotate90;
         Vec2_f32 delta = {0,1};
 #else
         u32 flags = ; // @todo Flag to rotate -90 degree?

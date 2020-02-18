@@ -4,7 +4,7 @@
 // @note: https://github.com/ryanfleury/4coder_fleury
 //        4coder_fleury_cursor.cpp
 //
-static void
+function void
 vim_draw_vertical_line_highlight_range(Application_Links *app, View_ID view_id, Text_Layout_ID text_layout_id, Range_i64 range, ARGB_Color argb_color, f32 width_multiplier = 0.05f) {
     Rect_f32 view_rect = view_get_screen_rect(app, view_id);
     Rect_f32 clip = draw_set_clip(app, view_rect);
@@ -31,7 +31,7 @@ vim_draw_vertical_line_highlight_range(Application_Links *app, View_ID view_id, 
     draw_set_clip(app, clip);
 }
 
-static void
+function void
 vim_draw_vertical_line_highlight_range(Application_Links *app, View_ID view_id, Text_Layout_ID text_layout_id, Range_i64 range, FColor color, f32 width_multiplier = 0.05f) {
     ARGB_Color argb = fcolor_resolve(color);
     vim_draw_vertical_line_highlight_range(app, view_id, text_layout_id, range, argb, width_multiplier);
@@ -50,6 +50,7 @@ vim_draw_cursor_mark(Application_Links *app, View_ID view_id, b32 is_active_view
     b32 is_mode_insert = (vim_state->mode == vim_mode_insert);
     i64 cursor_pos = view_get_cursor_pos(app, view_id);
     i64 mark_pos = view_get_mark_pos(app, view_id);
+    b32 cursor_before_mark = (cursor_pos <= mark_pos);
     // @note cursor
     if (is_active_view && is_mode_insert) {
         draw_character_i_bar(app, text_layout_id, cursor_pos, fcolor_id(defcolor_cursor));
@@ -59,13 +60,11 @@ vim_draw_cursor_mark(Application_Links *app, View_ID view_id, b32 is_active_view
         paint_text_color_pos(app, text_layout_id, cursor_pos, fcolor_id(defcolor_at_cursor));
     }
     else {
-        draw_character_wire_frame(app, text_layout_id, cursor_pos, cursor_roundness, mark_outline_thickness,
-                                  fcolor_id(defcolor_cursor));
+        draw_character_wire_frame(app, text_layout_id, cursor_pos, cursor_roundness, mark_outline_thickness, fcolor_id(defcolor_cursor));
     }
     // @note mark
     if (!is_mode_insert) {
-        draw_character_wire_frame(app, text_layout_id, mark_pos, cursor_roundness, mark_outline_thickness,
-                                  fcolor_id(defcolor_mark));
+        draw_character_wire_frame(app, text_layout_id, mark_pos, cursor_roundness, mark_outline_thickness, fcolor_id(defcolor_mark));
     }
 }
 

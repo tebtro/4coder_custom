@@ -1224,6 +1224,15 @@ CUSTOM_COMMAND_SIG(vim_toggle_mouse_suppression) {
     vim_enter_mode_normal(app);
 }
 
+
+#if CODE_PEEK
+#define vim_code_peek  vim_chord_command<fleury_code_peek>
+#define vim_close_code_peek  vim_chord_command<fleury_close_code_peek>
+#define vim_code_peek_go  vim_chord_command<fleury_code_peek_go>
+#define vim_code_peek_go_same_panel  vim_chord_command<fleury_code_peek_go_same_panel>
+#endif
+
+
 #if 0
 // :search
 #define vim_search          vim_window_command<search>
