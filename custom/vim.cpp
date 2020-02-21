@@ -1318,15 +1318,14 @@ CUSTOM_COMMAND_SIG(vim_replace_character_and_enter_mode_normal) {
 
 
 //
-// @note Insert mode specific commands
+// @note Insert mode commands
 //
 
-CUSTOM_COMMAND_SIG(vim_write_text_and_maybe_auto_close_and_auto_indent) {
+function void
+vim_write_text_and_maybe_auto_close_and_auto_indent(Application_Links *app, String_Const_u8 input_string) {
     ProfileScope(app, "write_text_and_maybe_auto_close_and_auto_indent");
     Scratch_Block scratch(app);
     
-    User_Input in = get_current_input(app);
-    String_Const_u8 input_string = to_writable(&in);
     if (input_string.str == 0 || input_string.size <= 0)  return;
     String_Const_u8 insert_string = SCu8(input_string.str);
     
@@ -1568,9 +1567,37 @@ CUSTOM_COMMAND_SIG(vim_write_text_and_maybe_auto_close_and_auto_indent) {
     no_mark_snap_to_cursor_if_shift(app, view_id);
 }
 
+CUSTOM_COMMAND_SIG(vim_write_text_and_maybe_auto_close_and_auto_indent) {
+    User_Input in = get_current_input(app);
+    String_Const_u8 input_string = to_writable(&in);
+    vim_write_text_and_maybe_auto_close_and_auto_indent(app, input_string);
+}
+
+
+CUSTOM_COMMAND_SIG(vim_write_open_brace_and_maybe_auto_close_and_auto_indent) {
+    vim_write_text_and_maybe_auto_close_and_auto_indent(app, SCu8("{"));
+}
+CUSTOM_COMMAND_SIG(vim_write_close_brace_and_maybe_auto_close_and_auto_indent) {
+    vim_write_text_and_maybe_auto_close_and_auto_indent(app, SCu8("}"));
+}
+
+CUSTOM_COMMAND_SIG(vim_write_open_bracket_and_maybe_auto_close_and_auto_indent) {
+    vim_write_text_and_maybe_auto_close_and_auto_indent(app, SCu8("["));
+}
+CUSTOM_COMMAND_SIG(vim_write_close_bracket_and_maybe_auto_close_and_auto_indent) {
+    vim_write_text_and_maybe_auto_close_and_auto_indent(app, SCu8("]"));
+}
+
+CUSTOM_COMMAND_SIG(vim_write_backslash_and_maybe_auto_close_and_auto_indent) {
+    vim_write_text_and_maybe_auto_close_and_auto_indent(app, SCu8("\\"));
+}
+CUSTOM_COMMAND_SIG(vim_write_tilda_and_maybe_auto_close_and_auto_indent) {
+    vim_write_text_and_maybe_auto_close_and_auto_indent(app, SCu8("~"));
+}
+
 
 //
-// @note visual mode specific commands
+// @note Visual mode commands
 //
 
 CUSTOM_COMMAND_SIG(vim_visual_mode_delete) {
@@ -2422,7 +2449,6 @@ CUSTOM_COMMAND_SIG(vim_set_big_face_size) {
 #define vim_open_file_in_quotes__in_other  vim_chord_command<open_file_in_quotes>
 
 
-#define vim_reopen  vim_chord_command<reopen>
 #define vim_delete_file_query  vim_chord_command<delete_file_query>
 #define vim_rename_file_query  vim_chord_command<rename_file_query>
 #define vim_make_directory_query  vim_chord_command<make_directory_query>
@@ -2485,6 +2511,71 @@ CUSTOM_COMMAND_SIG(vim_save_all_dirty_buffers) {
         }
     }
 }
+
+#if 1
+enum{
+    SureToReopen_NULL = 0,
+    SureToReopen_No = 1,
+    SureToReopen_Yes = 2,
+};
+
+
+function b32
+do_reopen_user_check(Application_Links *app, Buffer_ID buffer, View_ID view) {
+    Scratch_Block scratch(app);
+    Lister_Choice_List list = {};
+    lister_choice(scratch, &list, "(N)o"  , "", KeyCode_N, SureToReopen_No);
+    lister_choice(scratch, &list, "(Y)es" , "", KeyCode_Y, SureToReopen_Yes);
+    
+    Lister_Choice *choice = get_choice_from_user(app, "File has changed, reopen?", list);
+    
+    b32 do_reopen = false;
+    if(choice != 0) {
+        switch(choice->user_data) {
+            case SureToReopen_No:
+            {}
+            break;
+            
+            case SureToReopen_Yes:
+            {
+                do_reopen = true;
+            }
+            break;
+        }
+    }
+    
+    return do_reopen;
+}
+
+function void
+reopen_safely(Application_Links *app) {
+    View_ID view_id = get_active_view(app, Access_ReadWriteVisible);
+    Buffer_ID buffer_id = view_get_buffer(app, view_id, Access_ReadWriteVisible);
+    Dirty_State dirty = buffer_get_dirty_state(app, buffer_id);
+    
+    if(HasFlag(dirty, DirtyState_UnsavedChanges) || HasFlag(dirty, DirtyState_UnloadedChanges)) {
+        b32 should_reopen = do_reopen_user_check(app, buffer_id, view_id);
+        if(should_reopen) {
+            reopen(app);
+        }
+    } else {
+        reopen(app);
+    }
+}
+
+CUSTOM_COMMAND_SIG(reopen_buffer_safely)
+CUSTOM_DOC("Check buffer state before reopening file.")
+{
+    reopen_safely(app);
+}
+
+CUSTOM_COMMAND_SIG(reopen_buffer_safely__in_other) {
+    change_active_panel_send_command(app, reopen_safely);
+}
+
+#define vim_reopen  vim_chord_command<reopen_buffer_safely>
+#define vim_reopen__in_other  vim_chord_command<reopen_buffer_safely__in_other>
+#endif
 
 //
 // @note Buffer commands

@@ -58,12 +58,14 @@ space_mode_setup_mapping(Mapping *mapping) {
         // Bind(vim_open_file_in_quotes, KeyCode_Q);
         Bind(vim_open_file_in_quotes__in_other, KeyCode_Q, KeyCode_Alt);
         
+        Bind(vim_reopen,               KeyCode_R);
+        Bind(vim_reopen__in_other,     KeyCode_R, KeyCode_Alt);
+        
         
         Bind(vim_save_buffer, KeyCode_S);
         Bind(vim_save_all_dirty_buffers, KeyCode_S, KeyCode_Shift);
         
         
-        Bind(vim_reopen,               KeyCode_R, KeyCode_Control);
         Bind(vim_rename_file_query,    KeyCode_N, KeyCode_Control);
         Bind(vim_delete_file_query,    KeyCode_D, KeyCode_Control);
         Bind(vim_make_directory_query, KeyCode_M, KeyCode_Control);

@@ -1,3 +1,47 @@
+
+//
+// @note https://github.com/ryanbyczek/4coder-Customization
+//        4coder_ryanb.cpp
+//
+function u32
+tebtro_calculate_color_brightness(u32 color) {
+    u32 r = ((color >> 16) & 0xFF);
+    u32 g = ((color >> 8 ) & 0xFF);
+    u32 b = ((color >> 0 ) & 0xFF);
+    
+    f32 brightness = sqrtf((r * r * 0.241f) + (g * g * 0.691f) + (b * b * 0.068f));
+    
+    return (u32)(brightness);
+}
+function void
+tebtro_draw_hex_color_preview(Application_Links* app, Buffer_ID buffer, Text_Layout_ID text_layout_id, i64 pos) {
+    ProfileScope(app, "ryanb draw hex color preview");
+    
+    Scratch_Block scratch(app);
+    
+    Range_i64 range = enclose_pos_alpha_numeric(app, buffer, pos);
+    String_Const_u8 token = push_buffer_range(app, scratch, buffer, range);
+    if (token.size == 10) {
+        if (token.str[0] == '0' && (token.str[1] == 'x' || token.str[1] == 'X')) {
+            b32 is_hex = true;
+            for (u32 i = 0; (i < 8) && is_hex; ++i) {
+                char c = token.str[i + 2];
+                is_hex = ((c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f') || (c >= '0' && c <= '9'));
+            }
+            
+            if (is_hex) {
+                String_Const_u8 hex = string_substring(token, Ii64_size(2, 8));
+                
+                ARGB_Color hex_color = (u32)string_to_integer(hex, 16);
+                draw_character_block(app, text_layout_id, Ii64_size(range.min, 10), 2.0f, hex_color);
+                
+                ARGB_Color textColor = tebtro_calculate_color_brightness(hex_color) < 128 ? 0xFFFFFFFF : 0xFF000000;
+                paint_text_color(app, text_layout_id, range, textColor);
+            }
+        }
+    }
+}
+
 //
 // @note Background and margin
 //

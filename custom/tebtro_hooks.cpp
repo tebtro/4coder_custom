@@ -394,6 +394,8 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
         tebtro_draw_vertical_lines_scope_highlight(app, buffer_id, view_id, text_layout_id, rect, cursor_pos, (ARGB_Color *)&colors_back_cycle_adjusted, ArrayCount(colors_back_cycle_adjusted));
     }
     
+    // @note: Hex color preview
+    tebtro_draw_hex_color_preview(app, buffer_id, text_layout_id, cursor_pos);
     
     // @note Vertical line highlight range
     if (is_active_view) {

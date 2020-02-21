@@ -96,7 +96,7 @@ static Whichkey_Command whichkey_file_commands[12] = {
         vim_save_all_dirty_buffers, 0, 0
     },
     {
-        "reopen current file without asking", "CTRL + R",
+        "reopen current file without asking", "R",
         vim_reopen, 0, 0
     },
     {
