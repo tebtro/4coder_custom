@@ -2227,7 +2227,7 @@ CUSTOM_COMMAND_SIG(vim_newline) {
 #endif
 
 //
-// @note Window/view commands
+// @note View commands / Window commands
 //
 template <CUSTOM_COMMAND_SIG(command), b32 view_changed_to_line_highlight/* = false*/>
 CUSTOM_COMMAND_SIG(vim_window_command) {
@@ -2324,106 +2324,33 @@ CUSTOM_COMMAND_SIG(_vim_close_view) {
     close_panel(app);
 }
 
-// @todo Fix focus commands
+
+#include "vim_window_movement.cpp"
+
 CUSTOM_COMMAND_SIG(_vim_focus_view_left) {
-    View_ID view_id = get_active_view(app, Access_Always);
-    Rect_f32 view_rect = view_get_screen_rect(app, view_id);
-    f32 x0 = view_rect.x0;
-    f32 y0 = view_rect.y0;
-    
-    View_ID best_view_id = view_id;
-    Rect_f32 best_view_rect = view_rect;
-    
-    for_views(app, it) {
-        if (it == view_id)  continue;
-        
-        Rect_f32 it_rect = view_get_screen_rect(app, it);
-        if (y0 < it_rect.y0 || y0 > it_rect.y1)  continue;
-        if (x0 < it_rect.x0)  continue;
-        
-        if (best_view_id == view_id ||
-            it_rect.x0 > best_view_rect.x0) {
-            best_view_id   = it;
-            best_view_rect = it_rect;
-        }
-    }
-    
-    view_set_active(app, best_view_id);
+    windmove_panel_left(app);
 }
 CUSTOM_COMMAND_SIG(_vim_focus_view_right) {
-    View_ID view_id = get_active_view(app, Access_Always);
-    Rect_f32 view_rect = view_get_screen_rect(app, view_id);
-    f32 x0 = view_rect.x0;
-    f32 y0 = view_rect.y0;
-    
-    View_ID best_view_id = view_id;
-    Rect_f32 best_view_rect = view_rect;
-    
-    for_views(app, it) {
-        if (it == view_id)  continue;
-        
-        Rect_f32 it_rect = view_get_screen_rect(app, it);
-        if (y0 < it_rect.y0 || y0 > it_rect.y1)  continue;
-        if (x0 > it_rect.x0)  continue;
-        
-        if (best_view_id == view_id ||
-            it_rect.x0 < best_view_rect.x0) {
-            best_view_id   = it;
-            best_view_rect = it_rect;
-        }
-    }
-    
-    view_set_active(app, best_view_id);
+    windmove_panel_right(app);
 }
 CUSTOM_COMMAND_SIG(_vim_focus_view_down) {
-    View_ID view_id = get_active_view(app, Access_Always);
-    Rect_f32 view_rect = view_get_screen_rect(app, view_id);
-    f32 x0 = view_rect.x0;
-    f32 y0 = view_rect.y0;
-    
-    View_ID best_view_id = view_id;
-    Rect_f32 best_view_rect = view_rect;
-    
-    for_views(app, it) {
-        if (it == view_id)  continue;
-        
-        Rect_f32 it_rect = view_get_screen_rect(app, it);
-        if (x0 < it_rect.x0 || x0 > it_rect.x1)  continue;
-        if (y0 < it_rect.y0)  continue;
-        
-        if (best_view_id == view_id ||
-            it_rect.y0 > best_view_rect.y0) {
-            best_view_id   = it;
-            best_view_rect = it_rect;
-        }
-    }
-    
-    view_set_active(app, best_view_id);
+    windmove_panel_down(app);
 }
 CUSTOM_COMMAND_SIG(_vim_focus_view_up) {
-    View_ID view_id = get_active_view(app, Access_Always);
-    Rect_f32 view_rect = view_get_screen_rect(app, view_id);
-    f32 x0 = view_rect.x0;
-    f32 y0 = view_rect.y0;
-    
-    View_ID best_view_id = view_id;
-    Rect_f32 best_view_rect = view_rect;
-    
-    for_views(app, it) {
-        if (it == view_id)  continue;
-        
-        Rect_f32 it_rect = view_get_screen_rect(app, it);
-        if (x0 < it_rect.x0 || x0 > it_rect.x1)  continue;
-        if (y0 > it_rect.y0)  continue;
-        
-        if (best_view_id == view_id ||
-            it_rect.y0 < best_view_rect.y0) {
-            best_view_id   = it;
-            best_view_rect = it_rect;
-        }
-    }
-    
-    view_set_active(app, best_view_id);
+    windmove_panel_up(app);
+}
+
+CUSTOM_COMMAND_SIG(_vim_swap_view_left) {
+    windmove_panel_swap_left(app);
+}
+CUSTOM_COMMAND_SIG(_vim_swap_view_right) {
+    windmove_panel_swap_right(app);
+}
+CUSTOM_COMMAND_SIG(_vim_swap_view_down) {
+    windmove_panel_swap_down(app);
+}
+CUSTOM_COMMAND_SIG(_vim_swap_view_up) {
+    windmove_panel_swap_up(app);
 }
 
 
@@ -2444,6 +2371,11 @@ CUSTOM_COMMAND_SIG(_vim_focus_view_up) {
 #define vim_focus_view_right vim_window_command<_vim_focus_view_right, true>
 #define vim_focus_view_down  vim_window_command<_vim_focus_view_down, true>
 #define vim_focus_view_up    vim_window_command<_vim_focus_view_up, true>
+
+#define vim_swap_view_left  vim_window_command<_vim_swap_view_left, true>
+#define vim_swap_view_right vim_window_command<_vim_swap_view_right, true>
+#define vim_swap_view_down  vim_window_command<_vim_swap_view_down, true>
+#define vim_swap_view_up    vim_window_command<_vim_swap_view_up, true>
 
 //
 // @note Face commands / Font commands

@@ -675,6 +675,11 @@ vim_setup_mapping(Mapping *mapping) {
         Bind(vim_focus_view_up,    KeyCode_K, KeyCode_Control);
         Bind(vim_focus_view_right, KeyCode_L);
         Bind(vim_focus_view_right, KeyCode_L, KeyCode_Control);
+        
+        Bind(vim_swap_view_left,  KeyCode_H, KeyCode_Alt);
+        Bind(vim_swap_view_down,  KeyCode_J, KeyCode_Alt);
+        Bind(vim_swap_view_up,    KeyCode_K, KeyCode_Alt);
+        Bind(vim_swap_view_right, KeyCode_L, KeyCode_Alt);
     }
 }
 

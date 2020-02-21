@@ -396,7 +396,7 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
     
     
     // @note Vertical line highlight range
-    {
+    if (is_active_view) {
         ARGB_Color argb_cursor_mark_range = 0x77CCCCCC; // 0xFF010808
         vim_draw_vertical_line_highlight_range(app, view_id, text_layout_id, Ii64(cursor_pos, mark_pos), argb_cursor_mark_range);
     }

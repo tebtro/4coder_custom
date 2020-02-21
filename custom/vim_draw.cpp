@@ -27,6 +27,7 @@ vim_draw_vertical_line_highlight_range(Application_Links *app, View_ID view_id, 
     Face_Metrics metrics = get_face_metrics(app, face_id);
     f32 width = metrics.normal_advance * width_multiplier;
     draw_rectangle(app, Rf32(view_rect.x0, lower_bound_y, view_rect.x0 + width, upper_bound_y), 3.f, argb_color);
+    draw_rectangle(app, Rf32(view_rect.x1 - width, lower_bound_y, view_rect.x1, upper_bound_y), 3.f, argb_color);
     
     draw_set_clip(app, clip);
 }
