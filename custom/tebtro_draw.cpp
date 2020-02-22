@@ -248,6 +248,37 @@ tebtro_get_token_color_cpp(Token token){
     return(fcolor_id(color));
 }
 
+#if 0 // @todo
+//
+// @note: _underscore_text_
+//        *bold_text*
+//        -strikethrough-text-
+//        ~italic~text~
+//
+function void
+tebtro_draw_comment_font_styles(Application_Links *app, Text_Layout_ID text_layout_id, Buffer_ID buffer_id, Token *token, FColor color_foreground) {
+    if (!token)  return;
+    Scratch_Block scratch(app);
+    
+    String_Const_u8 lexeme = push_token_lexeme(app, scratch, buffer_id, token);
+    if (lexeme.size != 15 && lexeme.size != 16)  return;
+    
+    Rect_f32 first_char_rect = text_layout_character_on_screen(app, text_layout_id, token->pos + 4);
+    String_Const_u8 substring;
+    substring.str = lexeme.str + 4;
+    substring.size = 5;
+    
+    Vec2_f32 point;
+    point.x = first_char_rect.x0;
+    point.y = first_char_rect.y0;
+    
+    Face_ID face_id = get_face_id(app, 0);
+    color_foreground = fcolor_argb(0xFFFF0000);
+    
+    draw_string(app, face_id, substring, point, color_foreground);
+}
+#endif
+
 function void
 tebtro_draw_cpp_token_colors__only_comments(Application_Links *app, Text_Layout_ID text_layout_id, Buffer_ID buffer, Token_Array *array) {
     Scratch_Block scratch(app);
@@ -273,7 +304,7 @@ tebtro_draw_cpp_token_colors__only_comments(Application_Links *app, Text_Layout_
 }
 
 function void
-tebtro_draw_cpp_token_colors(Application_Links *app, Text_Layout_ID text_layout_id, Buffer_ID buffer, Token_Array *array) {
+tebtro_draw_cpp_token_colors(Application_Links *app, Text_Layout_ID text_layout_id, Buffer_ID buffer_id, Token_Array *array) {
     Scratch_Block scratch(app);
     
     Range_i64 visible_range = text_layout_get_visible_range(app, text_layout_id);
@@ -287,7 +318,7 @@ tebtro_draw_cpp_token_colors(Application_Links *app, Text_Layout_ID text_layout_
         FColor color = get_token_color_cpp(*token);
         ARGB_Color argb = fcolor_resolve(color);
         if (token->kind == TokenBaseKind_Keyword) {
-            String_Const_u8 lexeme = push_token_lexeme(app, scratch, buffer, token);
+            String_Const_u8 lexeme = push_token_lexeme(app, scratch, buffer_id, token);
             if (string_match(lexeme, SCu8("void"))  ||
                 string_match(lexeme, SCu8("bool"))  ||
                 string_match(lexeme, SCu8("char"))  ||

@@ -62,7 +62,7 @@ static Whichkey_Command whichkey_buffer_commands[2] = {
     },
 };
 // :filecommands
-static Whichkey_Command whichkey_file_commands[12] = {
+static Whichkey_Command whichkey_file_commands[13] = {
     {
         "fuzzy find file", "F",
         vim_interactive_open_or_new__or__fuzzy_find, 0, 0
@@ -98,6 +98,10 @@ static Whichkey_Command whichkey_file_commands[12] = {
     {
         "reopen current file without asking", "R",
         vim_reopen, 0, 0
+    },
+    {
+        "reopen current file without asking in other view", "ALT + R",
+        vim_reopen__in_other, 0, 0
     },
     {
         "rename file query", "CTRL + N",
