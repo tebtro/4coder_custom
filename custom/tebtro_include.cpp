@@ -140,6 +140,11 @@
 #include "vim_code_peek.cpp"
 #endif
 
+#define CALC_PLOT 1
+#if CALC_PLOT
+#include "vim_plot.cpp"
+#include "vim_calc.cpp"
+#endif
 
 //
 // vim
