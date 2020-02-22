@@ -116,8 +116,12 @@ CUSTOM_DOC("Input consumption loop for default view behavior")
             
             ProfileCloseNow(view_input_profile);
             
-            // NOTE(allen): call the command
+            // @note: Call the command
+#if USE_MULTIPLE_CURSORS
+            vim_multiple_cursor_handle_input_call_command(app, view_id, binding);
+#else
             binding.custom(app);
+#endif
             
             // NOTE(allen): after the command is called do some book keeping
             ProfileScope(app, "after view input");

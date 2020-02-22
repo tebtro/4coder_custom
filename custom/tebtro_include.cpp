@@ -146,6 +146,7 @@
 //
 #include "vim_function_helper.cpp"
 #include "vim.cpp"
+#include "vim_multiple_cursor.cpp"
 #include "vim_draw.cpp"
 #include "vim_hooks.cpp"
 #include "vim_map.cpp"

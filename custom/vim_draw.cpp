@@ -26,8 +26,82 @@ vim_draw_vertical_line_highlight_range(Application_Links *app, View_ID view_id, 
     Face_ID face_id = get_face_id(app, 0);
     Face_Metrics metrics = get_face_metrics(app, face_id);
     f32 width = metrics.normal_advance * width_multiplier;
-    draw_rectangle(app, Rf32(view_rect.x0, lower_bound_y, view_rect.x0 + width, upper_bound_y), 3.f, argb_color);
-    draw_rectangle(app, Rf32(view_rect.x1 - width, lower_bound_y, view_rect.x1, upper_bound_y), 3.f, argb_color);
+    
+    Rect_f32 left_rect  = Rf32(view_rect.x0, lower_bound_y, view_rect.x0 + width, upper_bound_y);
+    Rect_f32 right_rect = Rf32(view_rect.x1 - width, lower_bound_y, view_rect.x1, upper_bound_y);
+    if(min_rect.y0 < max_rect.y0) {
+        left_rect.y0 += metrics.line_height;
+        right_rect.y1 -= metrics.line_height;
+    }
+    else {
+        left_rect.y1  -= metrics.line_height;
+        right_rect.y0 += metrics.line_height;
+    }
+    
+#if 0
+    // @note: Fill rect
+    if(min_rect.y0 < max_rect.y0) {
+        right_rect = min_rect;
+        right_rect.x1 = view_rect.x1;
+        
+        left_rect = max_rect;
+        left_rect.x0 = view_rect.x0;
+        
+        
+        Rect_f32 center_rect;
+        center_rect.x0 = view_rect.x0;
+        center_rect.x1 = view_rect.x1;
+        center_rect.y0 = min_rect.y1;
+        center_rect.y1 = max_rect.y0;
+        draw_rectangle(app, center_rect, 3.0f, argb_color);
+    }
+    else {
+        Rect_f32 center_rect;
+        center_rect.x0 = min_rect.x0;
+        center_rect.x1 = max_rect.x1;
+        center_rect.y0 = min_rect.y1;
+        center_rect.y1 = max_rect.y0;
+        draw_rectangle(app, center_rect, 3.0f, argb_color);
+    }
+#endif
+    
+#if 0
+    // @note: Draw additional horizontal outline
+    f32 height = metrics.line_height * 0.06f;
+    
+    Rect_f32 top_rect1;
+    top_rect1.x0 = view_rect.x0;
+    top_rect1.x1 = min_rect.x0;
+    top_rect1.y0 = min_rect.y1;
+    top_rect1.y1 = top_rect1.y0 + height;
+    
+    Rect_f32 bottom_rect1;
+    bottom_rect1.x0 = max_rect.x1;
+    bottom_rect1.x1 = view_rect.x1;
+    bottom_rect1.y1 = max_rect.y0;
+    bottom_rect1.y0 = bottom_rect1.y1 - height;
+    
+    draw_rectangle(app, top_rect1, 3.f, argb_color);
+    draw_rectangle(app, bottom_rect1, 3.f, argb_color);
+    
+    Rect_f32 top_rect2;
+    top_rect2.x0 = min_rect.x1;
+    top_rect2.x1 = view_rect.x1;
+    top_rect2.y0 = min_rect.y0;
+    top_rect2.y1 = top_rect2.y0 - height;
+    
+    Rect_f32 bottom_rect2;
+    bottom_rect2.x0 = view_rect.x0;
+    bottom_rect2.x1 = max_rect.x0;
+    bottom_rect2.y1 = max_rect.y1;
+    bottom_rect2.y0 = bottom_rect2.y1 + height;
+    
+    draw_rectangle(app, top_rect2, 3.f, argb_color);
+    draw_rectangle(app, bottom_rect2, 3.f, argb_color);
+#endif
+    
+    draw_rectangle(app, left_rect, 3.f, argb_color);
+    draw_rectangle(app, right_rect, 3.f, argb_color);
     
     draw_set_clip(app, clip);
 }
@@ -46,9 +120,14 @@ vim_draw_cursor_mark(Application_Links *app, View_ID view_id, b32 is_active_view
                      Text_Layout_ID text_layout_id, f32 cursor_roundness, f32 mark_outline_thickness) {
     Managed_Scope view_scope = view_get_managed_scope(app, view_id);
     Vim_View_State *vim_state = scope_attachment(app, view_scope, view_vim_state_id, Vim_View_State);
+    b32 is_mode_insert = (vim_state->mode == vim_mode_insert);
+    
+#if USE_MULTIPLE_CURSORS
+    // @note Draw multiple cursors
+    vim_draw_multiple_cursors(app, text_layout_id, cursor_roundness, is_mode_insert);
+#endif
     
     // @note draw cursor mark
-    b32 is_mode_insert = (vim_state->mode == vim_mode_insert);
     i64 cursor_pos = view_get_cursor_pos(app, view_id);
     i64 mark_pos = view_get_mark_pos(app, view_id);
     b32 cursor_before_mark = (cursor_pos <= mark_pos);
