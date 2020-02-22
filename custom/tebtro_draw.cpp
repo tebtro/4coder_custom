@@ -248,36 +248,169 @@ tebtro_get_token_color_cpp(Token token){
     return(fcolor_id(color));
 }
 
-#if 0 // @todo
 //
 // @note: _underscore_text_
-//        *bold_text*
 //        -strikethrough-text-
+//        *bold_text*
 //        ~italic~text~
 //
-function void
-tebtro_draw_comment_font_styles(Application_Links *app, Text_Layout_ID text_layout_id, Buffer_ID buffer_id, Token *token, FColor color_foreground) {
+inline void
+tebtro_draw_one_comment_font_styles(Application_Links *app, Text_Layout_ID text_layout_id, Buffer_ID buffer_id, Token *token, ARGB_Color argb_color_foreground, Face_ID underlined_face_id, Face_ID strikethrough_face_id, Face_ID bold_face_id, Face_ID italic_face_id) {
     if (!token)  return;
     Scratch_Block scratch(app);
     
+    Face_ID buffer_face_id = get_face_id(app, buffer_id);
+    Face_Metrics face_metrics = get_face_metrics(app, buffer_face_id);
+    Face_ID face_id = 0;
+    
     String_Const_u8 lexeme = push_token_lexeme(app, scratch, buffer_id, token);
-    if (lexeme.size != 15 && lexeme.size != 16)  return;
     
-    Rect_f32 first_char_rect = text_layout_character_on_screen(app, text_layout_id, token->pos + 4);
-    String_Const_u8 substring;
-    substring.str = lexeme.str + 4;
-    substring.size = 5;
+    b32 found = false;
+    b32 underlined = false;
+    b32 strikethrough = false;
     
-    Vec2_f32 point;
-    point.x = first_char_rect.x0;
-    point.y = first_char_rect.y0;
-    
-    Face_ID face_id = get_face_id(app, 0);
-    color_foreground = fcolor_argb(0xFFFF0000);
-    
-    draw_string(app, face_id, substring, point, color_foreground);
-}
+    int string_start_index = 0;
+    int string_end_index = 0;
+    int i = 1;
+    for (;i+1 < lexeme.size; ++i) {
+        u8 *c = lexeme.str + i;
+        if (character_is_whitespace(*(c - 1)) && *c == '_') {
+            string_start_index = i;
+            while (i < lexeme.size && character_is_alpha_numeric(*c)) {
+                ++i;
+                c = lexeme.str + i;
+            }
+            if (*(c - 1) == '_') {
+                string_end_index = i;
+                found = true;
+                
+                underlined = true;
+                face_id = underlined_face_id;
+            }
+        }
+        else if (character_is_whitespace(*(c - 1)) && *c == '-') {
+            string_start_index = i;
+            while (i < lexeme.size && (character_is_alpha_numeric(*c) || *c == '-')) {
+                ++i;
+                c = lexeme.str + i;
+            }
+            if (*(c - 1) == '-') {
+                string_end_index = i;
+                found = true;
+                
+                strikethrough = true;
+                face_id = strikethrough_face_id;
+            }
+        }
+        else if (character_is_whitespace(*(c - 1)) && *c == '*') {
+            string_start_index = i;
+            while (i < lexeme.size && (character_is_alpha_numeric(*c) || *c == '*')) {
+                ++i;
+                c = lexeme.str + i;
+            }
+            if (*(c - 1) == '*') {
+                string_end_index = i;
+                found = true;
+                
+                face_id = bold_face_id;
+            }
+        }
+        else if (character_is_whitespace(*(c - 1)) && *c == '~') {
+            string_start_index = i;
+            while (i < lexeme.size && (character_is_alpha_numeric(*c) || *c == '~')) {
+                ++i;
+                c = lexeme.str + i;
+            }
+            if (*(c - 1) == '~') {
+                string_end_index = i;
+                found = true;
+                
+                face_id = italic_face_id;
+            }
+        }
+        
+        if (!found)  continue;
+        
+        Rect_f32 first_char_rect = text_layout_character_on_screen(app, text_layout_id, token->pos + string_start_index);
+        Rect_f32 last_char_rect = text_layout_character_on_screen(app, text_layout_id, token->pos + string_end_index - 1);
+        
+        String_Const_u8 substring;
+        substring.str = lexeme.str + string_start_index;
+        substring.size = (string_end_index - string_start_index);
+        if (substring.size <= 2)  goto end_found;
+        
+        if (face_id != 0) {
+            Vec2_f32 point;
+            point.x = first_char_rect.x0;
+            point.y = first_char_rect.y0;
+            
+            {
+                Rect_f32 rect;
+                rect.x0 = point.x;
+                rect.x1 = last_char_rect.x1;
+                rect.y0 = point.y;
+                rect.y1 = first_char_rect.y1;
+                draw_rectangle(app, rect, 0.0f, fcolor_resolve(fcolor_id(defcolor_back)));
+            }
+            
+#if 1
+            draw_string(app, face_id, substring, point, argb_color_foreground);
+#else
+            Fancy_String *fancy_string = push_fancy_string(scratch, 0, face_id, fcolor_argb(argb_color_foreground), substring);
+            draw_fancy_string(app, fancy_string, point);
 #endif
+        }
+        else if (underlined || strikethrough) {
+            f32 height = face_metrics.line_height * 0.06f;
+            Rect_f32 rect = {};
+            
+            if (underlined) {
+                f32 offset = face_metrics.line_height * 0.105f;
+                rect.y1 = first_char_rect.y1 - offset;
+                rect.y0 = rect.y1 - height;
+                rect.x0 = first_char_rect.x0;
+                rect.x1 = last_char_rect.x1;
+            }
+            else if (strikethrough) {
+                height *= 1.3f;
+                f32 offset = face_metrics.line_height * 0.5f;
+                rect.y0 = first_char_rect.y0 + offset - (height * 0.25f);
+                rect.y1 = rect.y0 + height;
+                rect.x0 = first_char_rect.x0;
+                rect.x1 = last_char_rect.x1;
+            }
+            
+            draw_rectangle(app, rect, 0.0f, argb_color_foreground);
+            underlined = false;
+            strikethrough = false;
+        }
+        
+        end_found:;
+        i = string_end_index;
+        string_start_index = 0;
+        string_end_index = 0;
+        found = false;
+    }
+}
+function void
+tebtro_draw_comment_font_styles(Application_Links *app, Text_Layout_ID text_layout_id, Buffer_ID buffer_id, Token_Array *array, Face_ID underlined_face_id, Face_ID strikethrough_face_id, Face_ID bold_face_id, Face_ID italic_face_id) {
+    Range_i64 visible_range = text_layout_get_visible_range(app, text_layout_id);
+    i64 first_index = token_index_from_pos(array, visible_range.first);
+    Token_Iterator_Array it = token_iterator_index(0, array, first_index);
+    for (;;) {
+        Token *token = token_it_read(&it);
+        if (token && token->pos >= visible_range.one_past_last) {
+            break;
+        }
+        if (token && token->kind == TokenBaseKind_Comment) {
+            ARGB_Color argb_color = fcolor_resolve(fcolor_id(defcolor_comment));
+            tebtro_draw_one_comment_font_styles(app, text_layout_id, buffer_id, token, argb_color, underlined_face_id, strikethrough_face_id, bold_face_id, italic_face_id);
+        }
+        if (!token_it_inc_all(&it)) {
+            break;
+        }
+    }
+}
 
 function void
 tebtro_draw_cpp_token_colors__only_comments(Application_Links *app, Text_Layout_ID text_layout_id, Buffer_ID buffer, Token_Array *array) {

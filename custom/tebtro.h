@@ -2,6 +2,15 @@
 
 
 //
+// @note: Fonts / Faces
+//
+global Face_ID global_underlined_face_id = 0;
+global Face_ID global_strikethrough_face_id = 0;
+global Face_ID global_bold_face_id = 0;
+global Face_ID global_italic_face_id = 0;
+
+
+//
 // @note Identifier list
 //
 

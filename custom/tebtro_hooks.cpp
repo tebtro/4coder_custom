@@ -25,6 +25,33 @@ CUSTOM_DOC("Tebtro custom command for responding to a startup event")
     }
     
     vim_setup_mode_and_chord_color_tables(app);
+    
+    // @note Setup fonts
+    {
+        // @todo Fonts are not updated when changing the font size with the mouse wheel.
+        
+        Scratch_Block scratch(app);
+        String_Const_u8 bin_path = system_get_path(scratch, SystemPath_Binary);
+        Face_Description default_face_desc = get_face_description(app, get_face_id(app, 0));
+        
+        Face_Description desc = {0};
+        desc.font.file_name =  push_u8_stringf(scratch, "%.*sfonts/SourceCodePro-Regular.ttf", string_expand(bin_path));
+        desc.parameters.pt_size = default_face_desc.parameters.pt_size;
+        desc.parameters.underline = 1;
+        global_underlined_face_id = try_create_new_face(app, &desc);
+        
+        desc.font.file_name =  push_u8_stringf(scratch, "%.*sfonts/SourceCodePro-Bold.ttf", string_expand(bin_path));
+        desc.parameters.underline = 0;
+        desc.parameters.bold = 1;
+        global_bold_face_id = try_create_new_face(app, &desc);
+        
+        // @todo Italic font
+        desc.font.file_name =  push_u8_stringf(scratch, "%.*sfonts/SourceCodePro-Light.ttf", string_expand(bin_path));
+        desc.parameters.bold = 0;
+        desc.parameters.italic = 1;
+        global_italic_face_id = try_create_new_face(app, &desc);
+    }
+    
 #if !defined(BUILD_DEBUG)
     system_set_fullscreen(true);
 #endif
@@ -423,8 +450,17 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
     // NOTE(allen): Fade ranges
     paint_fade_ranges(app, text_layout_id, buffer_id, view_id);
     
-    // NOTE(allen): put the actual text on the actual screen
+    // @note: Put the actual text on the actual screen
     draw_text_layout_default(app, text_layout_id);
+    
+    // @note: Render comment font styles
+    {
+        Face_ID underlined_face_id = 0;
+        Face_ID strikethrough_face_id = 0;
+        Face_ID bold_face_id = global_bold_face_id;
+        Face_ID italic_face_id = global_italic_face_id;
+        tebtro_draw_comment_font_styles(app, text_layout_id, buffer_id, &token_array, underlined_face_id, strikethrough_face_id, bold_face_id, italic_face_id);
+    }
     
     // @note: Scope brace annotations
     {
