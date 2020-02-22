@@ -252,7 +252,7 @@ tebtro_get_token_color_cpp(Token token){
 // @note: _underscore_text_
 //        -strikethrough-text-
 //        *bold_text*
-//        ~italic~text~
+//        /italic-text/
 //
 inline void
 tebtro_draw_one_comment_font_styles(Application_Links *app, Text_Layout_ID text_layout_id, Buffer_ID buffer_id, Token *token, ARGB_Color argb_color_foreground, Face_ID underlined_face_id, Face_ID strikethrough_face_id, Face_ID bold_face_id, Face_ID italic_face_id) {
@@ -304,7 +304,7 @@ tebtro_draw_one_comment_font_styles(Application_Links *app, Text_Layout_ID text_
         }
         else if (character_is_whitespace(*(c - 1)) && *c == '*') {
             string_start_index = i;
-            while (i < lexeme.size && (character_is_alpha_numeric(*c) || *c == '*')) {
+            while (i < lexeme.size && (character_is_alpha_numeric(*c) || *c == '-' || *c == '*')) {
                 ++i;
                 c = lexeme.str + i;
             }
@@ -315,13 +315,13 @@ tebtro_draw_one_comment_font_styles(Application_Links *app, Text_Layout_ID text_
                 face_id = bold_face_id;
             }
         }
-        else if (character_is_whitespace(*(c - 1)) && *c == '~') {
+        else if (character_is_whitespace(*(c - 1)) && *c == '/') {
             string_start_index = i;
-            while (i < lexeme.size && (character_is_alpha_numeric(*c) || *c == '~')) {
+            while (i < lexeme.size && (character_is_alpha_numeric(*c) || *c == '-' || *c == '/')) {
                 ++i;
                 c = lexeme.str + i;
             }
-            if (*(c - 1) == '~') {
+            if (*(c - 1) == '/') {
                 string_end_index = i;
                 found = true;
                 
@@ -344,14 +344,18 @@ tebtro_draw_one_comment_font_styles(Application_Links *app, Text_Layout_ID text_
             point.x = first_char_rect.x0;
             point.y = first_char_rect.y0;
             
-            {
-                Rect_f32 rect;
-                rect.x0 = point.x;
-                rect.x1 = last_char_rect.x1;
-                rect.y0 = point.y;
-                rect.y1 = first_char_rect.y1;
-                draw_rectangle(app, rect, 0.0f, fcolor_resolve(fcolor_id(defcolor_back)));
-            }
+#if 1
+            // @note: Hide actual comment text
+            Rect_f32 rect;
+            rect.x0 = point.x;
+            rect.x1 = last_char_rect.x1;
+            rect.y0 = point.y;
+            rect.y1 = first_char_rect.y1;
+            draw_rectangle(app, rect, 0.0f, fcolor_resolve(fcolor_id(defcolor_back)));
+#else
+            // @note We are first putting the actual text on the screen so we cant do that here.
+            paint_text_color(app, text_layout_id, Ii64(token->pos + string_start_index, token->pos + string_end_index - 1), fcolor_resolve(fcolor_id(defcolor_back)));
+#endif
             
 #if 1
             draw_string(app, face_id, substring, point, argb_color_foreground);

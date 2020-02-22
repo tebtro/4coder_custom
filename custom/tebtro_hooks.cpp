@@ -45,8 +45,8 @@ CUSTOM_DOC("Tebtro custom command for responding to a startup event")
         desc.parameters.bold = 1;
         global_bold_face_id = try_create_new_face(app, &desc);
         
-        // @todo Italic font
-        desc.font.file_name =  push_u8_stringf(scratch, "%.*sfonts/SourceCodePro-Light.ttf", string_expand(bin_path));
+        // desc.font.file_name =  push_u8_stringf(scratch, "%.*sfonts/SourceCodePro-Light.ttf", string_expand(bin_path));
+        desc.font.file_name =  push_u8_stringf(scratch, "%.*sfonts/Consolas-Italic.ttf", string_expand(bin_path));
         desc.parameters.bold = 0;
         desc.parameters.italic = 1;
         global_italic_face_id = try_create_new_face(app, &desc);
