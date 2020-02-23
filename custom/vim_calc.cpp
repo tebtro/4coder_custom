@@ -2701,3 +2701,161 @@ Fleury4RenderCalcComments(Application_Links *app, Buffer_ID buffer, View_ID view
     
 }
 
+
+CUSTOM_COMMAND_SIG(vim_calc_write_result) {
+    View_ID view_id = get_active_view(app, Access_Always);
+    Buffer_ID buffer_id = view_get_buffer(app, view_id, Access_Always);
+    i64 cursor_pos = view_get_cursor_pos(app, view_id);
+    Token *token = get_token_from_pos(app, buffer_id, cursor_pos);
+    // @note: When the cursor pos is at the end of the line, so at the \n char, it doesnt count as the comment token.
+    if (token && token->kind == TokenBaseKind_Whitespace) {
+        token = get_token_from_pos(app, buffer_id, cursor_pos-1);
+    }
+    if (!token || token->kind != TokenBaseKind_Comment)  return;
+    
+    // @copynpaste
+    
+    // @todo Use 4coder arenas
+    static char arena_buffer[64*1024*1024];
+    MemoryArena arena = MemoryArenaInit(arena_buffer, sizeof(arena_buffer));
+    
+    Range_i64 token_range =
+    {
+        token->pos,
+        token->pos + (token->size > 1024
+                      ? 1024
+                      : token->size),
+    };
+    
+    u32 token_buffer_size = (u32)(token_range.end - token_range.start);
+    if(token_buffer_size < 4)
+    {
+        token_buffer_size = 4;
+    }
+    u8 *token_buffer = (u8 *)MemoryArenaAllocate(&arena, token_buffer_size+1);
+    buffer_read_range(app, buffer_id, token_range, token_buffer);
+    token_buffer[token_buffer_size] = 0;
+    
+    if((token_buffer[0] == '/' && token_buffer[1] == '/' && token_buffer[2] == 'c' &&
+        token_buffer[3] <= 32) ||
+       (token_buffer[0] == '/' && token_buffer[1] == '*' && token_buffer[2] == 'c'))
+        
+    {
+        int is_multiline_comment = (token_buffer[1] == '*');
+        if(is_multiline_comment)
+        {
+            if(token_buffer[token_buffer_size-1] == '/' &&
+               token_buffer[token_buffer_size-2] == '*')
+            {
+                token_buffer[token_buffer_size-2] = 0;
+            }
+        }
+        
+        char *code_buffer = (char *)token_buffer + 3;
+        i64 start_char_offset = token_range.start + 3;
+#if 0
+        Fleury4RenderCalcCode(app, buffer_id, view, text_layout_id, frame_info,
+                              &arena, at, token_range.start + 3);
+#endif
+        // @copynpaste
+        // Fleury4RenderCalcCode
+        {
+            ProfileScope(app, "[Fleury] Render Calc Code");
+            
+            f32 current_time = global_calc_time;
+            CalcSymbolTable symbol_table = CalcSymbolTableInit(&arena, 1024);
+            
+            // NOTE(rjf): Add default symbols.
+            {
+                // NOTE(rjf): Pi
+                {
+                    CalcValue value = CalcValueF64(3.1415926535897);
+                    CalcSymbolTableAdd(&symbol_table, "pi", 2, value);
+                }
+                
+                // NOTE(rjf): e
+                {
+                    CalcValue value = CalcValueF64(2.71828);
+                    CalcSymbolTableAdd(&symbol_table, "e", 1, value);
+                }
+            }
+            
+            CalcInterpretContext context_ = CalcInterpretContextInit(app, buffer_id, /*text_layout_id*/ 0, &arena,
+                                                                     &symbol_table, current_time);
+            CalcInterpretContext *context = &context_;
+            
+            char *at = code_buffer;
+            CalcNode *expr = ParseCalcCode(&arena, &at);
+            
+            for(CalcNode *interpret_expression = expr; interpret_expression;
+                interpret_expression = interpret_expression->next)
+            {
+                char *at_source = interpret_expression->at_source;
+                
+                // NOTE(rjf): Find starting result layout position.
+                i64 buffer_offset = 0;
+                if(at_source)
+                {
+                    i64 offset = (i64)(at_source - code_buffer);
+                    for(int i = 0; at_source[i] && at_source[i] != '\n'; ++i)
+                    {
+                        ++offset;
+                    }
+                    buffer_offset = start_char_offset + offset;
+                }
+                
+                CalcInterpretResult result = InterpretCalcCode(context, interpret_expression);
+                
+                if (buffer_offset != 0)
+                {
+                    
+                    // NOTE(rjf): Draw result, if there's one.
+                    {
+                        char result_buffer[256];
+                        String_Const_u8 result_string =
+                        {
+                            (u8 *)result_buffer,
+                        };
+                        
+                        switch(result.value.type)
+                        {
+                            case CALC_TYPE_error:
+                            {
+                                if(expr == 0 || !result.value.as_error)
+                                {
+                                    result_string.size = (u64)snprintf(result_buffer, sizeof(result_buffer),
+                                                                       "(error: Parse failure.)");
+                                }
+                                else
+                                {
+                                    result_string.size = (u64)snprintf(result_buffer, sizeof(result_buffer),
+                                                                       "(error: %s)", result.value.as_error);
+                                }
+                                break;
+                            }
+                            case CALC_TYPE_number:
+                            {
+                                result_string.size = (u64)snprintf(result_buffer, sizeof(result_buffer),
+                                                                   "= %f", result.value.as_f64);
+                                break;
+                            }
+                            case CALC_TYPE_string:
+                            {
+                                result_string.size = (u64)snprintf(result_buffer, sizeof(result_buffer),
+                                                                   "= %.*s", result.value.string_length, result.value.as_string);
+                                break;
+                            }
+                            default: break;
+                        }
+                        
+#if 0
+                        draw_string(app, get_face_id(app, buffer), result_string, point, color);
+#endif
+                        buffer_replace_range(app, buffer_id, Ii64(buffer_offset), result_string);
+                    }
+                }
+            }
+        }
+    }
+}
+

@@ -260,7 +260,7 @@ vim_setup_mapping(Mapping *mapping) {
         // :multiple_cursors
         Bind(vim_add_multiple_cursor_down,  KeyCode_J, KeyCode_Control, KeyCode_Alt, KeyCode_Shift);
         Bind(vim_remove_multiple_cursor_up, KeyCode_K, KeyCode_Control, KeyCode_Alt, KeyCode_Shift);
-        Bind(vim_multiple_cursor_search, KeyCode_S, KeyCode_Alt);
+        Bind(vim_multiple_cursor_search, KeyCode_S, KeyCode_Control, KeyCode_Alt);
 #endif
         
         
@@ -298,6 +298,11 @@ vim_setup_mapping(Mapping *mapping) {
         Bind(if_read_only_goto_position_same_panel, KeyCode_Return);
         Bind(if_read_only_goto_position,            KeyCode_Return, KeyCode_Alt);
         Bind(view_jump_list_with_lister,            KeyCode_Return, KeyCode_Control);
+        
+#if CALC_PLOT
+        // @note Calc commands
+        Bind(vim_calc_write_result, KeyCode_Return, KeyCode_Control, KeyCode_Alt);
+#endif
         
         // @note :paste
         Bind(vim_paste_after_and_indent, KeyCode_P);
