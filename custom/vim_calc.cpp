@@ -2736,9 +2736,8 @@ CUSTOM_COMMAND_SIG(vim_calc_write_result) {
     buffer_read_range(app, buffer_id, token_range, token_buffer);
     token_buffer[token_buffer_size] = 0;
     
-    if((token_buffer[0] == '/' && token_buffer[1] == '/' && token_buffer[2] == 'c' &&
-        token_buffer[3] <= 32) ||
-       (token_buffer[0] == '/' && token_buffer[1] == '*' && token_buffer[2] == 'c'))
+    if((token_buffer[0] == '/' && token_buffer[1] == '/') ||
+       (token_buffer[0] == '/' && token_buffer[1] == '*'))
         
     {
         int is_multiline_comment = (token_buffer[1] == '*');
@@ -2751,11 +2750,11 @@ CUSTOM_COMMAND_SIG(vim_calc_write_result) {
             }
         }
         
-        char *code_buffer = (char *)token_buffer + 3;
-        i64 start_char_offset = token_range.start + 3;
+        char *code_buffer = (char *)token_buffer + 2;
+        i64 start_char_offset = token_range.start + 2;
 #if 0
         Fleury4RenderCalcCode(app, buffer_id, view, text_layout_id, frame_info,
-                              &arena, at, token_range.start + 3);
+                              &arena, at, token_range.start + 2);
 #endif
         // @copynpaste
         // Fleury4RenderCalcCode
