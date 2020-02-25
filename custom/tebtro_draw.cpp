@@ -634,6 +634,16 @@ tebtro_draw_search_highlight(Application_Links *app, View_ID view_id, Buffer_ID 
                 Range_i64 visible_range = text_layout_get_visible_range(app, text_layout_id);
                 String_Const_u8 needle = push_buffer_range(app, scratch, buffer_id, range);
                 String_Match_List matches = buffer_find_all_matches(app, scratch, buffer_id, 0, visible_range, needle, &character_predicate_alpha_numeric_underscore_utf8, Scan_Forward);
+                if (global_search_highlight_case_sensitive) {
+                    String_Match_Flag must_have_flags = 0;
+                    String_Match_Flag must_not_have_flags = 0;
+                    
+                    must_have_flags     = StringMatch_CaseSensitive;
+                    // must_not_have_flags = StringMatch_CaseInsensitive;
+                    // StringMatch_LeftSideSloppy | StringMatch_RightSideSloppy
+                    string_match_list_filter_flags(&matches, must_have_flags, must_not_have_flags);
+                }
+                
                 String_Match *match = matches.first;
                 for (int i = 0; i < matches.count; ++i) {
                     Range_i64 match_range = match->range;

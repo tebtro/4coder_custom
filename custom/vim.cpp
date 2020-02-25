@@ -3199,6 +3199,8 @@ run_lister(Application_Links *app, Lister *lister) {
 #define ISEARCH_RING_BUFFER 1
 function void
 vim_isearch(Application_Links *app, Scan_Direction start_scan, i64 first_pos, String_Const_u8 query_init, b32 union_visual_selection_range) {
+    global_search_highlight_case_sensitive = false;
+    
     View_ID view = get_active_view(app, Access_ReadVisible);
     Buffer_ID buffer = view_get_buffer(app, view, Access_ReadVisible);
     if (!buffer_exists(app, buffer)) {
@@ -3455,6 +3457,8 @@ isearch(Application_Links *app, Scan_Direction start_scan, i64 first_pos, String
 
 function void
 query_replace_base(Application_Links *app, View_ID view, Buffer_ID buffer_id, i64 pos, String_Const_u8 r, String_Const_u8 w){
+    global_search_highlight_case_sensitive = true;
+    
     i64 new_pos = 0;
     seek_string_forward(app, buffer_id, pos - 1, 0, r, &new_pos);
     

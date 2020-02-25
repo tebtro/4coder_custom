@@ -119,5 +119,13 @@ global f32 vim_global_mouse_last_event_time = 0.0f;
 global b32 vim_global_enable_mouse_suppression = true;
 
 
+
+//
+// @note: Search highlight
+//
+global b32 global_search_highlight_case_sensitive = false;
+
+
+
 #define VIM_H
 #endif
