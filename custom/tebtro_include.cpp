@@ -147,6 +147,11 @@
 #endif
 
 //
+// magit
+//
+#include "magit.cpp"
+
+//
 // vim
 //
 #include "vim_function_helper.cpp"
