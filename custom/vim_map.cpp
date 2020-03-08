@@ -386,6 +386,22 @@ vim_setup_mapping(Mapping *mapping) {
         Bind(keyboard_macro_start_recording , KeyCode_Minus, KeyCode_Control);
         Bind(keyboard_macro_finish_recording, KeyCode_Minus, KeyCode_Control, KeyCode_Shift);
         Bind(keyboard_macro_replay,           KeyCode_Minus, KeyCode_Alt);
+        
+        
+#if 0
+        // keycode <= 48
+        for (int keycode = 0; keycode < 88; ++keycode) {
+            if (keycode >= 64 && keycode <= 71)  continue;
+            Bind(vim_keycode_test, keycode);
+            Bind(vim_keycode_test, keycode, KeyCode_Shift);
+            Bind(vim_keycode_test, keycode, KeyCode_Alt);
+            Bind(vim_keycode_test, keycode, KeyCode_Control);
+            Bind(vim_keycode_test, keycode, KeyCode_Alt,   KeyCode_Control);
+            Bind(vim_keycode_test, keycode, KeyCode_Alt,   KeyCode_Shift);
+            Bind(vim_keycode_test, keycode, KeyCode_Shift, KeyCode_Control);
+            Bind(vim_keycode_test, keycode, KeyCode_Alt,   KeyCode_Control, KeyCode_Shift);
+        }
+#endif
     }
     
     SelectMap(mapid_vim_mode_visual);

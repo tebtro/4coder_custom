@@ -115,6 +115,13 @@ CUSTOM_DOC("Input consumption loop for default view behavior")
             continue;
         }
         
+#if 0
+        if ((event_properties & EventPropertyGroup_AnyKeyboardEvent) != 0) {
+            int break_here = 0;
+            break_here = 0;
+        }
+#endif
+        
         View_ID view_id = get_this_ctx_view(app, Access_Always);
         Managed_Scope view_scope = view_get_managed_scope(app, view_id);
         Command_Map_ID *map_id_ptr = scope_attachment(app, view_scope, view_map_id, Command_Map_ID);

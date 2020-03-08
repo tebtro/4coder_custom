@@ -15,6 +15,40 @@ struct Avy_State {
     Avy_Pair *pairs;
 };
 
+function String_Const_u8 *
+avy_generate_keys(Arena *arena, int key_count) {
+    String_Const_u8 *keys = push_array(arena, String_Const_u8, key_count);
+    
+    // char *input_chars = "aoeuhtns";
+    char *input_chars = "abcdefghijklmnopqrstuvwxyz";
+    // @note k
+    u64 input_chars_count = cstring_length(input_chars);
+    // @note n
+    u64 key_length = key_count / input_chars_count;
+    
+    if (key_count <= input_chars_count) {
+        for (int i = 0; i < key_count; ++i) {
+            String_Const_u8 *key = keys + i;
+            key->str = push_array(arena, u8, 1);
+            key->size = 1;
+            
+            key->str[0] = input_chars[i];
+        }
+    }
+    else {
+        // @todo @robustness We only support one char, so just one abc.
+        for (int i = 0; i < key_count; ++i) {
+            String_Const_u8 *key = keys + i;
+            key->str = push_array(arena, u8, 1);
+            key->size = 1;
+            
+            key->str[0] = input_chars[i % input_chars_count];
+        }
+    }
+    
+    return keys;
+}
+
 // @todo Make it more interactive, so that you dont have to press enter every time.
 CUSTOM_COMMAND_SIG(avy_search) {
     Scratch_Block scratch(app);
@@ -55,15 +89,10 @@ CUSTOM_COMMAND_SIG(avy_search) {
         *avy_state = {0};
     };
     String_Match *match = matches.first;
-    // @todo @robustness We only support one char, so just one abc.
-    char *abc = "abcdefghijklmnopqrstuvwxyz";
+    String_Const_u8 *keys = avy_generate_keys(scratch, matches.count);
     for (i32 i = 0; i < matches.count; ++i) {
         Avy_Pair *pair = avy_state->pairs + i;
-        u8 key_ = (u8)abc[i % 26];
-        String_Const_u8 key = {};
-        key.str = &key_;
-        key.size = 1;
-        pair->key = push_string_copy(scratch, key);
+        pair->key = keys[i];
         pair->range = match->range;
         match = match->next;
     }
