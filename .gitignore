@@ -37,3 +37,4 @@ custom/*
 !custom/space*
 !custom/tebtro*
 !custom/magit*
+!custom/avy*

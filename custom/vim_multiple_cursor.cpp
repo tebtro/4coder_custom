@@ -162,7 +162,7 @@ vim_multiple_cursor_isearch(Application_Links *app, Scan_Direction start_scan, i
             }break;
         }
         isearch__update_highlight(app, view, Ii64_size(pos, match_size));
-        vim_scroll_cursor_line(app, 0);
+        scroll_cursor_line(app, 0);
         
         in = get_next_input(app, EventPropertyGroup_AnyKeyboardEvent, EventProperty_Escape|EventProperty_ViewActivation);
         if (in.abort) {

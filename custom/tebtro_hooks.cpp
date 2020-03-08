@@ -470,29 +470,11 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
         tebtro_draw_scope_close_brace_annotations(app, view_id, rect, buffer_id, text_layout_id, face_id, cursor_pos, (ARGB_Color *)&color, color_count);
     }
     
-    // @todo Pull out into an avy file
     // @note :avy_search
     {
-        ARGB_Color argb_color = 0xFFFFFF00;
+        ARGB_Color argb_background = 0xFFFFFF00;
         ARGB_Color argb_foreground = 0xFF000000;
-        
-        Managed_Scope view_scope = view_get_managed_scope(app, view_id);
-        Range_i64 *avy_visible_range = scope_attachment(app, view_scope, view_visible_range, Range_i64);
-        *avy_visible_range = text_layout_get_visible_range(app, text_layout_id);
-        
-        Avy_State *avy_state = scope_attachment(app, view_scope, view_avy_state, Avy_State);
-        i32 count = avy_state->count;
-        for (i32 i = 0; i < count; ++i) {
-            Avy_Pair *pair = avy_state->pairs + i;
-            // @todo change to draw rect
-            // draw_character_block(app, text_layout_id, pair->range, cursor_roundness, argb_color);
-            draw_character_block(app, text_layout_id, Ii64(pair->range.first, pair->range.first + pair->key.size), cursor_roundness, argb_color);
-            Rect_f32 rect = text_layout_character_on_screen(app, text_layout_id, pair->range.first);
-            Vec2_f32 point = {};
-            point.x = rect.x0;
-            point.y = rect.y0;
-            draw_string(app, face_id, pair->key, point, argb_foreground);
-        }
+        avy_search_render(app, view_id, text_layout_id, face_id, cursor_roundness, argb_background, argb_foreground);
     }
     
 #if CALC_PLOT

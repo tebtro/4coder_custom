@@ -6,7 +6,6 @@ function void vim_improved_newline(Application_Links *app, b32 below = true, b32
 // Ugh
 template <CUSTOM_COMMAND_SIG(command), b32 view_changed_do_highlight = false> CUSTOM_COMMAND_SIG(vim_window_command);
 
-function void vim_scroll_cursor_line(Application_Links *app, int view_pos, View_ID view_id = -1);
 CUSTOM_COMMAND_SIG(vim_scroll_cursor_line_to_view_center);
 
 //
@@ -940,7 +939,7 @@ inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_cursor_mark_swap_scope_range) {
         view_set_cursor_and_preferred_x(app, view_id, seek_pos(range.first));
         view_set_mark(app, view_id, seek_pos(range.one_past_last-1));
     }
-    vim_scroll_cursor_line(app, 0, view_id);
+    scroll_cursor_line(app, 0, view_id);
 }
 
 
@@ -973,7 +972,7 @@ CUSTOM_COMMAND_SIG(vim_center_all_views) {
             continue;
         }
         
-        vim_scroll_cursor_line(app, 0, it);
+        scroll_cursor_line(app, 0, it);
     }
 }
 
@@ -1266,94 +1265,6 @@ CUSTOM_COMMAND_SIG(vim_search_token_or_word) {
 }
 CUSTOM_COMMAND_SIG(vim_reverse_search_token_or_word) {
     vim_isearch_token_or_word(app, Scan_Backward);
-}
-
-
-// @note: Vim avy search  :avy_search
-// @todo Move to it's own file
-CUSTOM_ID(attachment, view_visible_range);
-CUSTOM_ID(attachment, view_avy_state);
-struct Avy_Pair {
-    String_Const_u8 key;
-    Range_i64 range;
-};
-struct Avy_State {
-    i32 count;
-    Avy_Pair *pairs;
-};
-// @todo Make it more interactive, so that you dont have to press enter every time.
-CUSTOM_COMMAND_SIG(vim_avy_search) {
-    Scratch_Block scratch(app);
-    Query_Bar_Group group(app);
-    
-    Query_Bar needle_bar = {};
-    u8 needle_space[1024];
-    needle_bar.prompt = string_u8_litexpr("Avy-Search: ");
-    needle_bar.string = SCu8(needle_space, (u64)0);
-    needle_bar.string_capacity = sizeof(needle_space);
-    // @todo Would be nice to already highlight the occurances while typing.
-    if (!query_user_string(app, &needle_bar)) {
-        return;
-    }
-    
-    View_ID view_id = get_active_view(app, Access_Always);
-    Buffer_ID buffer_id = view_get_buffer(app, view_id, Access_Always);
-    
-    // @todo @robustness What is the correct and safe way to get the visible_range outside the render loop?
-    Managed_Scope view_scope = view_get_managed_scope(app, view_id);
-    Range_i64 visible_range = *scope_attachment(app, view_scope, view_visible_range, Range_i64);
-    if (range_size(visible_range) <= 0) {
-        return;
-    }
-    
-    
-    String_Const_u8 needle = needle_bar.string;
-    String_Match_List matches = buffer_find_all_matches(app, scratch, buffer_id, 0, visible_range, needle, &character_predicate_alpha_numeric_underscore_utf8, Scan_Forward);
-    string_match_list_filter_flags(&matches, StringMatch_CaseSensitive, 0);
-    if (matches.count <= 0) {
-        return;
-    }
-    
-    Avy_State *avy_state = scope_attachment(app, view_scope, view_avy_state, Avy_State);
-    avy_state->count = matches.count;
-    avy_state->pairs = push_array(scratch, Avy_Pair, matches.count);
-    defer {
-        *avy_state = {0};
-    };
-    String_Match *match = matches.first;
-    // @todo @robustness We only support one char, so just one abc.
-    char *abc = "abcdefghijklmnopqrstuvwxyz";
-    for (i32 i = 0; i < matches.count; ++i) {
-        Avy_Pair *pair = avy_state->pairs + i;
-        u8 key_ = (u8)abc[i % 26];
-        String_Const_u8 key = {};
-        key.str = &key_;
-        key.size = 1;
-        pair->key = push_string_copy(scratch, key);
-        pair->range = match->range;
-        match = match->next;
-    }
-    
-    // @todo We maybe also need to save this to the views scope attachment.
-    Query_Bar key_bar = {};
-    u8 key_space[1024];
-    key_bar.prompt = string_u8_litexpr("Avy-Jump: ");
-    key_bar.string = SCu8(key_space, (u64)0);
-    key_bar.string_capacity = sizeof(key_space);
-    if (!query_user_string(app, &key_bar)) {
-        return;
-    }
-    
-    i64 jump_pos = -1;
-    for (i32 i = 0; i < matches.count; ++i) {
-        Avy_Pair *pair = avy_state->pairs + i;
-        if (string_match(pair->key, key_bar.string)) {
-            jump_pos = pair->range.first;
-        }
-    }
-    if (jump_pos >= 0) {
-        view_set_cursor_and_preferred_x(app, view_id, seek_pos(jump_pos));
-    }
 }
 
 
@@ -2359,50 +2270,16 @@ CUSTOM_COMMAND_SIG(vim_window_command) {
     }
 }
 
-function void
-vim_scroll_cursor_line(Application_Links *app, int view_pos, View_ID view_id) {
-    ProfileScope(app, "vim_scroll_cursor_line");
-    
-    if (view_id == -1) {
-        view_id = get_active_view(app, Access_Always);
-    }
-    f32 line_height = 0.f;
-    if (view_pos != 0) {
-        Buffer_ID buffer_id = view_get_buffer(app, view_id, Access_ReadVisible);
-        Face_ID face_id = get_face_id(app, buffer_id);
-        Face_Metrics metrics = get_face_metrics(app, face_id);
-        line_height = metrics.line_height;
-    }
-    
-    Rect_f32 region = view_get_buffer_region(app, view_id);
-    i64 pos = view_get_cursor_pos(app, view_id);
-    Buffer_Cursor cursor = view_compute_cursor(app, view_id, seek_pos(pos));
-    f32 view_height = rect_height(region);
-    Buffer_Scroll scroll = view_get_buffer_scroll(app, view_id);
-    scroll.target.line_number = cursor.line;
-    if (view_pos == 0) {
-        scroll.target.pixel_shift.y = -view_height*0.5f;
-    }
-    else if (view_pos == -1) {
-        scroll.target.pixel_shift.y =  -line_height;
-    }
-    else if (view_pos == 1) {
-        scroll.target.pixel_shift.y = -(view_height - 2.0f*line_height);
-        // @todo Not quite right when the line to scroll to is a wrapped line!
-    }
-    
-    view_set_buffer_scroll(app, view_id, scroll, SetBufferScroll_SnapCursorIntoView);
-}
 CUSTOM_COMMAND_SIG(vim_scroll_cursor_line_to_view_center) {
-    vim_scroll_cursor_line(app, 0);
+    scroll_cursor_line_to_view_center(app);
     vim_reset_mode_mapid(app);
 }
 CUSTOM_COMMAND_SIG(vim_scroll_cursor_line_to_view_top) {
-    vim_scroll_cursor_line(app, -1);
+    scroll_cursor_line_to_view_top(app);
     vim_reset_mode_mapid(app);
 }
 CUSTOM_COMMAND_SIG(vim_scroll_cursor_line_to_view_bottom) {
-    vim_scroll_cursor_line(app, 1);
+    scroll_cursor_line_to_view_bottom(app);
     vim_reset_mode_mapid(app);
 }
 
@@ -3345,7 +3222,7 @@ vim_isearch(Application_Links *app, Scan_Direction start_scan, i64 first_pos, St
                 vim_update_visual_range(app, view);
             }
         }
-        vim_scroll_cursor_line(app, 0);
+        scroll_cursor_line(app, 0);
         
         in = get_next_input(app, EventPropertyGroup_AnyKeyboardEvent, EventProperty_Escape|EventProperty_ViewActivation);
         if (in.abort) {
@@ -3558,7 +3435,7 @@ query_replace_base(Application_Links *app, View_ID view, Buffer_ID buffer_id, i6
     for (;;){
         Range_i64 match = Ii64(new_pos, new_pos + r.size);
         isearch__update_highlight(app, view, match);
-        vim_scroll_cursor_line(app, 0);
+        scroll_cursor_line(app, 0);
         
         in = get_next_input(app, EventProperty_AnyKey, EventProperty_MouseButton);
         if (in.abort || match_key_code(&in, KeyCode_Escape) || !is_unmodified_key(&in.event)){

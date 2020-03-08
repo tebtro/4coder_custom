@@ -129,7 +129,7 @@
 //
 // general
 //
-#include "tebtro_general.h"
+#include "tebtro_general.cpp"
 
 // @todo Remove this test code, its flashing too much when scrolling up/down.
 #define USE_RANGE_COLOR_START_DEFAULT 1
@@ -150,6 +150,11 @@
 // magit
 //
 #include "magit.cpp"
+
+//
+// avy
+//
+#include "avy_search.cpp"
 
 //
 // vim

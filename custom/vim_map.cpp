@@ -250,6 +250,10 @@ vim_setup_mapping(Mapping *mapping) {
         Bind(vim_reverse_search_token_or_word, KeyCode_Equal, KeyCode_Alt); // KeyCode_Plus
         Bind(nop, KeyCode_Equal, KeyCode_Shift);
         
+        // @note :avy_search
+        Bind(avy_search, KeyCode_A, KeyCode_Alt);
+        
+        // @note query_replace
         Bind(query_replace,     KeyCode_Q);
         Bind(replace_in_range,  KeyCode_Q, KeyCode_Shift);
         Bind(replace_in_buffer, KeyCode_Q, KeyCode_Shift, KeyCode_Control);
@@ -366,8 +370,7 @@ vim_setup_mapping(Mapping *mapping) {
 #endif
         
         // @note :avy_search
-        // @todo Should be in map_movements, but then the binding isnt working because theres a A binding in normal mode.
-        Bind(vim_avy_search, KeyCode_A, KeyCode_Control);
+        Bind(avy_search, KeyCode_A, KeyCode_Alt);
         
         // @note Build and Debug
         Bind(vim_save_all_dirty_buffers_and_build, KeyCode_M, KeyCode_Alt);
