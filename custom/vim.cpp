@@ -734,6 +734,10 @@ vim_get_found_input_character_pos(Application_Links *app, View_ID view_id, Buffe
     }
     view_set_cursor_and_preferred_x(app, view_id, seek_pos(pos));
     no_mark_snap_to_cursor_if_shift(app, view_id);
+    
+#if 1 // VIM_FIND_CHAR_USE_SNIPE
+    isearch(app, direction, pos, character);
+#endif
 }
 inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_ntimes_move_right_to_found) {
     vim_get_found_input_character_pos(app, view_id, buffer_id, vim_state, Scan_Forward);
@@ -1262,6 +1266,94 @@ CUSTOM_COMMAND_SIG(vim_search_token_or_word) {
 }
 CUSTOM_COMMAND_SIG(vim_reverse_search_token_or_word) {
     vim_isearch_token_or_word(app, Scan_Backward);
+}
+
+
+// @note: Vim avy search  :avy_search
+// @todo Move to it's own file
+CUSTOM_ID(attachment, view_visible_range);
+CUSTOM_ID(attachment, view_avy_state);
+struct Avy_Pair {
+    String_Const_u8 key;
+    Range_i64 range;
+};
+struct Avy_State {
+    i32 count;
+    Avy_Pair *pairs;
+};
+// @todo Make it more interactive, so that you dont have to press enter every time.
+CUSTOM_COMMAND_SIG(vim_avy_search) {
+    Scratch_Block scratch(app);
+    Query_Bar_Group group(app);
+    
+    Query_Bar needle_bar = {};
+    u8 needle_space[1024];
+    needle_bar.prompt = string_u8_litexpr("Avy-Search: ");
+    needle_bar.string = SCu8(needle_space, (u64)0);
+    needle_bar.string_capacity = sizeof(needle_space);
+    // @todo Would be nice to already highlight the occurances while typing.
+    if (!query_user_string(app, &needle_bar)) {
+        return;
+    }
+    
+    View_ID view_id = get_active_view(app, Access_Always);
+    Buffer_ID buffer_id = view_get_buffer(app, view_id, Access_Always);
+    
+    // @todo @robustness What is the correct and safe way to get the visible_range outside the render loop?
+    Managed_Scope view_scope = view_get_managed_scope(app, view_id);
+    Range_i64 visible_range = *scope_attachment(app, view_scope, view_visible_range, Range_i64);
+    if (range_size(visible_range) <= 0) {
+        return;
+    }
+    
+    
+    String_Const_u8 needle = needle_bar.string;
+    String_Match_List matches = buffer_find_all_matches(app, scratch, buffer_id, 0, visible_range, needle, &character_predicate_alpha_numeric_underscore_utf8, Scan_Forward);
+    string_match_list_filter_flags(&matches, StringMatch_CaseSensitive, 0);
+    if (matches.count <= 0) {
+        return;
+    }
+    
+    Avy_State *avy_state = scope_attachment(app, view_scope, view_avy_state, Avy_State);
+    avy_state->count = matches.count;
+    avy_state->pairs = push_array(scratch, Avy_Pair, matches.count);
+    defer {
+        *avy_state = {0};
+    };
+    String_Match *match = matches.first;
+    // @todo @robustness We only support one char, so just one abc.
+    char *abc = "abcdefghijklmnopqrstuvwxyz";
+    for (i32 i = 0; i < matches.count; ++i) {
+        Avy_Pair *pair = avy_state->pairs + i;
+        u8 key_ = (u8)abc[i % 26];
+        String_Const_u8 key = {};
+        key.str = &key_;
+        key.size = 1;
+        pair->key = push_string_copy(scratch, key);
+        pair->range = match->range;
+        match = match->next;
+    }
+    
+    // @todo We maybe also need to save this to the views scope attachment.
+    Query_Bar key_bar = {};
+    u8 key_space[1024];
+    key_bar.prompt = string_u8_litexpr("Avy-Jump: ");
+    key_bar.string = SCu8(key_space, (u64)0);
+    key_bar.string_capacity = sizeof(key_space);
+    if (!query_user_string(app, &key_bar)) {
+        return;
+    }
+    
+    i64 jump_pos = -1;
+    for (i32 i = 0; i < matches.count; ++i) {
+        Avy_Pair *pair = avy_state->pairs + i;
+        if (string_match(pair->key, key_bar.string)) {
+            jump_pos = pair->range.first;
+        }
+    }
+    if (jump_pos >= 0) {
+        view_set_cursor_and_preferred_x(app, view_id, seek_pos(jump_pos));
+    }
 }
 
 

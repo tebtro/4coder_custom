@@ -365,6 +365,10 @@ vim_setup_mapping(Mapping *mapping) {
         Bind(vim_code_peek_go,            KeyCode_Backspace, KeyCode_Alt);
 #endif
         
+        // @note :avy_search
+        // @todo Should be in map_movements, but then the binding isnt working because theres a A binding in normal mode.
+        Bind(vim_avy_search, KeyCode_A, KeyCode_Control);
+        
         // @note Build and Debug
         Bind(vim_save_all_dirty_buffers_and_build, KeyCode_M, KeyCode_Alt);
         Bind(goto_next_jump,  KeyCode_N, KeyCode_Alt);
