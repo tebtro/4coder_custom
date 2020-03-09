@@ -24,9 +24,8 @@
 // char *input_chars = "aoeuhtns";
 // char *input_chars = "abcdefghijklmnopqrstuvwxyz";
 // char *input_chars = "abcd";
-#undef AVY_KEY_LIST
 #ifndef AVY_KEY_LIST
-#define AVY_KEY_LIST  "asdf"
+#define AVY_KEY_LIST  "asdfghjkl"
 #endif
 
 
@@ -34,13 +33,23 @@
 CUSTOM_ID(attachment, view_visible_range);
 CUSTOM_ID(attachment, view_avy_state);
 
+enum Avy_Action {
+    avy_action_none = 0,
+    
+    avy_action_goto_string,
+    avy_action_goto_line,
+};
+
 struct Avy_Pair {
     String_Const_u8 key;
     Range_i64 range;
 };
 
-struct Avy_State {
-    i32 count;
+// @todo Maybe rename to Avy_View_State
+struct Avy_View_State {
+    Avy_Action action;
+    
+    int count;
     Avy_Pair *pairs;
 };
 
@@ -117,7 +126,7 @@ avy_generate_keys(Arena *arena, int key_count) {
 }
 
 function Avy_Pair *
-avy_get_selection_from_user(Application_Links *app, Avy_State *avy_state, String_Match_List matches) {
+avy_get_selection_from_user(Application_Links *app, Avy_View_State *avy_state) {
     Avy_Pair *result_pair = 0;
     
     // @todo We maybe also need to save this to the views scope attachment.
@@ -203,7 +212,7 @@ avy_get_selection_from_user(Application_Links *app, Avy_State *avy_state, String
         }
         
         if (string_change) {
-            for (i32 i = 0; i < matches.count; ++i) {
+            for (i32 i = 0; i < avy_state->count; ++i) {
                 Avy_Pair *pair = avy_state->pairs + i;
                 if (string_match(pair->key, key_bar.string)) {
                     result_pair = pair;
@@ -255,7 +264,8 @@ CUSTOM_COMMAND_SIG(avy_goto_string) {
         return;
     }
     
-    Avy_State *avy_state = scope_attachment(app, view_scope, view_avy_state, Avy_State);
+    Avy_View_State *avy_state = scope_attachment(app, view_scope, view_avy_state, Avy_View_State);
+    avy_state->action = avy_action_goto_string;
     avy_state->count = matches.count;
     avy_state->pairs = push_array(scratch, Avy_Pair, matches.count);
     defer {
@@ -278,7 +288,7 @@ CUSTOM_COMMAND_SIG(avy_goto_string) {
     };
 #endif
     
-    Avy_Pair *result_pair = avy_get_selection_from_user(app, avy_state, matches);
+    Avy_Pair *result_pair = avy_get_selection_from_user(app, avy_state);
     if (result_pair != 0) {
         i64 jump_pos = result_pair->range.first;
         view_set_cursor_and_preferred_x(app, view_id, seek_pos(jump_pos));
@@ -288,23 +298,77 @@ CUSTOM_COMMAND_SIG(avy_goto_string) {
     scroll_cursor_line(app, 0, view_id);
 }
 
+CUSTOM_COMMAND_SIG(avy_goto_line) {
+    Scratch_Block scratch(app);
+    
+    View_ID view_id = get_active_view(app, Access_Always);
+    Buffer_ID buffer_id = view_get_buffer(app, view_id, Access_Always);
+    
+    // @todo @robustness What is the correct and safe way to get the visible_range outside the render loop?
+    Managed_Scope view_scope = view_get_managed_scope(app, view_id);
+    Range_i64 visible_range = *scope_attachment(app, view_scope, view_visible_range, Range_i64);
+    if (range_size(visible_range) <= 0) {
+        return;
+    }
+    Range_i64 line_range = get_line_range_from_pos_range(app, buffer_id, visible_range);
+    int line_count = (int)range_size(line_range);
+    
+    Avy_View_State *avy_state = scope_attachment(app, view_scope, view_avy_state, Avy_View_State);
+    avy_state->action = avy_action_goto_line;
+    avy_state->count = line_count;
+    avy_state->pairs = push_array(scratch, Avy_Pair, line_count);
+    defer {
+        *avy_state = {0};
+    };
+    String_Const_u8 *keys = avy_generate_keys(scratch, line_count);
+    i64 line = line_range.start;
+    for (int i = 0; i < line_count; ++i, ++line) {
+        Avy_Pair *pair = avy_state->pairs + i;
+        pair->key = keys[i];
+        pair->range = Ii64(line);
+    }
+    
+    
+    Avy_Pair *result_pair = avy_get_selection_from_user(app, avy_state);
+    if (result_pair != 0) {
+        i64 jump_line_number = result_pair->range.first;
+        view_set_cursor_and_preferred_x(app, view_id, seek_line_col(jump_line_number, 0));
+    }
+    
+    // @note Center view
+    scroll_cursor_line(app, 0, view_id);
+}
+
+
 //
 // @note: Avy rendering
 //
 function void
-avy_search_render(Application_Links *app, View_ID view_id, Text_Layout_ID text_layout_id, Face_ID face_id, f32 roundness, ARGB_Color argb_background, ARGB_Color argb_foreground) {
+avy_render(Application_Links *app, View_ID view_id, Buffer_ID buffer_id, Text_Layout_ID text_layout_id, Face_ID face_id, Rect_f32 view_region, f32 roundness, ARGB_Color argb_background, ARGB_Color argb_foreground) {
+    Face_Metrics face_metrics = get_face_metrics(app, face_id);
+    
     Managed_Scope view_scope = view_get_managed_scope(app, view_id);
     Range_i64 *avy_visible_range = scope_attachment(app, view_scope, view_visible_range, Range_i64);
     *avy_visible_range = text_layout_get_visible_range(app, text_layout_id);
     
-    Avy_State *avy_state = scope_attachment(app, view_scope, view_avy_state, Avy_State);
+    Avy_View_State *avy_state = scope_attachment(app, view_scope, view_avy_state, Avy_View_State);
     i32 count = avy_state->count;
     for (i32 i = 0; i < count; ++i) {
         Avy_Pair *pair = avy_state->pairs + i;
-        // @todo change to draw rect
-        // draw_character_block(app, text_layout_id, pair->range, cursor_roundness, argb_color);
-        draw_character_block(app, text_layout_id, Ii64(pair->range.first, pair->range.first + pair->key.size), roundness, argb_background);
-        Rect_f32 rect = text_layout_character_on_screen(app, text_layout_id, pair->range.first);
+        i64 pos = pair->range.first;
+        Rect_f32 rect = {};
+        if (avy_state->action == avy_action_goto_line) {
+            pos = get_line_start_pos(app, buffer_id, pos);
+            pos = view_get_character_legal_pos_from_pos(app, view_id, pos);
+            rect = text_layout_character_on_screen(app, text_layout_id, pos);
+            rect.x0 = view_region.x0;
+            rect.x1 = rect.x0 + face_metrics.normal_advance;
+        }
+        else {
+            rect = text_layout_character_on_screen(app, text_layout_id, pos);
+        }
+        rect.x1 += face_metrics.normal_advance * (pair->key.size - 1);
+        draw_rectangle(app, rect, roundness, argb_background);
         Vec2_f32 point = {};
         point.x = rect.x0;
         point.y = rect.y0;
@@ -313,7 +377,7 @@ avy_search_render(Application_Links *app, View_ID view_id, Text_Layout_ID text_l
 }
 
 function void
-avy_search_render(Application_Links *app, View_ID view_id, Text_Layout_ID text_layout_id) {
+avy_render(Application_Links *app, View_ID view_id, Text_Layout_ID text_layout_id, Rect_f32 view_region) {
     ARGB_Color argb_background = 0xFFFFFF00;
     ARGB_Color argb_foreground = 0xFF000000;
     
@@ -323,5 +387,5 @@ avy_search_render(Application_Links *app, View_ID view_id, Text_Layout_ID text_l
     Face_Metrics face_metrics = get_face_metrics(app, face_id);
     f32 roundness = (face_metrics.normal_advance*0.5f)*0.9f;
     
-    avy_search_render(app, view_id, text_layout_id, face_id, roundness, argb_background, argb_foreground);
+    avy_render(app, view_id, buffer_id, text_layout_id, face_id, view_region, roundness, argb_background, argb_foreground);
 }

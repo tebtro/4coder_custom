@@ -209,7 +209,7 @@ vim_setup_mapping(Mapping *mapping) {
         Bind(vim_enter_chord_z, KeyCode_Z, KeyCode_Control);
         
         Bind(vim_goto_line, KeyCode_G, KeyCode_Control);
-        Bind(vim_goto_line, KeyCode_G, KeyCode_Alt);
+        Bind(avy_goto_line, KeyCode_G, KeyCode_Alt);
         // Bind(vim_enter_chord_g, KeyCode_G, KeyCode_Control);
         
         // @note :cursor_mark

@@ -293,12 +293,12 @@ BUFFER_HOOK_SIG(tebtro_begin_buffer) {
 }
 
 function void
-tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, Buffer_ID buffer_id, Text_Layout_ID text_layout_id, Rect_f32 rect, Frame_Info frame_info, Vim_View_State *vim_state) {
+tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, Buffer_ID buffer_id, Text_Layout_ID text_layout_id, Rect_f32 view_region, Frame_Info frame_info, Vim_View_State *vim_state) {
     ProfileScope(app, "render buffer");
     
     View_ID active_view = get_active_view(app, Access_Always);
     b32 is_active_view = (active_view == view_id);
-    Rect_f32 prev_clip = draw_set_clip(app, rect);
+    Rect_f32 prev_clip = draw_set_clip(app, view_region);
     
     i64 cursor_pos = view_correct_cursor(app, view_id);
     i64 mark_pos   = view_correct_mark(app, view_id);
@@ -429,7 +429,7 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
     
     // @note: Scope vertical line highlight
     {
-        tebtro_draw_vertical_lines_scope_highlight(app, buffer_id, view_id, text_layout_id, rect, cursor_pos, (ARGB_Color *)&colors_back_cycle_adjusted, ArrayCount(colors_back_cycle_adjusted));
+        tebtro_draw_vertical_lines_scope_highlight(app, buffer_id, view_id, text_layout_id, view_region, cursor_pos, (ARGB_Color *)&colors_back_cycle_adjusted, ArrayCount(colors_back_cycle_adjusted));
     }
     
     // @note: Hex color preview
@@ -450,8 +450,8 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
     
     // @note: Divider comments
     {
-        tebtro_draw_main_section_divider_comments(app, view_id, face_id, buffer_id, rect, text_layout_id);
-        tebtro_draw_divider_comments(app, view_id, face_id, buffer_id, rect, text_layout_id);
+        tebtro_draw_main_section_divider_comments(app, view_id, face_id, buffer_id, view_region, text_layout_id);
+        tebtro_draw_divider_comments(app, view_id, face_id, buffer_id, view_region, text_layout_id);
     }
     
     // NOTE(allen): Fade ranges
@@ -474,14 +474,14 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
         // (ARGB_Color *)&colors_back_cycle_adjusted, ArrayCount(colors_back_cycle_adjusted)
         u32 color = 0xFF808080;
         int color_count = 1;
-        tebtro_draw_scope_close_brace_annotations(app, view_id, rect, buffer_id, text_layout_id, face_id, cursor_pos, (ARGB_Color *)&color, color_count);
+        tebtro_draw_scope_close_brace_annotations(app, view_id, view_region, buffer_id, text_layout_id, face_id, cursor_pos, (ARGB_Color *)&color, color_count);
     }
     
     // @note :avy_search
     {
         ARGB_Color argb_background = 0xFFFFFF00;
         ARGB_Color argb_foreground = 0xFF000000;
-        avy_search_render(app, view_id, text_layout_id, face_id, cursor_roundness, argb_background, argb_foreground);
+        avy_render(app, view_id, buffer_id, text_layout_id, face_id, view_region, cursor_roundness, argb_background, argb_foreground);
     }
     
 #if CALC_PLOT
