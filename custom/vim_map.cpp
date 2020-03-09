@@ -216,7 +216,7 @@ vim_setup_mapping(Mapping *mapping) {
         // @todo Proper vim marks
         Bind(vim_set_mark,         KeyCode_M); // Should we be able to set mark in visual mode
         Bind(vim_cursor_mark_swap, KeyCode_S);
-        Bind(vim_cursor_mark_swap_scope_range, KeyCode_S, KeyCode_Alt);
+        Bind(vim_cursor_mark_swap_scope_range, KeyCode_S, KeyCode_Shift);
         // @todo
         // Bind(vim_save_cursor_mark_pos,    KeyCode_S, KeyCode_Alt);
         // Bind(vim_restore_cursor_mark_pos, KeyCode_S, KeyCode_Shift);
@@ -251,7 +251,8 @@ vim_setup_mapping(Mapping *mapping) {
         Bind(nop, KeyCode_Equal, KeyCode_Shift);
         
         // @note :avy_search
-        Bind(avy_search, KeyCode_A, KeyCode_Alt);
+        // Bind(avy_search, KeyCode_A, KeyCode_Alt);
+        Bind(avy_goto_string, KeyCode_S, KeyCode_Alt);
         
         // @note query_replace
         Bind(query_replace,     KeyCode_Q);
@@ -370,7 +371,8 @@ vim_setup_mapping(Mapping *mapping) {
 #endif
         
         // @note :avy_search
-        Bind(avy_search, KeyCode_A, KeyCode_Alt);
+        // Bind(avy_search, KeyCode_A, KeyCode_Alt);
+        Bind(avy_goto_string, KeyCode_S, KeyCode_Alt);
         
         // @note Build and Debug
         Bind(vim_save_all_dirty_buffers_and_build, KeyCode_M, KeyCode_Alt);

@@ -1,6 +1,35 @@
 //
 // @note: Avy search  :avy_search
 //
+//
+// @note Usage:
+// Funtions:
+// - avy_goto_string
+//
+// Options: (Before including define those)
+//
+// - #define AVY_CLOSE_FIRST_QUERY_BAR_AFTER_INPUT  true
+// - #define AVY_HIDE_SECOND_QUERY_BAR_DURING_SELECTION  true
+// - #define AVY_KEY_LIST  "asdfghjkl"
+//
+
+#ifndef AVY_CLOSE_FIRST_QUERY_BAR_AFTER_INPUT
+#define AVY_CLOSE_FIRST_QUERY_BAR_AFTER_INPUT  true
+#endif
+
+#ifndef AVY_HIDE_SECOND_QUERY_BAR_DURING_SELECTION
+#define AVY_HIDE_SECOND_QUERY_BAR_DURING_SELECTION  true
+#endif
+
+// char *input_chars = "aoeuhtns";
+// char *input_chars = "abcdefghijklmnopqrstuvwxyz";
+// char *input_chars = "abcd";
+#undef AVY_KEY_LIST
+#ifndef AVY_KEY_LIST
+#define AVY_KEY_LIST  "asdf"
+#endif
+
+
 
 CUSTOM_ID(attachment, view_visible_range);
 CUSTOM_ID(attachment, view_avy_state);
@@ -15,42 +44,186 @@ struct Avy_State {
     Avy_Pair *pairs;
 };
 
+// global int global_generated_count = 0;
+
+// @note: For input_characters "abcd", the prefixes start at the first char.
+//        And not at the end, as it would be in emacs avy.
+// @todo: For that we would need to order the keys after generation
+//        and for removing prefixes we would need to do that in the middle of the keys array.
+//        Could store that in a bit_array!
 function String_Const_u8 *
 avy_generate_keys(Arena *arena, int key_count) {
-    String_Const_u8 *keys = push_array(arena, String_Const_u8, key_count);
-    
-    // char *input_chars = "aoeuhtns";
-    char *input_chars = "abcdefghijklmnopqrstuvwxyz";
-    // @note k
+    char *input_chars = AVY_KEY_LIST;
     u64 input_chars_count = cstring_length(input_chars);
-    // @note n
-    u64 key_length = key_count / input_chars_count;
+    if (input_chars_count < 4) {
+        AssertMessageAlways("You should define at least 4 characters in AVY_KEY_LIST!");
+    }
     
-    if (key_count <= input_chars_count) {
-        for (int i = 0; i < key_count; ++i) {
-            String_Const_u8 *key = keys + i;
-            key->str = push_array(arena, u8, 1);
-            key->size = 1;
+    u64 extra_count = key_count / input_chars_count;
+    extra_count *= extra_count;
+    String_Const_u8 *keys = push_array(arena, String_Const_u8, key_count + extra_count);
+    
+    int remaining = key_count;
+    int generated_count = 0;
+    
+    for (int i = 0; (i < input_chars_count && remaining > 0); ++i) {
+        String_Const_u8 *key = keys + i;
+        key->str = push_array(arena, u8, 1);
+        key->size = 1;
+        key->str[0] = input_chars[i];
+        
+        --remaining;
+        ++generated_count;
+    }
+    if (remaining <= 0) {
+        return keys;
+    }
+    
+    int prefix_count = generated_count;
+    for (int i = 0; i < generated_count; ++i) {
+        if (i >= prefix_count) {
+            i = prefix_count;
+            prefix_count = generated_count;
+        }
+        
+        String_Const_u8 *prefix = keys + i;
+        ++remaining;
+        
+        for (int c = 0; c < input_chars_count; ++c) {
+            Assert(generated_count < key_count + extra_count);
+            String_Const_u8 *key = keys + (generated_count);
+            key->size = prefix->size + 1;
+            key->str = push_array(arena, u8, key->size);
+            for (int x = 0; x < prefix->size; ++x) {
+                key->str[x] = prefix->str[x];
+            }
+            key->str[key->size - 1] = input_chars[c];
             
-            key->str[0] = input_chars[i];
+            --remaining;
+            ++generated_count;
+            
+            if (remaining <= 0) {
+                goto loop_end;
+            }
         }
     }
-    else {
-        // @todo @robustness We only support one char, so just one abc.
-        for (int i = 0; i < key_count; ++i) {
-            String_Const_u8 *key = keys + i;
-            key->str = push_array(arena, u8, 1);
-            key->size = 1;
-            
-            key->str[0] = input_chars[i % input_chars_count];
-        }
-    }
+    loop_end:;
+    
+    // global_generated_count = generated_count;
+    int prefixes_used = generated_count - key_count;
+    keys += prefixes_used;
     
     return keys;
 }
 
-// @todo Make it more interactive, so that you dont have to press enter every time.
-CUSTOM_COMMAND_SIG(avy_search) {
+function Avy_Pair *
+avy_get_selection_from_user(Application_Links *app, Avy_State *avy_state, String_Match_List matches) {
+    Avy_Pair *result_pair = 0;
+    
+    // @todo We maybe also need to save this to the views scope attachment.
+    //       To blur out the already written characters.
+    Query_Bar key_bar = {};
+    u8 key_space[1024];
+    key_bar.prompt = string_u8_litexpr("Avy-Jump: ");
+    key_bar.string = SCu8(key_space, (u64)0);
+    key_bar.string_capacity = sizeof(key_space);
+#if 0
+    if (!query_user_string(app, &key_bar)) {
+        return;
+    }
+    
+    i64 jump_pos = -1;
+    for (i32 i = 0; i < matches.count; ++i) {
+        Avy_Pair *pair = avy_state->pairs + i;
+        if (string_match(pair->key, key_bar.string)) {
+            jump_pos = pair->range.first;
+        }
+    }
+    
+    if (jump_pos >= 0) {
+        view_set_cursor_and_preferred_x(app, view_id, seek_pos(jump_pos));
+    }
+#else
+    
+#if !AVY_HIDE_SECOND_QUERY_BAR_DURING_SELECTION
+    if (start_query_bar(app, &key_bar, 0) == 0) {
+        return;
+    }
+    defer {
+        end_query_bar(app, &key_bar, 0);
+    };
+#endif
+    User_Input in = {};
+    for (;;) {
+        in = get_next_input(app, EventPropertyGroup_AnyKeyboardEvent, EventProperty_Escape | EventProperty_ViewActivation);
+        if (in.abort){
+            break;
+        }
+        
+        String_Const_u8 string = to_writable(&in);
+        
+        b32 string_change = false;
+        if (string.str != 0 && string.size > 0) {
+            // @note Validate that the string contains only valid characters from the AVY_KEY_LIST.
+            b32 is_valid = true;
+            String_Const_u8 avy_key_list = SCu8(AVY_KEY_LIST);
+            for (int c = 0; c < string.size; ++c) {
+                b32 has_match = false;
+                for (int k = 0; k < avy_key_list.size; ++k) {
+                    if (avy_key_list.str[k] == string.str[c]) {
+                        has_match = true;
+                        break;
+                    }
+                }
+                if (!has_match) {
+                    is_valid = false;
+                    break;
+                }
+            }
+            
+            if (is_valid) {
+                String_u8 bar_string = Su8(key_bar.string, sizeof(key_space));
+                string_append(&bar_string, string);
+                key_bar.string = bar_string.string;
+                string_change = true;
+            }
+        }
+        else if (match_key_code(&in, KeyCode_Backspace)) {
+            if (is_unmodified_key(&in.event)) {
+                u64 old_bar_string_size = key_bar.string.size;
+                key_bar.string = backspace_utf8(key_bar.string);
+                string_change = (key_bar.string.size < old_bar_string_size);
+            }
+            else if (has_modifier(&in.event.key.modifiers, KeyCode_Control)) {
+                if (key_bar.string.size > 0) {
+                    string_change = true;
+                    key_bar.string.size = 0;
+                }
+            }
+        }
+        
+        if (string_change) {
+            for (i32 i = 0; i < matches.count; ++i) {
+                Avy_Pair *pair = avy_state->pairs + i;
+                if (string_match(pair->key, key_bar.string)) {
+                    result_pair = pair;
+                }
+            }
+            if (result_pair != 0) {
+                break;
+            }
+        }
+        else {
+            leave_current_input_unhandled(app);
+        }
+    }
+#endif
+    
+    return result_pair;
+}
+
+
+CUSTOM_COMMAND_SIG(avy_goto_string) {
     Scratch_Block scratch(app);
     Query_Bar_Group group(app);
     
@@ -97,27 +270,19 @@ CUSTOM_COMMAND_SIG(avy_search) {
         match = match->next;
     }
     
-    // @todo We maybe also need to save this to the views scope attachment.
-    Query_Bar key_bar = {};
-    u8 key_space[1024];
-    key_bar.prompt = string_u8_litexpr("Avy-Jump: ");
-    key_bar.string = SCu8(key_space, (u64)0);
-    key_bar.string_capacity = sizeof(key_space);
-    if (!query_user_string(app, &key_bar)) {
-        return;
-    }
+#if AVY_CLOSE_FIRST_QUERY_BAR_AFTER_INPUT
+    end_query_bar(app, &needle_bar, 0);
+#else
+    defer {
+        end_query_bar(app, &needle_bar, 0);
+    };
+#endif
     
-    i64 jump_pos = -1;
-    for (i32 i = 0; i < matches.count; ++i) {
-        Avy_Pair *pair = avy_state->pairs + i;
-        if (string_match(pair->key, key_bar.string)) {
-            jump_pos = pair->range.first;
-        }
-    }
-    if (jump_pos >= 0) {
+    Avy_Pair *result_pair = avy_get_selection_from_user(app, avy_state, matches);
+    if (result_pair != 0) {
+        i64 jump_pos = result_pair->range.first;
         view_set_cursor_and_preferred_x(app, view_id, seek_pos(jump_pos));
     }
-    
     
     // @note Center view
     scroll_cursor_line(app, 0, view_id);

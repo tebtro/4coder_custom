@@ -154,6 +154,8 @@
 //
 // avy
 //
+// "aoeuhtns"
+#define AVY_KEY_LIST  "aoeuidhtns"
 #include "avy_search.cpp"
 
 //
