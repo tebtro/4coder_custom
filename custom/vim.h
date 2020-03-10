@@ -133,5 +133,12 @@ global b32 global_search_highlight_case_sensitive = false;
 #define VIM
 CUSTOM_COMMAND_SIG(vim_enter_mode_normal);
 
+
+#define VIM_NTIMES_CUSTOM_COMMAND_SIG(name) void name(struct Application_Links *app, View_ID view_id, Buffer_ID buffer_id, Managed_Scope view_scope, Managed_Scope buffer_scope, Vim_View_State *vim_state)
+
+template <VIM_NTIMES_CUSTOM_COMMAND_SIG(command), b32 one_past_last = false, b32 move_right_if_mode_insert = false>
+CUSTOM_COMMAND_SIG(vim_command_execute_ntimes);
+
+
 #define VIM_H
 #endif

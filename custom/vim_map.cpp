@@ -209,7 +209,8 @@ vim_setup_mapping(Mapping *mapping) {
         Bind(vim_enter_chord_z, KeyCode_Z, KeyCode_Control);
         
         Bind(vim_goto_line, KeyCode_G, KeyCode_Control);
-        Bind(avy_goto_line, KeyCode_G, KeyCode_Alt);
+        // :avy
+        Bind(vim_avy_goto_line, KeyCode_G, KeyCode_Alt);
         // Bind(vim_enter_chord_g, KeyCode_G, KeyCode_Control);
         
         // @note :cursor_mark
@@ -252,8 +253,8 @@ vim_setup_mapping(Mapping *mapping) {
         
         // @note :avy
         // Bind(avy_search, KeyCode_A, KeyCode_Alt);
-        Bind(avy_goto_string, KeyCode_S, KeyCode_Alt);
-        Bind(avy_goto_char, KeyCode_C, KeyCode_Alt);
+        Bind(vim_avy_goto_string, KeyCode_S, KeyCode_Alt);
+        Bind(vim_avy_goto_char, KeyCode_C, KeyCode_Alt);
         
         // @note query_replace
         Bind(query_replace,     KeyCode_Q);
@@ -373,8 +374,8 @@ vim_setup_mapping(Mapping *mapping) {
         
         // @note :avy
         // Bind(avy_search, KeyCode_A, KeyCode_Alt);
-        Bind(avy_goto_string, KeyCode_S, KeyCode_Alt);
-        Bind(avy_goto_char, KeyCode_C, KeyCode_Alt);
+        Bind(vim_avy_goto_string, KeyCode_S, KeyCode_Alt);
+        Bind(vim_avy_goto_char, KeyCode_C, KeyCode_Alt);
         
         // @note Build and Debug
         Bind(vim_save_all_dirty_buffers_and_build, KeyCode_M, KeyCode_Alt);
@@ -425,6 +426,11 @@ vim_setup_mapping(Mapping *mapping) {
         Bind(vim_visual_mode_delete, KeyCode_X);
         Bind(vim_visual_mode_yank,   KeyCode_Y);
         Bind(vim_visual_mode_change, KeyCode_C);
+        
+        // @note :avy
+        Bind(vim_avy_goto_char,   KeyCode_C, KeyCode_Alt);
+        Bind(vim_avy_goto_string, KeyCode_S, KeyCode_Alt);
+        Bind(vim_avy_goto_line,   KeyCode_G, KeyCode_Alt);
         
         // :paste
         Bind(vim_visual_paste_and_indent, KeyCode_P);

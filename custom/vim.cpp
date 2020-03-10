@@ -644,8 +644,6 @@ CUSTOM_COMMAND_SIG(vim_exec_pending_action_on_line_range) {
 // @note vim movement commands
 //
 
-#define VIM_NTIMES_CUSTOM_COMMAND_SIG(name) void name(struct Application_Links *app, View_ID view_id, Buffer_ID buffer_id, Managed_Scope view_scope, Managed_Scope buffer_scope, Vim_View_State *vim_state)
-
 // @note execute ntimes
 
 inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_ntimes_move_up) {
@@ -734,7 +732,7 @@ vim_get_found_input_character_pos(Application_Links *app, View_ID view_id, Buffe
     view_set_cursor_and_preferred_x(app, view_id, seek_pos(pos));
     no_mark_snap_to_cursor_if_shift(app, view_id);
     
-#if 1 // VIM_FIND_CHAR_USE_SNIPE
+#if 0 // VIM_FIND_CHAR_USE_SNIPE
     isearch(app, direction, pos, character);
 #endif
 }
@@ -985,7 +983,7 @@ CUSTOM_COMMAND_SIG(vim_center_all_views) {
 //
 // Uh, templates ...
 
-template <VIM_NTIMES_CUSTOM_COMMAND_SIG(command), b32 one_past_last = false, b32 move_right_if_mode_insert = false>
+template <VIM_NTIMES_CUSTOM_COMMAND_SIG(command), b32 one_past_last, b32 move_right_if_mode_insert>
 CUSTOM_COMMAND_SIG(vim_command_execute_ntimes) {
     ProfileScope(app, "vim_command_execute_ntimes");
     

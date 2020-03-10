@@ -389,10 +389,6 @@ avy_goto_text(Application_Links *app, b32 single_character) {
     
     // @note Center view
     scroll_cursor_line(app, 0, view_id);
-    
-#ifdef VIM
-    vim_enter_mode_normal(app);
-#endif
 }
 
 CUSTOM_COMMAND_SIG(avy_goto_char) {
@@ -442,11 +438,29 @@ CUSTOM_COMMAND_SIG(avy_goto_line) {
     
     // @note Center view
     scroll_cursor_line(app, 0, view_id);
-    
-#ifdef VIM
-    vim_enter_mode_normal(app);
-#endif
 }
+
+//
+// @note Vim
+//
+// @todo Make vim stuff easier
+#ifdef VIM
+
+inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_avy_goto_char) {
+    avy_goto_char(app);
+}
+inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_avy_goto_string) {
+    avy_goto_string(app);
+}
+inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_avy_goto_line) {
+    avy_goto_line(app);
+}
+
+#define vim_avy_goto_char    vim_command_execute_ntimes<_avy_goto_char>
+#define vim_avy_goto_string  vim_command_execute_ntimes<_avy_goto_string>
+#define vim_avy_goto_line    vim_command_execute_ntimes<_avy_goto_line>
+
+#endif
 
 
 //
