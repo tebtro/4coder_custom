@@ -4,6 +4,7 @@
 //
 // @note Usage:
 // Funtions:
+// - avy_goto_char
 // - avy_goto_string
 // - avy_goto_line
 //
@@ -17,6 +18,9 @@
 // - #define AVY_CLOSE_FIRST_QUERY_BAR_AFTER_INPUT  true
 // - #define AVY_HIDE_SECOND_QUERY_BAR_DURING_SELECTION  true
 // - #define AVY_VIEW_THRESHOLD 2
+//
+// - #define AVY_VIEW_IGNORE_UNIMPORTANT_BUFFERS  false
+// - #define AVY_VIEW_IGNORE_COMPILATION_BUFFERS  true
 //
 // - #define AVY_VIEW_SELECTION_CENTER_KEY  false
 // - #define AVY_VIEW_SELECTION_BIGGER_KEY  false
@@ -40,6 +44,14 @@
 
 #ifndef AVY_VIEW_THRESHOLD
 #define AVY_VIEW_THRESHOLD  2
+#endif
+
+
+#ifndef AVY_VIEW_IGNORE_UNIMPORTANT_BUFFERS
+#define AVY_VIEW_IGNORE_UNIMPORTANT_BUFFERS  false
+#endif
+#ifndef AVY_VIEW_IGNORE_COMPILATION_BUFFERS
+#define AVY_VIEW_IGNORE_COMPILATION_BUFFERS  true
 #endif
 
 
@@ -166,6 +178,37 @@ avy_generate_keys(Arena *arena, int key_count) {
     return keys;
 }
 
+struct Avy_Selection_Result {
+    b32 abort;
+    char character;
+};
+
+function Avy_Selection_Result
+avy_get_single_character_selection_from_user(Application_Links *app, b32 allow_only_avy_key_list_chars) {
+    Avy_Selection_Result result = {};
+    
+    User_Input in = {};
+    for (;;) {
+        in = get_next_input(app, EventPropertyGroup_AnyKeyboardEvent, EventProperty_Escape | EventProperty_ViewActivation);
+        if (in.abort){
+            break;
+        }
+        
+        String_Const_u8 string = to_writable(&in);
+        
+        if (string.str != 0 && string.size > 0) {
+            result.abort = false;
+            result.character = string.str[0];
+            return result;
+        }
+        else {
+            leave_current_input_unhandled(app);
+        }
+    }
+    
+    return result;
+}
+
 function Avy_Pair *
 avy_get_key_selection_from_user(Application_Links *app, Avy_Pair *pairs, int count) {
     Avy_Pair *result_pair = 0;
@@ -188,10 +231,6 @@ avy_get_key_selection_from_user(Application_Links *app, Avy_Pair *pairs, int cou
         if (string_match(pair->key, key_bar.string)) {
             jump_pos = pair->range.first;
         }
-    }
-    
-    if (jump_pos >= 0) {
-        view_set_cursor_and_preferred_x(app, view_id, seek_pos(jump_pos));
     }
 #else
     
@@ -277,18 +316,28 @@ avy_get_key_selection_from_user(Application_Links *app, Avy_Pair *pairs, int cou
 // @note: Avy buffer/text commands
 //
 
-CUSTOM_COMMAND_SIG(avy_goto_string) {
+function void
+avy_goto_text(Application_Links *app, b32 single_character) {
     Scratch_Block scratch(app);
     Query_Bar_Group group(app);
     
+    String_Const_u8 needle = {};
     Query_Bar needle_bar = {};
-    u8 needle_space[1024];
-    needle_bar.prompt = string_u8_litexpr("Avy-Search: ");
-    needle_bar.string = SCu8(needle_space, (u64)0);
-    needle_bar.string_capacity = sizeof(needle_space);
-    // @todo Would be nice to already highlight the occurances while typing.
-    if (!query_user_string(app, &needle_bar)) {
-        return;
+    if (single_character) {
+        Avy_Selection_Result result = avy_get_single_character_selection_from_user(app, false);
+        if (result.abort)  return;
+        needle = push_string_copy(scratch, SCu8(&result.character, 1));
+    }
+    else {
+        u8 needle_space[1024];
+        needle_bar.prompt = string_u8_litexpr("Avy-Search: ");
+        needle_bar.string = SCu8(needle_space, (u64)0);
+        needle_bar.string_capacity = sizeof(needle_space);
+        // @todo Would be nice to already highlight the occurances while typing.
+        if (!query_user_string(app, &needle_bar)) {
+            return;
+        }
+        needle = needle_bar.string;
     }
     
     View_ID view_id = get_active_view(app, Access_Always);
@@ -302,7 +351,6 @@ CUSTOM_COMMAND_SIG(avy_goto_string) {
     }
     
     
-    String_Const_u8 needle = needle_bar.string;
     String_Match_List matches = buffer_find_all_matches(app, scratch, buffer_id, 0, visible_range, needle, &character_predicate_alpha_numeric_underscore_utf8, Scan_Forward);
     string_match_list_filter_flags(&matches, StringMatch_CaseSensitive, 0);
     if (matches.count <= 0) {
@@ -345,6 +393,14 @@ CUSTOM_COMMAND_SIG(avy_goto_string) {
 #ifdef VIM
     vim_enter_mode_normal(app);
 #endif
+}
+
+CUSTOM_COMMAND_SIG(avy_goto_char) {
+    avy_goto_text(app, true);
+}
+
+CUSTOM_COMMAND_SIG(avy_goto_string) {
+    avy_goto_text(app, false);
 }
 
 CUSTOM_COMMAND_SIG(avy_goto_line) {
@@ -407,17 +463,54 @@ avy_get_view_selection_from_user(Application_Links *app) {
     Scratch_Block scratch(app);
     View_ID active_view_id = get_active_view(app, Access_Always);
     View_ID target_view_id = 0;
+    b32 active_view_is_hidden_build_buffer = false;
     
     int view_count = 0;
+    // @todo: Use a linked_list maybe, so we don't have to loop twice.?
     avy_for_views(app, it) {
         ++view_count;
     }
+    View_ID *view_ids = push_array(scratch, View_ID, view_count);
+    View_ID *dest = view_ids;
+    avy_for_views(app, it) {
+        b32 valid_view = true;
+        
+        Buffer_ID buffer_id = view_get_buffer(app, it, Access_Always);
+#if AVY_VIEW_IGNORE_UNIMPORTANT_BUFFERS
+        i64 unimportant;
+        buffer_get_setting(app, buffer_id, BufferSetting_Unimportant, &unimportant);
+        if (unimportant)  valid_view = false;
+#endif
+        
+#if AVY_VIEW_IGNORE_COMPILATION_BUFFERS
+        String_Const_u8 buffer_name = push_buffer_base_name(app, scratch, buffer_id);
+        if (string_match(buffer_name, string_u8_litexpr("*compilation*"))) {
+#ifdef VIM
+            if (vim_is_build_panel_hidden)
+#endif
+            {
+                valid_view = false;
+                if (active_view_id == it) {
+                    active_view_is_hidden_build_buffer = true;
+                }
+            }
+        }
+#endif
+        if (!valid_view) {
+            *dest = 0;
+            --view_count;
+            continue;
+        }
+        *dest = it;
+        ++dest;
+    }
     
-    if (view_count > AVY_VIEW_THRESHOLD) {
+    if (view_count > AVY_VIEW_THRESHOLD || active_view_is_hidden_build_buffer) {
         Avy_Pair *pairs = push_array(scratch, Avy_Pair, view_count);
         String_Const_u8 *keys = avy_generate_keys(scratch, view_count);
-        int i = 0;
-        avy_for_views(app, it) {
+        for (int i = 0; i < view_count; ++i) {
+            View_ID it = view_ids[i];
+            
             // @note: We are itrating over the views backwards I guess, so we reverse the keys here.
             String_Const_u8 *key = keys + (view_count - 1) - i;
             
@@ -430,11 +523,11 @@ avy_get_view_selection_from_user(Application_Links *app) {
             Avy_Pair *pair = pairs + i;
             pair->key = *key;
             pair->view_id = it;
-            
-            ++i;
         }
         defer {
-            avy_for_views(app, it) {
+            for (int i = 0; i < view_count; ++i) {
+                View_ID it = view_ids[i];
+                
                 Managed_Scope view_scope = view_get_managed_scope(app, it);
                 Avy_View_State *avy_state = scope_attachment(app, view_scope, view_avy_state, Avy_View_State);
                 *avy_state = {0};

@@ -253,6 +253,7 @@ vim_setup_mapping(Mapping *mapping) {
         // @note :avy
         // Bind(avy_search, KeyCode_A, KeyCode_Alt);
         Bind(avy_goto_string, KeyCode_S, KeyCode_Alt);
+        Bind(avy_goto_char, KeyCode_C, KeyCode_Alt);
         
         // @note query_replace
         Bind(query_replace,     KeyCode_Q);
@@ -373,6 +374,7 @@ vim_setup_mapping(Mapping *mapping) {
         // @note :avy
         // Bind(avy_search, KeyCode_A, KeyCode_Alt);
         Bind(avy_goto_string, KeyCode_S, KeyCode_Alt);
+        Bind(avy_goto_char, KeyCode_C, KeyCode_Alt);
         
         // @note Build and Debug
         Bind(vim_save_all_dirty_buffers_and_build, KeyCode_M, KeyCode_Alt);

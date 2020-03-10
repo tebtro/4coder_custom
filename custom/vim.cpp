@@ -2578,6 +2578,7 @@ CUSTOM_COMMAND_SIG(vim_kill_current_buffer) {
 #define vim_goto_first_jump  vim_window_command<goto_first_jump>
 
 
+// :build_panel
 function View_ID
 vim_open_build_view(Application_Links *app) {
     View_ID result = 0;
@@ -2611,9 +2612,6 @@ vim_open_build_footer_panel(Application_Links *app) {
     view_set_active(app, view_id);
     return build_footer_panel_view_id;
 }
-
-global b32 vim_is_build_panel_hidden = false;
-global b32 vim_is_build_panel_expanded = false;
 
 static void
 vim_minimize_build_panel(Application_Links *app, View_ID build_view_id, b32 center_view = true) {

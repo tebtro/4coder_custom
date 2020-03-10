@@ -119,6 +119,10 @@ global f32 vim_global_mouse_last_event_time = 0.0f;
 global b32 vim_global_enable_mouse_suppression = true;
 
 
+// :build_panel
+global b32 vim_is_build_panel_hidden = false;
+global b32 vim_is_build_panel_expanded = false;
+
 
 //
 // @note: Search highlight
