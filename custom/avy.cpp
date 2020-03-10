@@ -1,17 +1,34 @@
 //
-// @note: Avy search  :avy_search
+// @note: Avy  :avy
 //
 //
 // @note Usage:
 // Funtions:
 // - avy_goto_string
+// - avy_goto_line
 //
-// Options: (Before including define those)
+// - avy_goto_view
+// - avy_goto_view_and_swap_buffers
+// - avy_close_view
 //
+//
+// Options(Before including define those):
+// - #define AVY_KEY_LIST  "asdfghjkl"
 // - #define AVY_CLOSE_FIRST_QUERY_BAR_AFTER_INPUT  true
 // - #define AVY_HIDE_SECOND_QUERY_BAR_DURING_SELECTION  true
-// - #define AVY_KEY_LIST  "asdfghjkl"
+// - #define AVY_VIEW_THRESHOLD 2
 //
+// - #define AVY_VIEW_SELECTION_CENTER_KEY  false
+// - #define AVY_VIEW_SELECTION_BIGGER_KEY  false
+//
+//
+
+// char *input_chars = "aoeuhtns";
+// char *input_chars = "abcdefghijklmnopqrstuvwxyz";
+// char *input_chars = "abcd";
+#ifndef AVY_KEY_LIST
+#define AVY_KEY_LIST  "asdfghjkl"
+#endif
 
 #ifndef AVY_CLOSE_FIRST_QUERY_BAR_AFTER_INPUT
 #define AVY_CLOSE_FIRST_QUERY_BAR_AFTER_INPUT  true
@@ -21,11 +38,18 @@
 #define AVY_HIDE_SECOND_QUERY_BAR_DURING_SELECTION  true
 #endif
 
-// char *input_chars = "aoeuhtns";
-// char *input_chars = "abcdefghijklmnopqrstuvwxyz";
-// char *input_chars = "abcd";
-#ifndef AVY_KEY_LIST
-#define AVY_KEY_LIST  "asdfghjkl"
+#ifndef AVY_VIEW_THRESHOLD
+#define AVY_VIEW_THRESHOLD  2
+#endif
+
+
+// @todo Position the bigger key correctly in the view if it is no centered.
+// @todo Center the text inside the background rect correcly, when its bigger and not centered.
+#ifndef AVY_VIEW_SELECTION_CENTER_KEY
+#define AVY_VIEW_SELECTION_CENTER_KEY  false
+#endif
+#ifndef AVY_VIEW_SELECTION_BIGGER_KEY
+#define AVY_VIEW_SELECTION_BIGGER_KEY  false
 #endif
 
 
@@ -38,19 +62,36 @@ enum Avy_Action {
     
     avy_action_goto_string,
     avy_action_goto_line,
+    
+    avy_action_goto_view,
 };
 
 struct Avy_Pair {
     String_Const_u8 key;
-    Range_i64 range;
+    
+    union {
+        // @note: For actions goto_string, goto_line
+        Range_i64 range;
+        // @note: For actions goto_view
+        View_ID view_id;
+    };
 };
 
-// @todo Maybe rename to Avy_View_State
 struct Avy_View_State {
     Avy_Action action;
     
-    int count;
-    Avy_Pair *pairs;
+    union {
+        // @note: For actions goto_string, goto_line
+        struct {
+            int count;
+            Avy_Pair *pairs;
+        };
+        // @note: For actions goto_view
+        struct {
+            String_Const_u8 key;
+            View_ID view_id;
+        };
+    };
 };
 
 // global int global_generated_count = 0;
@@ -126,7 +167,7 @@ avy_generate_keys(Arena *arena, int key_count) {
 }
 
 function Avy_Pair *
-avy_get_selection_from_user(Application_Links *app, Avy_View_State *avy_state) {
+avy_get_key_selection_from_user(Application_Links *app, Avy_Pair *pairs, int count) {
     Avy_Pair *result_pair = 0;
     
     // @todo We maybe also need to save this to the views scope attachment.
@@ -156,7 +197,7 @@ avy_get_selection_from_user(Application_Links *app, Avy_View_State *avy_state) {
     
 #if !AVY_HIDE_SECOND_QUERY_BAR_DURING_SELECTION
     if (start_query_bar(app, &key_bar, 0) == 0) {
-        return;
+        return 0;
     }
     defer {
         end_query_bar(app, &key_bar, 0);
@@ -212,8 +253,8 @@ avy_get_selection_from_user(Application_Links *app, Avy_View_State *avy_state) {
         }
         
         if (string_change) {
-            for (i32 i = 0; i < avy_state->count; ++i) {
-                Avy_Pair *pair = avy_state->pairs + i;
+            for (i32 i = 0; i < count; ++i) {
+                Avy_Pair *pair = pairs + i;
                 if (string_match(pair->key, key_bar.string)) {
                     result_pair = pair;
                 }
@@ -231,6 +272,10 @@ avy_get_selection_from_user(Application_Links *app, Avy_View_State *avy_state) {
     return result_pair;
 }
 
+
+//
+// @note: Avy buffer/text commands
+//
 
 CUSTOM_COMMAND_SIG(avy_goto_string) {
     Scratch_Block scratch(app);
@@ -288,7 +333,7 @@ CUSTOM_COMMAND_SIG(avy_goto_string) {
     };
 #endif
     
-    Avy_Pair *result_pair = avy_get_selection_from_user(app, avy_state);
+    Avy_Pair *result_pair = avy_get_key_selection_from_user(app, avy_state->pairs, avy_state->count);
     if (result_pair != 0) {
         i64 jump_pos = result_pair->range.first;
         view_set_cursor_and_preferred_x(app, view_id, seek_pos(jump_pos));
@@ -296,6 +341,10 @@ CUSTOM_COMMAND_SIG(avy_goto_string) {
     
     // @note Center view
     scroll_cursor_line(app, 0, view_id);
+    
+#ifdef VIM
+    vim_enter_mode_normal(app);
+#endif
 }
 
 CUSTOM_COMMAND_SIG(avy_goto_line) {
@@ -329,7 +378,7 @@ CUSTOM_COMMAND_SIG(avy_goto_line) {
     }
     
     
-    Avy_Pair *result_pair = avy_get_selection_from_user(app, avy_state);
+    Avy_Pair *result_pair = avy_get_key_selection_from_user(app, avy_state->pairs, avy_state->count);
     if (result_pair != 0) {
         i64 jump_line_number = result_pair->range.first;
         view_set_cursor_and_preferred_x(app, view_id, seek_line_col(jump_line_number, 0));
@@ -337,6 +386,110 @@ CUSTOM_COMMAND_SIG(avy_goto_line) {
     
     // @note Center view
     scroll_cursor_line(app, 0, view_id);
+    
+#ifdef VIM
+    vim_enter_mode_normal(app);
+#endif
+}
+
+
+//
+// @note: Avy view commands
+//
+
+#define avy_for_views(app, it) \
+for (View_ID it = get_view_next((app), 0, Access_Always); \
+it != 0;                                           \
+it = get_view_next((app), it, Access_Always))
+
+function View_ID
+avy_get_view_selection_from_user(Application_Links *app) {
+    Scratch_Block scratch(app);
+    View_ID active_view_id = get_active_view(app, Access_Always);
+    View_ID target_view_id = 0;
+    
+    int view_count = 0;
+    avy_for_views(app, it) {
+        ++view_count;
+    }
+    
+    if (view_count > AVY_VIEW_THRESHOLD) {
+        Avy_Pair *pairs = push_array(scratch, Avy_Pair, view_count);
+        String_Const_u8 *keys = avy_generate_keys(scratch, view_count);
+        int i = 0;
+        avy_for_views(app, it) {
+            // @note: We are itrating over the views backwards I guess, so we reverse the keys here.
+            String_Const_u8 *key = keys + (view_count - 1) - i;
+            
+            Managed_Scope view_scope = view_get_managed_scope(app, it);
+            Avy_View_State *avy_state = scope_attachment(app, view_scope, view_avy_state, Avy_View_State);
+            avy_state->action = avy_action_goto_view;
+            avy_state->key = *key;
+            avy_state->view_id = it;
+            
+            Avy_Pair *pair = pairs + i;
+            pair->key = *key;
+            pair->view_id = it;
+            
+            ++i;
+        }
+        defer {
+            avy_for_views(app, it) {
+                Managed_Scope view_scope = view_get_managed_scope(app, it);
+                Avy_View_State *avy_state = scope_attachment(app, view_scope, view_avy_state, Avy_View_State);
+                *avy_state = {0};
+            }
+        };
+        
+        Avy_Pair *result_pair = avy_get_key_selection_from_user(app, pairs, view_count);
+        if (result_pair != 0) {
+            target_view_id = result_pair->view_id;
+        }
+    }
+    else {
+        target_view_id = get_next_view_looped_primary_panels(app, active_view_id, Access_Always);
+    }
+    return target_view_id;
+}
+
+function void
+avy_goto_view(Application_Links *app, b32 do_buffer_swap) {
+    View_ID active_view_id = get_active_view(app, Access_Always);
+    View_ID target_view_id = avy_get_view_selection_from_user(app);
+    if (target_view_id != 0) {
+        if (do_buffer_swap) {
+            Buffer_ID active_buffer_id = view_get_buffer(app, active_view_id, Access_Always);
+            Buffer_ID target_buffer_id = view_get_buffer(app, target_view_id, Access_Always);
+            view_set_buffer(app, target_view_id, active_buffer_id, Access_Always);
+            view_set_buffer(app, active_view_id, target_buffer_id, Access_Always);
+        }
+        view_set_active(app, target_view_id);
+    }
+}
+
+CUSTOM_COMMAND_SIG(avy_goto_view) {
+    avy_goto_view(app, false);
+    
+#ifdef VIM
+    vim_enter_mode_normal(app);
+#endif
+}
+
+CUSTOM_COMMAND_SIG(avy_goto_view_and_swap_buffers) {
+    avy_goto_view(app, true);
+    
+#ifdef VIM
+    vim_enter_mode_normal(app);
+#endif
+}
+
+CUSTOM_COMMAND_SIG(avy_close_view) {
+    View_ID target_view_id = avy_get_view_selection_from_user(app);
+    view_close(app, target_view_id);
+    
+#ifdef VIM
+    vim_enter_mode_normal(app);
+#endif
 }
 
 
@@ -352,27 +505,56 @@ avy_render(Application_Links *app, View_ID view_id, Buffer_ID buffer_id, Text_La
     *avy_visible_range = text_layout_get_visible_range(app, text_layout_id);
     
     Avy_View_State *avy_state = scope_attachment(app, view_scope, view_avy_state, Avy_View_State);
-    i32 count = avy_state->count;
-    for (i32 i = 0; i < count; ++i) {
-        Avy_Pair *pair = avy_state->pairs + i;
-        i64 pos = pair->range.first;
-        Rect_f32 rect = {};
-        if (avy_state->action == avy_action_goto_line) {
-            pos = get_line_start_pos(app, buffer_id, pos);
-            pos = view_get_character_legal_pos_from_pos(app, view_id, pos);
-            rect = text_layout_character_on_screen(app, text_layout_id, pos);
-            rect.x0 = view_region.x0;
-            rect.x1 = rect.x0 + face_metrics.normal_advance;
+    if (avy_state->action == avy_action_goto_string || avy_state->action == avy_action_goto_line) {
+        i32 count = avy_state->count;
+        for (i32 i = 0; i < count; ++i) {
+            Avy_Pair *pair = avy_state->pairs + i;
+            i64 pos = pair->range.first;
+            Rect_f32 rect = {};
+            if (avy_state->action == avy_action_goto_line) {
+                pos = get_line_start_pos(app, buffer_id, pos);
+                pos = view_get_character_legal_pos_from_pos(app, view_id, pos);
+                rect = text_layout_character_on_screen(app, text_layout_id, pos);
+                rect.x0 = view_region.x0;
+                rect.x1 = rect.x0 + face_metrics.normal_advance;
+            }
+            else {
+                rect = text_layout_character_on_screen(app, text_layout_id, pos);
+            }
+            rect.x1 += face_metrics.normal_advance * (pair->key.size - 1);
+            draw_rectangle(app, rect, roundness, argb_background);
+            Vec2_f32 point = {};
+            point.x = rect.x0;
+            point.y = rect.y0;
+            draw_string(app, face_id, pair->key, point, argb_foreground);
         }
-        else {
-            rect = text_layout_character_on_screen(app, text_layout_id, pos);
-        }
-        rect.x1 += face_metrics.normal_advance * (pair->key.size - 1);
-        draw_rectangle(app, rect, roundness, argb_background);
+    }
+    else if (avy_state->action == avy_action_goto_view) {
+        Rect_f32 rect = view_region;
+        
+#if AVY_VIEW_SELECTION_CENTER_KEY
+        Vec2_f32 half_view_dim = rect_dim(view_region) / 2.0f;
+        rect.x0 += half_view_dim.x;
+        rect.y0 += half_view_dim.y;
+#endif
+        
+        f32 key_widch  = face_metrics.normal_advance * avy_state->key.size;
+        f32 key_height = face_metrics.line_height;
+        rect.y1 = rect.y0 + face_metrics.line_height;
+        rect.x1 = rect.x0 + (face_metrics.normal_advance * avy_state->key.size);
+        
+        Rect_f32 rect_background = rect;
+#if AVY_VIEW_SELECTION_BIGGER_KEY
+        rect_background.x0 -= face_metrics.normal_advance * 2;
+        rect_background.x1 += face_metrics.normal_advance * 2;
+        rect_background.y0 -= face_metrics.line_height * 1;
+        rect_background.y1 += face_metrics.line_height * 1;
+#endif
+        draw_rectangle(app, rect_background, roundness, argb_background);
         Vec2_f32 point = {};
         point.x = rect.x0;
         point.y = rect.y0;
-        draw_string(app, face_id, pair->key, point, argb_foreground);
+        draw_string(app, face_id, avy_state->key, point, argb_foreground);
     }
 }
 

@@ -250,7 +250,7 @@ vim_setup_mapping(Mapping *mapping) {
         Bind(vim_reverse_search_token_or_word, KeyCode_Equal, KeyCode_Alt); // KeyCode_Plus
         Bind(nop, KeyCode_Equal, KeyCode_Shift);
         
-        // @note :avy_search
+        // @note :avy
         // Bind(avy_search, KeyCode_A, KeyCode_Alt);
         Bind(avy_goto_string, KeyCode_S, KeyCode_Alt);
         
@@ -370,7 +370,7 @@ vim_setup_mapping(Mapping *mapping) {
         Bind(vim_code_peek_go,            KeyCode_Backspace, KeyCode_Alt);
 #endif
         
-        // @note :avy_search
+        // @note :avy
         // Bind(avy_search, KeyCode_A, KeyCode_Alt);
         Bind(avy_goto_string, KeyCode_S, KeyCode_Alt);
         

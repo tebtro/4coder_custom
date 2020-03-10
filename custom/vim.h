@@ -126,6 +126,8 @@ global b32 vim_global_enable_mouse_suppression = true;
 global b32 global_search_highlight_case_sensitive = false;
 
 
+#define VIM
+CUSTOM_COMMAND_SIG(vim_enter_mode_normal);
 
 #define VIM_H
 #endif

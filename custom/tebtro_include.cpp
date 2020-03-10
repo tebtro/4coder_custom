@@ -125,6 +125,10 @@
 
 #include "4coder_default_hooks.cpp"
 
+//
+// vim
+//
+#include "vim.h"
 
 //
 // general
@@ -156,7 +160,9 @@
 //
 // "aoeuhtns"
 #define AVY_KEY_LIST  "aoeuidhtns"
-#include "avy_search.cpp"
+#define AVY_VIEW_SELECTION_CENTER_KEY  true
+#define AVY_VIEW_SELECTION_BIGGER_KEY  true
+#include "avy.cpp"
 
 //
 // vim
