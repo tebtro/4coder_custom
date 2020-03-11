@@ -23,7 +23,8 @@ custom_layer_init(Application_Links *app) {
     
     vim_setup_mapping(&framework_mapping);
     space_mode_setup_mapping(&framework_mapping);
-    tebtro_setup_mapping(&framework_mapping);
+    // tebtro_setup_mapping(&framework_mapping);
+    tebtro_setup_mapping_dvorak_programmer(&framework_mapping);
 }
 
 #endif // TEBTRO_BINDINGS_CPP

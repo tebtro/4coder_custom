@@ -1529,6 +1529,7 @@ vim_write_text_and_maybe_auto_close_and_auto_indent(Application_Links *app, Stri
         case ')':
         case ']':
         case '}':
+        case '>':
         case ';': {
             check_for_closing_tag = true;
         } break;
