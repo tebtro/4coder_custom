@@ -429,17 +429,7 @@ tebtro_setup_mapping_dvorak_programmer(Mapping *mapping) {
     {
         ParentMap(mapid_vim_escape_to_normal_mode);
         // BindTextInput(write_text_input); // @todo Maybe use write_text_input_and_auto_indent for non virtual whitespace files.
-        // @note We are using that for now, because we don't have all the KeyCodes at the moment.
         BindTextInput(vim_write_text_and_maybe_auto_close_and_auto_indent);
-#if 1
-        // @todo Not necessary anymore, cause of dvorak?
-        Bind(vim_write_open_brace_and_maybe_auto_close_and_auto_indent,  KeyCode_5);
-        Bind(vim_write_close_brace_and_maybe_auto_close_and_auto_indent, KeyCode_3);
-        Bind(vim_write_open_bracket_and_maybe_auto_close_and_auto_indent,  KeyCode_7);
-        Bind(vim_write_close_bracket_and_maybe_auto_close_and_auto_indent, KeyCode_6);
-        Bind(vim_write_backslash_and_maybe_auto_close_and_auto_indent, KeyCode_BackwardSlash);
-        Bind(vim_write_tilda_and_maybe_auto_close_and_auto_indent, KeyCode_Tick, KeyCode_Shift);
-#endif
         
         Bind(vim_mode_insert_start_escape_sequence,  KeyCode_J);
         Bind(vim_mode_insert_finish_escape_sequence, KeyCode_K);
