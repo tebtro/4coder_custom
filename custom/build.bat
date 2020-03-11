@@ -6,7 +6,7 @@
 
 pushd ..
 
-call custom/bin/buildsuper_x64.bat custom/tebtro_bindings.cpp
+call custom\bin\buildsuper_x64-win.bat custom\tebtro_bindings.cpp
 :: call custom/bin/buildsuper_x64.bat custom/vim_bindings.cpp
 
 popd

@@ -271,7 +271,7 @@ static Whichkey_Command whichkey_commands[12] = {
 function Lister_Result
 get_whichkey_from_user(Application_Links *app, Whichkey_Command *whichkeys, i32 whichkey_count, String_Const_u8 query) {
     Scratch_Block scratch(app, Scratch_Share);
-    Lister *lister = begin_lister(app, scratch);
+    Lister *lister = begin_lister(app, scratch).current;
     lister_set_query(lister, query);
     lister->handlers = lister_get_default_handlers();
     

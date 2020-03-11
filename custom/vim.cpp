@@ -54,7 +54,7 @@ vim_setup_mode_and_chord_color_tables(Application_Links *app) {
     for (int i = 0; i < ArrayCount(vim_global_state.color_tables_array); ++i) {
         vim_global_state.color_tables_array[i] = make_color_table(app, arena);
         
-        for (u32 x = 0; x < active_color_table.count; ++x) {
+        for (i32 x = 0; x < active_color_table.count; ++x) {
             vim_global_state.color_tables_array[i].arrays[x] = active_color_table.arrays[x];
         }
     }
@@ -1894,7 +1894,8 @@ function void
 vim_paste(Application_Links *app, b32 paste_after = true) {
     ProfileScope(app, "vim_paste");
     
-    i32 count = clipboard_count(app, 0);
+    clipboard_update_history_from_system(app, 0);
+    i32 count = clipboard_count(0);
     if (count <= 0)  return;
     
     View_ID view_id = get_active_view(app, Access_ReadWriteVisible);
@@ -1902,12 +1903,14 @@ vim_paste(Application_Links *app, b32 paste_after = true) {
     
     Managed_Scope view_scope = view_get_managed_scope(app, view_id);
     Rewrite_Type *next_rewrite = scope_attachment(app, view_scope, view_next_rewrite_loc, Rewrite_Type);
+    if (next_rewrite == 0)  return;
     *next_rewrite = Rewrite_Paste;
     i32 *paste_index = scope_attachment(app, view_scope, view_paste_index_loc, i32);
     *paste_index = 0;
     
     Scratch_Block scratch(app);
-    String_Const_u8 string = push_clipboard_index(app, scratch, 0, *paste_index);
+    
+    String_Const_u8 string = push_clipboard_index(scratch, 0, *paste_index);
     if (string.size <= 0)  return;
     
     // @note Check if there are newline characters in the string
@@ -1954,7 +1957,7 @@ vim_paste(Application_Links *app, b32 paste_after = true) {
     
     // @note Fade pasted text
     ARGB_Color argb_fade = fcolor_resolve(fcolor_id(defcolor_paste));
-    view_post_fade(app, view_id, 0.667f, Ii64_size(pos, string.size), argb_fade);
+    buffer_post_fade(app, buffer_id, 0.667f, Ii64_size(pos, string.size), argb_fade);
 #if 0
     // @todo 4coder 4.0 Do we need to do that?
     if (!is_line) {
@@ -1986,13 +1989,14 @@ CUSTOM_COMMAND_SIG(vim_paste_next) {
     
     Scratch_Block scratch(app);
     
-    i32 count = clipboard_count(app, 0);
+    i32 count = clipboard_count(0);
     if (count <= 0)  return;
     View_ID view_id = get_active_view(app, Access_ReadWriteVisible);
     Managed_Scope view_scope = view_get_managed_scope(app, view_id);
     no_mark_snap_to_cursor(app, view_scope);
     
     Rewrite_Type *rewrite = scope_attachment(app, view_scope, view_rewrite_loc, Rewrite_Type);
+    if (rewrite == 0)  return;
     if (*rewrite != Rewrite_Paste)  return;
     
     Rewrite_Type *next_rewrite = scope_attachment(app, view_scope, view_next_rewrite_loc, Rewrite_Type);
@@ -2002,7 +2006,7 @@ CUSTOM_COMMAND_SIG(vim_paste_next) {
     i32 paste_index = (*paste_index_ptr) + 1;
     *paste_index_ptr = paste_index;
     
-    String_Const_u8 string = push_clipboard_index(app, scratch, 0, paste_index);
+    String_Const_u8 string = push_clipboard_index(scratch, 0, paste_index);
     
     Buffer_ID buffer_id = view_get_buffer(app, view_id, Access_ReadWriteVisible);
     
@@ -2023,7 +2027,7 @@ CUSTOM_COMMAND_SIG(vim_paste_next) {
     
     // @note Fade pasted text
     ARGB_Color argb = fcolor_resolve(fcolor_id(defcolor_paste));
-    view_post_fade(app, view_id, 0.667f, Ii64_size(pos, string.size), argb);
+    buffer_post_fade(app, view_id, 0.667f, Ii64_size(pos, string.size), argb);
     
 }
 CUSTOM_COMMAND_SIG(vim_paste_next_and_indent) {
@@ -2037,19 +2041,20 @@ CUSTOM_COMMAND_SIG(vim_visual_paste) {
     VIM_GET_VIEW_ID_SCOPE_AND_VIM_STATE(app);
     if (vim_state->mode != vim_mode_visual && vim_state->mode != vim_mode_visual_line)  return;
     
-    i32 count = clipboard_count(app, 0);
+    i32 count = clipboard_count(0);
     if (count <= 0)  return;
     
     i64 cursor_pos = view_get_cursor_pos(app, view_id);
     i64 mark_pos   = view_get_mark_pos(app, view_id);
     
     Rewrite_Type *next_rewrite = scope_attachment(app, view_scope, view_next_rewrite_loc, Rewrite_Type);
+    if (next_rewrite == 0)  return;
     *next_rewrite = Rewrite_Paste;
     i32 *paste_index = scope_attachment(app, view_scope, view_paste_index_loc, i32);
     *paste_index = 0;
     
     Scratch_Block scratch(app);
-    String_Const_u8 clipboard_string = push_clipboard_index(app, scratch, 0, *paste_index);
+    String_Const_u8 clipboard_string = push_clipboard_index(scratch, 0, *paste_index);
     if (clipboard_string.size <= 0)  return;
     
     Range_i64 range = vim_state->selection_range;
@@ -2058,7 +2063,7 @@ CUSTOM_COMMAND_SIG(vim_visual_paste) {
     
     // @note Fade pasted text
     ARGB_Color argb = fcolor_resolve(fcolor_id(defcolor_paste));
-    view_post_fade(app, view_id, 0.667f, range, argb);
+    buffer_post_fade(app, view_id, 0.667f, range, argb);
     
     // :vim_mode
     vim_enter_mode_normal(app);
@@ -3157,6 +3162,7 @@ run_lister(Application_Links *app, Lister *lister) {
 }
 #endif // !VIM_USE_DEFAULT_RUN_LISTER
 
+
 #if !defined(VIM_USE_DEFAULT_ISEARCH)
 #error "You need to #if 0 out the default 4coder isearch function in 4coder_base_commands.cpp to use the vim custom one. And define VIM_USE_DEFAULT_ISEARCH 0."
 #endif
@@ -3220,8 +3226,8 @@ vim_isearch(Application_Links *app, Scan_Direction start_scan, i64 first_pos, St
         }
         scroll_cursor_line(app, 0);
         
-        in = get_next_input(app, EventPropertyGroup_AnyKeyboardEvent, EventProperty_Escape|EventProperty_ViewActivation);
-        if (in.abort) {
+        in = get_next_input(app, EventPropertyGroup_Any, EventProperty_Escape);
+        if (in.abort){
             break;
         }
         Input_Modifier_Set *mods = &in.event.key.modifiers;
@@ -3263,9 +3269,6 @@ vim_isearch(Application_Links *app, Scan_Direction start_scan, i64 first_pos, St
             }
         }
         
-        // TODO(allen): how to detect if the input corresponds to
-        // a search or rsearch command, a scroll wheel command?
-        
         b32 do_scan_action = false;
         b32 do_scroll_wheel = false;
         Scan_Direction change_scan = scan;
@@ -3284,12 +3287,36 @@ vim_isearch(Application_Links *app, Scan_Direction start_scan, i64 first_pos, St
                 change_scan = Scan_Backward;
                 do_scan_action = true;
             }
-            
-#if 0
-            if (in.command == mouse_wheel_scroll) {
-                do_scroll_wheel = true;
+            else{
+                // NOTE(allen): is the user trying to execute another command?
+                View_Context ctx = view_current_context(app, view);
+                Mapping *mapping = ctx.mapping;
+                Command_Map *map = mapping_get_map(mapping, ctx.map_id);
+                Command_Binding binding = map_get_binding_recursive(mapping, map, &in.event);
+                if (binding.custom != 0){
+                    if (binding.custom == search){
+                        change_scan = Scan_Forward;
+                        do_scan_action = true;
+                    }
+                    else if (binding.custom == reverse_search){
+                        change_scan = Scan_Backward;
+                        do_scan_action = true;
+                    }
+                    else{
+                        Command_Metadata *metadata = get_command_metadata(binding.custom);
+                        if (metadata != 0){
+                            if (metadata->is_ui){
+                                view_enqueue_command_function(app, view, binding.custom);
+                                break;
+                            }
+                        }
+                        binding.custom(app);
+                    }
+                }
+                else{
+                    leave_current_input_unhandled(app);
+                }
             }
-#endif
         }
         
         if (string_change) {
@@ -3366,9 +3393,11 @@ vim_isearch(Application_Links *app, Scan_Direction start_scan, i64 first_pos, St
         else if (do_scroll_wheel) {
             mouse_wheel_scroll(app);
         }
+#if 0
         else{
             leave_current_input_unhandled(app);
         }
+#endif
     }
     
     view_disable_highlight_range(app, view);
@@ -3419,7 +3448,6 @@ isearch(Application_Links *app, Scan_Direction start_scan, i64 first_pos, String
 #error "You need to #if 0 out the default 4coder query_replace_base function in 4coder_base_commands.cpp to use the vim custom one. And define VIM_USE_DEFAULT_QUERY_REPLACE_BASE 0."
 #endif
 #if !VIM_USE_DEFAULT_QUERY_REPLACE_BASE
-
 function void
 query_replace_base(Application_Links *app, View_ID view, Buffer_ID buffer_id, i64 pos, String_Const_u8 r, String_Const_u8 w){
     global_search_highlight_case_sensitive = true;

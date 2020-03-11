@@ -324,11 +324,10 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
 #endif
     }
     
-    // NOTE(allen): Line highlight
+    // @note Line highlight
     if (global_config.highlight_line_at_cursor && is_active_view) {
         i64 line_number = get_line_number_from_pos(app, buffer_id, cursor_pos);
-        draw_line_highlight(app, text_layout_id, line_number,
-                            fcolor_id(defcolor_highlight_cursor_line));
+        draw_line_highlight(app, text_layout_id, line_number, fcolor_id(defcolor_highlight_cursor_line));
     }
     
     // @note Draw whitespaces
@@ -340,7 +339,7 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
         tebtro_draw_whitespaces(app, face_id, buffer_id, text_layout_id, &token_array, argb);
     }
     
-    // NOTE(allen): Token colorizing
+    // @note Token colorizing
     if (token_array.tokens != 0) {
 #if 1
         tebtro_draw_cpp_token_colors(app, text_layout_id, buffer_id, &token_array);
@@ -354,7 +353,7 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
             tebtro_draw_token_under_cursor_highlight(app, text_layout_id, buffer_id, &token_array, cursor_pos, cursor_roundness);
         }
         
-        // NOTE(allen): Scan for TODOs and NOTEs
+        // @note Scan for TODOs and NOTEs
         if (global_config.use_comment_keyword) {
 #if 0
             Comment_Highlight_Pair pairs[] = {

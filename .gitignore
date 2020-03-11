@@ -36,5 +36,3 @@ custom/*
 !custom/vim*
 !custom/space*
 !custom/tebtro*
-!custom/magit*
-!custom/avy*

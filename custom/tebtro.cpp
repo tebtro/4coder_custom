@@ -234,6 +234,7 @@ struct Project_List_Item {
     char *path;
 };
 
+// @todo: Move this out into a file. Like a master project file.
 static Project_List_Item global_tebtro_project_list[3] = {
     { "quick", "D:\\_projects\\quick\\project.4coder" },
     { "handmade", "D:\\_research\\game_dev\\_projects\\handmade_hero\\handmade\\project.4coder" },
@@ -243,7 +244,7 @@ static Project_List_Item global_tebtro_project_list[3] = {
 function Project_List_Item
 get_project_from_user(Application_Links *app, Project_List_Item *project_list, i32 project_count, String_Const_u8 query) {
     Scratch_Block scratch(app, Scratch_Share);
-    Lister *lister = begin_lister(app, scratch);
+    Lister *lister = begin_lister(app, scratch).current;
     lister_set_query(lister, query);
     lister->handlers = lister_get_default_handlers();
     {

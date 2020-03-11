@@ -11,6 +11,12 @@
 #endif
 
 
+#define FCODER_TRANSITION_TO 4001004
+#if !defined(FCODER_TRANSITION_TO)
+#define FCODER_TRANSITION_TO 0
+#endif
+
+
 #include "4coder_base_types.h"
 #include "4coder_version.h"
 #include "4coder_table.h"
@@ -38,6 +44,7 @@
 #include "4coder_insertion.h"
 #include "4coder_command_map.h"
 #include "4coder_lister_base.h"
+#include "4coder_clipboard.h"
 #include "4coder_default_framework.h"
 #include "4coder_config.h"
 #include "4coder_auto_indent.h"
@@ -79,12 +86,14 @@
 #include "4coder_async_tasks.cpp"
 #include "4coder_string_match.cpp"
 #include "4coder_buffer_seek_constructors.cpp"
-
 #include "4coder_token.cpp"
-#include "generated/lexer_cpp.cpp"
 #include "4coder_command_map.cpp"
+
+#include "generated/lexer_cpp.cpp"
+
 #include "4coder_default_map.cpp"
 #include "4coder_mac_map.cpp"
+
 #include "4coder_default_framework_variables.cpp"
 #include "4coder_default_colors.cpp"
 #include "4coder_helper.cpp"
@@ -96,6 +105,7 @@
 #include "4coder_font_helper.cpp"
 #include "4coder_config.cpp"
 #include "4coder_default_framework.cpp"
+#include "4coder_clipboard.cpp"
 #include "4coder_lister_base.cpp"
 #include "4coder_base_commands.cpp"
 #include "4coder_insertion.cpp"
@@ -108,7 +118,6 @@
 #include "4coder_jump_lister.cpp"
 #include "4coder_code_index_listers.cpp"
 #include "4coder_log_parser.cpp"
-#include "4coder_clipboard.cpp"
 #include "4coder_keyboard_macro.cpp"
 #include "4coder_cli_command.cpp"
 #include "4coder_build_commands.cpp"
@@ -122,6 +131,8 @@
 #include "4coder_doc_content_types.cpp"
 #include "4coder_doc_commands.cpp"
 #include "4coder_docs.cpp"
+
+#include "4coder_examples.cpp"
 
 #include "4coder_default_hooks.cpp"
 

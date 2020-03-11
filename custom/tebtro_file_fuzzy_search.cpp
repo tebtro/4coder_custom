@@ -5,7 +5,7 @@ lister__write_character__fuzzy_find(Application_Links *app) {
     Lister_Activation_Code result = ListerActivation_Continue;
     
     View_ID view_id = get_this_ctx_view(app, Access_Always);
-    Lister *lister = view_get_lister(view_id);
+    Lister *lister = view_get_lister(app, view_id);
     if (!lister)  return result;
     
     User_Input in = get_current_input(app);
@@ -26,7 +26,7 @@ lister__write_character__fuzzy_find(Application_Links *app) {
 function void
 lister__backspace_text_field__fuzzy_find(Application_Links *app) {
     View_ID view_id = get_this_ctx_view(app, Access_Always);
-    Lister *lister = view_get_lister(view_id);
+    Lister *lister = view_get_lister(app, view_id);
     if (!lister)  return;
     if (lister->text_field.size <= 0)  return;
     
@@ -42,7 +42,7 @@ lister__backspace_text_field__fuzzy_find(Application_Links *app) {
 
 
 function void
-recursive_fill_fuzzy_file_list(Application_Links *app, Lister *lister, Scratch_Block *scratch, String_Const_u8 root_dir, String_Const_u8 sub_dir, 
+recursive_fill_fuzzy_file_list(Application_Links *app, Lister *lister, Scratch_Block *scratch, String_Const_u8 root_dir, String_Const_u8 sub_dir,
                                Project_File_Pattern_Array whitelist, Project_File_Pattern_Array blacklist) {
     File_List file_list;
     {
@@ -65,7 +65,7 @@ recursive_fill_fuzzy_file_list(Application_Links *app, Lister *lister, Scratch_B
         
         String_Const_u8 dir_name = (**info).file_name;
         // :whitelist_blacklist
-        if (string_match(dir_name, SCu8(".git")) || 
+        if (string_match(dir_name, SCu8(".git")) ||
             string_match(dir_name, SCu8(".vs"))) {
             continue;
         }
@@ -167,10 +167,8 @@ generate_fuzzy_file_list(Application_Links *app, Lister *lister) {
     Project_File_Pattern_Array whitelist;
     Project_File_Pattern_Array blacklist;
     if (current_project.loaded) {
-        // @todo In 4coder set_current_project the parsed project is in temp_memory, so we can't access white and blacklist.
-        Project_Parse_Result project_parse = parse_project__nearest_file(app, scratch);
-        whitelist = project_parse.project->pattern_array;
-        blacklist = project_parse.project->blacklist_pattern_array;
+        whitelist = current_project.pattern_array;
+        blacklist = current_project.blacklist_pattern_array;
     }
     else {
         whitelist = {0};
@@ -216,7 +214,7 @@ get_fuzzy_file_name_from_user(Application_Links *app, Arena *arena, String_Const
 }
 
 
-CUSTOM_COMMAND_SIG(interactive_fuzzy_find) 
+CUSTOM_COMMAND_SIG(interactive_fuzzy_find)
 CUSTOM_DOC("Interactively fuzzy find a file in the other panel.") {
     View_ID view_id = get_this_ctx_view(app, Access_Always);
     
@@ -237,14 +235,14 @@ CUSTOM_DOC("Interactively fuzzy find a file in the other panel.") {
     }
 }
 
-CUSTOM_COMMAND_SIG(interactive_fuzzy_find_in_other) 
+CUSTOM_COMMAND_SIG(interactive_fuzzy_find_in_other)
 CUSTOM_DOC("Interactively fuzzy find a file recursively up the current directory.") {
     change_active_panel_send_command(app, interactive_fuzzy_find);
 }
 
 
 // @note Use this because we don't want to accidentally start a fuzzy search over the whole drive.
-CUSTOM_COMMAND_SIG(interactive_open_or_new__or__fuzzy_find) 
+CUSTOM_COMMAND_SIG(interactive_open_or_new__or__fuzzy_find)
 CUSTOM_DOC("If a project is loaded a fuzzy search is started, otherwise a normal query is started.") {
     if (current_project.loaded) {
         interactive_fuzzy_find(app);
@@ -253,7 +251,7 @@ CUSTOM_DOC("If a project is loaded a fuzzy search is started, otherwise a normal
         interactive_open_or_new(app);
     }
 }
-CUSTOM_COMMAND_SIG(interactive_open_or_new__or__fuzzy_find__in_other) 
+CUSTOM_COMMAND_SIG(interactive_open_or_new__or__fuzzy_find__in_other)
 CUSTOM_DOC("If a project is loaded a fuzzy search is started, otherwise a normal query is started, in the other view.") {
     if (current_project.loaded) {
         interactive_fuzzy_find_in_other(app);
