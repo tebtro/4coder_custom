@@ -550,10 +550,11 @@ tebtro_render_caller(Application_Links *app, Frame_Info frame_info, View_ID view
 #endif
 #endif
     
-    Rect_f32 region = draw_background_and_margin(app, view_id, is_active_view, global_keyboard_macro_is_recording);
+    Buffer_ID buffer_id = view_get_buffer(app, view_id, Access_Always);
+    
+    Rect_f32 region = tebtro_draw_background_and_margin(app, view_id, buffer_id, is_active_view, global_keyboard_macro_is_recording);
     Rect_f32 prev_clip = draw_set_clip(app, region);
     
-    Buffer_ID buffer_id = view_get_buffer(app, view_id, Access_Always);
     Face_ID face_id = get_face_id(app, buffer_id);
     Face_Metrics face_metrics = get_face_metrics(app, face_id);
     f32 line_height = face_metrics.line_height;

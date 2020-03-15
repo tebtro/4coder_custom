@@ -50,7 +50,7 @@ tebtro_draw_hex_color_preview(Application_Links* app, Buffer_ID buffer, Text_Lay
 // @todo Hover margin color
 
 function Rect_f32
-draw_background_and_margin(Application_Links *app, View_ID view, b32 is_active_view, b32 keyboard_macro_is_recording) {
+tebtro_draw_background_and_margin(Application_Links *app, View_ID view_id, Buffer_ID buffer_id, b32 is_active_view, b32 keyboard_macro_is_recording) {
     FColor margin_color = get_panel_margin_color(is_active_view?UIHighlight_Active:UIHighlight_None);
     FColor back_color = fcolor_id(defcolor_back);
     
@@ -61,7 +61,12 @@ draw_background_and_margin(Application_Links *app, View_ID view, b32 is_active_v
         margin_argb = 0xFFDC143C; // crimson red: 0xFFDC143C
     }
     
-    return(draw_background_and_margin(app, view, margin_argb, back_argb));
+    Buffer_ID comp_buffer_id = get_comp_buffer(app);
+    if (buffer_id == comp_buffer_id) {
+        back_argb = 0xFF031212;
+    }
+    
+    return(draw_background_and_margin(app, view_id, margin_argb, back_argb));
 }
 
 
