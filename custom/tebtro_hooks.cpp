@@ -20,6 +20,14 @@ CUSTOM_DOC("Tebtro custom command for responding to a startup event")
     load_themes_default_folder(app);
     default_4coder_initialize(app, file_names);
     default_4coder_side_by_side_panels(app, file_names);
+    Buffer_ID scratch_buffer_id = get_buffer_by_name(app, string_u8_litexpr("*scratch*"), Access_Always);
+    if (scratch_buffer_id != 0) {
+        i64 size = buffer_get_size(app, scratch_buffer_id);
+        if (size == 0){
+            String_Const_u8 message = SCu8("Unfortunately, there’s a radio connected to my brain.");
+            buffer_replace_range(app, scratch_buffer_id, Ii64(0, size), message);
+        }
+    }
     if (global_config.automatically_load_project){
         load_project(app);
     }
