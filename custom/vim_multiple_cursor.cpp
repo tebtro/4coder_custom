@@ -101,7 +101,7 @@ CUSTOM_COMMAND_SIG(vim_add_multiple_cursor_down) {
     
     global_multiple_cursors[0] = view_get_cursor_pos(app, view_id);
     view_set_cursor(app, view_id, seek_pos(global_multiple_cursors[global_multiple_cursor_count-1]));
-    vim_move_down(app);
+    move_down(app);
     global_multiple_cursors[global_multiple_cursor_count++] = view_get_cursor_pos(app, view_id);
     
     view_set_cursor(app, view_id, seek_pos(global_multiple_cursors[0]));

@@ -110,8 +110,8 @@ space_mode_setup_mapping(Mapping *mapping) {
         // Bind(vim_cycle_view_focus,    KeyCode_W);
         // Bind(vim_rotate_view_buffers, KeyCode_R);
         // @note :avy
-        Bind(avy_goto_view, KeyCode_W);
-        Bind(avy_goto_view_and_swap_buffers, KeyCode_R);
+        Bind(vim_avy_goto_view, KeyCode_W);
+        Bind(vim_avy_goto_view_and_swap_buffers, KeyCode_R);
         
         Bind(vim_open_view_duplicate_split_vertical,   KeyCode_V);
         Bind(vim_open_view_duplicate_split_horizontal, KeyCode_S);
@@ -121,8 +121,8 @@ space_mode_setup_mapping(Mapping *mapping) {
         
         Bind(vim_close_view, KeyCode_Q);
         // @note :avy
-        Bind(avy_close_view, KeyCode_Q, KeyCode_Alt);
-        Bind(avy_close_view, KeyCode_Q, KeyCode_Shift);
+        Bind(vim_avy_close_view, KeyCode_Q, KeyCode_Alt);
+        Bind(vim_avy_close_view, KeyCode_Q, KeyCode_Shift);
         
         Bind(vim_focus_view_left,  KeyCode_H);
         Bind(vim_focus_view_down,  KeyCode_J);

@@ -260,3 +260,11 @@ CUSTOM_DOC("If a project is loaded a fuzzy search is started, otherwise a normal
         interactive_open_or_new_in_other(app);
     }
 }
+
+
+#ifdef VIM
+VIM_CHORD_COMMAND(vim_interactive_fuzzy_find, interactive_fuzzy_find);
+VIM_VIEW_COMMAND(vim_interactive_fuzzy_find__in_other, interactive_fuzzy_find_in_other);
+VIM_CHORD_COMMAND(vim_interactive_open_or_new__or__fuzzy_find, interactive_open_or_new__or__fuzzy_find);
+VIM_VIEW_COMMAND(vim_interactive_open_or_new__or__fuzzy_find__in_other, interactive_open_or_new__or__fuzzy_find__in_other);
+#endif

@@ -443,23 +443,10 @@ CUSTOM_COMMAND_SIG(avy_goto_line) {
 //
 // @note Vim
 //
-// @todo Make vim stuff easier
 #ifdef VIM
-
-inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_avy_goto_char) {
-    avy_goto_char(app);
-}
-inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_avy_goto_string) {
-    avy_goto_string(app);
-}
-inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_avy_goto_line) {
-    avy_goto_line(app);
-}
-
-#define vim_avy_goto_char    vim_command_execute_ntimes<_avy_goto_char>
-#define vim_avy_goto_string  vim_command_execute_ntimes<_avy_goto_string>
-#define vim_avy_goto_line    vim_command_execute_ntimes<_avy_goto_line>
-
+VIM_MOVE_COMMAND_EXECUTE_ONCE(vim_avy_goto_char,   avy_goto_char);
+VIM_MOVE_COMMAND_EXECUTE_ONCE(vim_avy_goto_string, avy_goto_string);
+VIM_MOVE_COMMAND_EXECUTE_ONCE(vim_avy_goto_line,   avy_goto_line);
 #endif
 
 
@@ -576,28 +563,20 @@ avy_goto_view(Application_Links *app, b32 do_buffer_swap) {
 
 CUSTOM_COMMAND_SIG(avy_goto_view) {
     avy_goto_view(app, false);
-    
-#ifdef VIM
-    vim_enter_mode_normal(app);
-#endif
 }
-
 CUSTOM_COMMAND_SIG(avy_goto_view_and_swap_buffers) {
     avy_goto_view(app, true);
-    
-#ifdef VIM
-    vim_enter_mode_normal(app);
-#endif
 }
-
 CUSTOM_COMMAND_SIG(avy_close_view) {
     View_ID target_view_id = avy_get_view_selection_from_user(app);
     view_close(app, target_view_id);
-    
-#ifdef VIM
-    vim_enter_mode_normal(app);
-#endif
 }
+
+#ifdef VIM
+VIM_VIEW_COMMAND(vim_avy_goto_view, avy_goto_view, true);
+VIM_VIEW_COMMAND(vim_avy_goto_view_and_swap_buffers, avy_goto_view_and_swap_buffers, true);
+VIM_VIEW_COMMAND(vim_avy_close_view, avy_close_view, true);
+#endif
 
 
 //

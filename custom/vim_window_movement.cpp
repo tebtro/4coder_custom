@@ -175,3 +175,17 @@ CUSTOM_DOC("Swap buffer right from the active view.")
 {
     windmove_to_panel(app, windmove_right, true);
 }
+
+
+#ifdef VIM
+VIM_VIEW_COMMAND(vim_focus_view_left, windmove_panel_left, true);
+VIM_VIEW_COMMAND(vim_focus_view_right, windmove_panel_right, true);
+VIM_VIEW_COMMAND(vim_focus_view_down, windmove_panel_down, true);
+VIM_VIEW_COMMAND(vim_focus_view_up, windmove_panel_up, true);
+
+VIM_VIEW_COMMAND(vim_swap_view_left, windmove_panel_swap_left, true);
+VIM_VIEW_COMMAND(vim_swap_view_right, windmove_panel_swap_right, true);
+VIM_VIEW_COMMAND(vim_swap_view_down, windmove_panel_swap_down, true);
+VIM_VIEW_COMMAND(vim_swap_view_up, windmove_panel_swap_up, true);
+#endif
+

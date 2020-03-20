@@ -3,9 +3,6 @@
 
 function void vim_improved_newline(Application_Links *app, b32 below = true, b32 newline_at_sol_eol = true);
 
-// Ugh
-template <CUSTOM_COMMAND_SIG(command), b32 view_changed_do_highlight = false> CUSTOM_COMMAND_SIG(vim_window_command);
-
 CUSTOM_COMMAND_SIG(vim_scroll_cursor_line_to_view_center);
 
 //
@@ -19,27 +16,6 @@ character_is_newline(char c) {
     b32 result = (c == '\n');
     return result;
 }
-
-#define VIM_GET_VIEW_ID_VIEW_SCOPE_BUFFER_ID_AND_VIM_STATE(app) \
-View_ID view_id = get_this_ctx_view((app), Access_Always); \
-Buffer_ID buffer_id = view_get_buffer((app), view_id, Access_ReadVisible); \
-Managed_Scope view_scope = view_get_managed_scope((app), view_id); \
-Vim_View_State *vim_state = scope_attachment((app), view_scope, view_vim_state_id, Vim_View_State);
-
-#define VIM_GET_VIEW_ID_SCOPE_AND_VIM_STATE(app) \
-View_ID view_id = get_this_ctx_view((app), Access_Always); \
-Managed_Scope view_scope = view_get_managed_scope((app), view_id); \
-Vim_View_State *vim_state = scope_attachment((app), view_scope, view_vim_state_id, Vim_View_State);
-
-#define VIM_GET_VIEW_ID_AND_BUFFER_ID(app) \
-View_ID view_id = get_this_ctx_view((app), Access_Always); \
-Buffer_ID buffer_id = view_get_buffer((app), view_id, Access_ReadVisible);
-
-// @note View for macro
-#define for_views(app, it) \
-for (View_ID it = get_view_next((app), 0, Access_Always); \
-it != 0;                                           \
-it = get_view_next((app), it, Access_Always))
 
 
 //
@@ -670,6 +646,10 @@ inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_ntimes_move_right) {
     view_set_cursor_by_character_delta(app, view_id, vim_state->execute_command_count);
     no_mark_snap_to_cursor_if_shift(app, view_id);
 }
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_move_up, _vim_ntimes_move_up);
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_move_down, _vim_ntimes_move_down);
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_move_left, _vim_ntimes_move_left);
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_move_right, _vim_ntimes_move_right);
 
 inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_ntimes_move_up_by_page) {
     f32 page_jump = get_page_jump(app, view_id) * (f32)vim_state->execute_command_count;
@@ -687,6 +667,10 @@ inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_ntimes_move_down_by_page_half) {
     f32 page_jump = get_page_jump(app, view_id) * 0.5f * (f32)vim_state->execute_command_count;
     move_vertical_pixels(app, page_jump);
 }
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_move_up_by_page, _vim_ntimes_move_up_by_page);
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_move_down_by_page, _vim_ntimes_move_down_by_page);
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_move_up_by_page_half, _vim_ntimes_move_up_by_page_half);
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_move_down_by_page_half, _vim_ntimes_move_down_by_page_half);
 
 /* @todo :non_virtual_whitespace This option only really changes the behaviour in non_virtual_whitspace_mode.
 PositionWithinLine_Start
@@ -703,6 +687,8 @@ inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_ntimes_move_down_by_whitespace) {
         seek_blank_line(app, Scan_Forward, PositionWithinLine_SkipLeadingWhitespace);
     }
 }
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_move_up_by_whitespace, _vim_ntimes_move_up_by_whitespace);
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_move_down_by_whitespace, _vim_ntimes_move_down_by_whitespace);
 
 inline void
 vim_get_found_input_character_pos(Application_Links *app, View_ID view_id, Buffer_ID buffer_id, Vim_View_State *vim_state, Scan_Direction direction, b32 one_before_found = false) {
@@ -748,6 +734,11 @@ inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_ntimes_move_left_to_found) {
 inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_ntimes_move_left_before_found) {
     vim_get_found_input_character_pos(app, view_id, buffer_id, vim_state, Scan_Backward, true);
 }
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_move_right_to_found, _vim_ntimes_move_right_to_found, true, true);
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_move_right_before_found, _vim_ntimes_move_right_before_found, true, true);
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_move_left_to_found, _vim_ntimes_move_left_to_found, true);
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_move_left_before_found, _vim_ntimes_move_left_before_found, true);
+
 
 
 // @note Added Side
@@ -812,6 +803,9 @@ inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_ntimes_move_right_one_after_whitespace
         current_view_scan_move(app, Scan_Forward, Side_Max, push_boundary_list(scratch, boundary_whitespace));
     }
 }
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_move_right_word_start, _vim_ntimes_move_right_word_start);
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_move_right_token_start, _vim_ntimes_move_right_token_start);
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_move_right_one_after_whitespace, _vim_ntimes_move_right_one_after_whitespace);
 
 inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_ntimes_move_right_word_end) {
     for (int i = 0; i < vim_state->execute_command_count; ++i) {
@@ -835,6 +829,9 @@ inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_ntimes_move_right_one_before_whitespac
         move_left(app);
     }
 }
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_move_right_word_end, _vim_ntimes_move_right_word_end, true, true);
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_move_right_token_end, _vim_ntimes_move_right_token_end, true, true);
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_move_right_one_before_whitespace, _vim_ntimes_move_right_one_before_whitespace, true, true);
 
 
 inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_ntimes_move_left_word_start) {
@@ -853,6 +850,9 @@ inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_ntimes_move_left_one_before_whitespace
         move_left_whitespace_boundary(app);
     }
 }
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_move_left_word_start, _vim_ntimes_move_left_word_start);
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_move_left_token_start, _vim_ntimes_move_left_token_start);
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_move_left_one_before_whitespace, _vim_ntimes_move_left_one_before_whitespace);
 
 inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_ntimes_move_left_word_end) {
     for (int i = 0; i < vim_state->execute_command_count; ++i) {
@@ -875,6 +875,9 @@ inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_ntimes_move_left_one_after_whitespace)
         move_left(app);
     }
 }
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_move_left_word_end, _vim_ntimes_move_left_word_end);
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_move_left_token_end, _vim_ntimes_move_left_token_end);
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_move_left_one_after_whitespace, _vim_ntimes_move_left_one_after_whitespace);
 
 // @note execute once
 
@@ -888,6 +891,8 @@ inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_once_move_to_line_start) {
 inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_once_move_to_line_end) {
     seek_pos_of_visual_line(app, Side_Max);
 }
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_move_to_line_start, _vim_once_move_to_line_start);
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_move_to_line_end, _vim_once_move_to_line_end);
 
 inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_once_move_to_file_start) {
     view_set_cursor_and_preferred_x(app, view_id, seek_pos(0));
@@ -898,11 +903,14 @@ inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_once_move_to_file_end) {
     view_set_cursor_and_preferred_x(app, view_id, seek_pos(size));
     no_mark_snap_to_cursor_if_shift(app, view_id);
 }
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_move_to_file_start, _vim_once_move_to_file_start);
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_move_to_file_end, _vim_once_move_to_file_end);
 
 inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_once_goto_line) {
     goto_line(app);
     vim_scroll_cursor_line_to_view_center(app);
 }
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_goto_line, _vim_once_goto_line);
 
 
 inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_set_mark) {
@@ -939,6 +947,9 @@ inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_cursor_mark_swap_scope_range) {
     }
     scroll_cursor_line(app, 0, view_id);
 }
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_set_mark, _vim_set_mark);
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_cursor_mark_swap, _vim_cursor_mark_swap);
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_cursor_mark_swap_scope_range, _vim_cursor_mark_swap_scope_range);
 
 
 inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_select_next_scope_absolute) {
@@ -959,6 +970,12 @@ inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_select_surrounding_scope_maximal) {
 inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_select_surrounding_scope) {
     select_surrounding_scope(app);
 }
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_select_next_scope_absolute, _vim_select_next_scope_absolute);
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_select_prev_scope_absolute, _vim_select_prev_scope_absolute);
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_select_next_scope_after_current, _vim_select_next_scope_after_current);
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_select_prev_top_most_scope, _vim_select_prev_top_most_scope);
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_select_surrounding_scope_maximal, _vim_select_surrounding_scope_maximal);
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_select_surrounding_scope, _vim_select_surrounding_scope);
 
 
 CUSTOM_COMMAND_SIG(vim_center_all_views) {
@@ -973,119 +990,6 @@ CUSTOM_COMMAND_SIG(vim_center_all_views) {
         scroll_cursor_line(app, 0, it);
     }
 }
-
-//
-// @note compound commands
-//
-
-//
-// @note execute command n times
-//
-// Uh, templates ...
-
-template <VIM_NTIMES_CUSTOM_COMMAND_SIG(command), b32 one_past_last, b32 move_right_if_mode_insert>
-CUSTOM_COMMAND_SIG(vim_command_execute_ntimes) {
-    ProfileScope(app, "vim_command_execute_ntimes");
-    
-    VIM_GET_VIEW_ID_SCOPE_AND_VIM_STATE(app);
-    Buffer_ID buffer_id = view_get_buffer(app, view_id, Access_Always);
-    Managed_Scope buffer_scope = buffer_get_managed_scope(app, buffer_id);
-    
-    i64 pos_before = view_get_cursor_pos(app, view_id);
-    
-    command(app, view_id, buffer_id, view_scope, buffer_scope, vim_state);
-    
-    vim_state->execute_command_count = 1;
-    vim_state->predecimal_count = 0;
-    
-    i64 pos_after = view_get_cursor_pos(app, view_id);
-    
-    
-    Range_i64 diff_range = Ii64(pos_before, pos_after);
-    if (one_past_last) {
-        i64 buffer_size = buffer_get_size(app, buffer_id);
-        if (diff_range.end < buffer_size) {
-            diff_range.one_past_last = diff_range.end + 1;
-        }
-    }
-    
-    // @note Vim exec pending action
-    vim_exec_pending_action(app, diff_range, false, move_right_if_mode_insert);
-    
-    
-    // @note Update :vim_visual_range
-    if (vim_state->mode == vim_mode_visual) {
-        vim_update_visual_range(app, view_id, vim_state);
-    }
-    else if (vim_state->mode == vim_mode_visual_line) {
-        vim_update_visual_line_range(app, view_id, vim_state);
-    }
-    else if (vim_state->mode == vim_mode_insert) {
-        if (move_right_if_mode_insert) {
-            move_right(app);
-        }
-    }
-}
-
-// @note execute ntimes
-
-#define vim_move_up    vim_command_execute_ntimes<_vim_ntimes_move_up>
-#define vim_move_down  vim_command_execute_ntimes<_vim_ntimes_move_down>
-#define vim_move_left  vim_command_execute_ntimes<_vim_ntimes_move_left>
-#define vim_move_right vim_command_execute_ntimes<_vim_ntimes_move_right>
-
-#define vim_move_up_by_page   vim_command_execute_ntimes<_vim_ntimes_move_up_by_page>
-#define vim_move_down_by_page vim_command_execute_ntimes<_vim_ntimes_move_down_by_page>
-#define vim_move_up_by_page_half   vim_command_execute_ntimes<_vim_ntimes_move_up_by_page_half>
-#define vim_move_down_by_page_half vim_command_execute_ntimes<_vim_ntimes_move_down_by_page_half>
-
-#define vim_move_up_by_whitespace   vim_command_execute_ntimes<_vim_ntimes_move_up_by_whitespace>
-#define vim_move_down_by_whitespace vim_command_execute_ntimes<_vim_ntimes_move_down_by_whitespace>
-
-
-#define vim_move_right_word_start  vim_command_execute_ntimes<_vim_ntimes_move_right_word_start>
-#define vim_move_right_token_start vim_command_execute_ntimes<_vim_ntimes_move_right_token_start>
-#define vim_move_right_one_after_whitespace  vim_command_execute_ntimes<_vim_ntimes_move_right_one_after_whitespace>
-
-#define vim_move_right_word_end  vim_command_execute_ntimes<_vim_ntimes_move_right_word_end, true, true>
-#define vim_move_right_token_end vim_command_execute_ntimes<_vim_ntimes_move_right_token_end, true, true>
-#define vim_move_right_one_before_whitespace  vim_command_execute_ntimes<_vim_ntimes_move_right_one_before_whitespace, true, true>
-
-
-#define vim_move_left_word_start  vim_command_execute_ntimes<_vim_ntimes_move_left_word_start>
-#define vim_move_left_token_start  vim_command_execute_ntimes<_vim_ntimes_move_left_token_start>
-#define vim_move_left_one_before_whitespace  vim_command_execute_ntimes<_vim_ntimes_move_left_one_before_whitespace>
-
-#define vim_move_left_word_end  vim_command_execute_ntimes<_vim_ntimes_move_left_word_end>
-#define vim_move_left_token_end vim_command_execute_ntimes<_vim_ntimes_move_left_token_end>
-#define vim_move_left_one_after_whitespace  vim_command_execute_ntimes<_vim_ntimes_move_left_one_after_whitespace>
-
-// @note execute once
-
-#define vim_move_to_file_start vim_command_execute_ntimes<_vim_once_move_to_file_start>
-#define vim_move_to_file_end   vim_command_execute_ntimes<_vim_once_move_to_file_end>
-
-#define vim_move_to_line_start vim_command_execute_ntimes<_vim_once_move_to_line_start>
-#define vim_move_to_line_end   vim_command_execute_ntimes<_vim_once_move_to_line_end>
-
-#define vim_goto_line vim_command_execute_ntimes<_vim_once_goto_line>
-
-#define vim_move_right_to_found     vim_command_execute_ntimes<_vim_ntimes_move_right_to_found, true, true>
-#define vim_move_right_before_found vim_command_execute_ntimes<_vim_ntimes_move_right_before_found, true, true>
-#define vim_move_left_to_found      vim_command_execute_ntimes<_vim_ntimes_move_left_to_found, true>
-#define vim_move_left_before_found  vim_command_execute_ntimes<_vim_ntimes_move_left_before_found, true>
-
-#define vim_set_mark  vim_command_execute_ntimes<_vim_set_mark>
-#define vim_cursor_mark_swap  vim_command_execute_ntimes<_vim_cursor_mark_swap>
-#define vim_cursor_mark_swap_scope_range  vim_command_execute_ntimes<_vim_cursor_mark_swap_scope_range>
-
-
-#define vim_select_next_scope_absolute        vim_command_execute_ntimes<_vim_select_next_scope_absolute>
-#define vim_select_prev_scope_absolute        vim_command_execute_ntimes<_vim_select_prev_scope_absolute>
-#define vim_select_next_scope_after_current   vim_command_execute_ntimes<_vim_select_next_scope_after_current>
-#define vim_select_prev_top_most_scope        vim_command_execute_ntimes<_vim_select_prev_top_most_scope>
-#define vim_select_surrounding_scope_maximal  vim_command_execute_ntimes<_vim_select_surrounding_scope_maximal>
-#define vim_select_surrounding_scope          vim_command_execute_ntimes<_vim_select_surrounding_scope>
 
 
 //
@@ -2263,16 +2167,6 @@ CUSTOM_COMMAND_SIG(vim_newline) {
 //
 // @note View commands / Window commands
 //
-template <CUSTOM_COMMAND_SIG(command), b32 view_changed_to_line_highlight/* = false*/>
-CUSTOM_COMMAND_SIG(vim_window_command) {
-    vim_enter_mode_normal(app);
-    command(app);
-    
-    // @note Vim :view_changed_flash_line
-    if (view_changed_to_line_highlight) {
-        vim_global_view_changed_time = 1.0f;
-    }
-}
 
 CUSTOM_COMMAND_SIG(vim_scroll_cursor_line_to_view_center) {
     scroll_cursor_line_to_view_center(app);
@@ -2291,6 +2185,7 @@ CUSTOM_COMMAND_SIG(vim_scroll_cursor_line_to_view_bottom) {
 CUSTOM_COMMAND_SIG(_vim_swap_buffers_between_two_views) {
     swap_panels(app);
 }
+VIM_VIEW_COMMAND(vim_swap_buffers_between_two_views, _vim_swap_buffers_between_two_views, true);
 
 CUSTOM_COMMAND_SIG(_vim_cycle_view_focus) {
     View_ID view_id = get_active_view(app, Access_Always);
@@ -2301,6 +2196,8 @@ CUSTOM_COMMAND_SIG(_vim_rotate_view_buffers) {
     // @todo Rotate all buffers
     _vim_swap_buffers_between_two_views(app);
 }
+VIM_VIEW_COMMAND(vim_cycle_view_focus, _vim_cycle_view_focus, true);
+VIM_VIEW_COMMAND(vim_rotate_view_buffers, _vim_rotate_view_buffers, true);
 
 CUSTOM_COMMAND_SIG(_vim_open_view_duplicate_split_vertical) {
     open_panel_vsplit(app);
@@ -2308,6 +2205,8 @@ CUSTOM_COMMAND_SIG(_vim_open_view_duplicate_split_vertical) {
 CUSTOM_COMMAND_SIG(_vim_open_view_duplicate_split_horizontal) {
     open_panel_hsplit(app);
 }
+VIM_VIEW_COMMAND(vim_open_view_duplicate_split_vertical, _vim_open_view_duplicate_split_vertical, true);
+VIM_VIEW_COMMAND(vim_open_view_duplicate_split_horizontal, _vim_open_view_duplicate_split_horizontal, true);
 
 CUSTOM_COMMAND_SIG(_vim_open_view_split_vertical) {
     View_ID view = get_active_view(app, Access_Always);
@@ -2319,63 +2218,15 @@ CUSTOM_COMMAND_SIG(_vim_open_view_split_horizontal) {
     View_ID new_view = open_view(app, view, ViewSplit_Bottom);
     new_view_settings(app, new_view);
 }
+VIM_VIEW_COMMAND(vim_open_view_split_horizontal, _vim_open_view_split_horizontal, true);
+VIM_VIEW_COMMAND(vim_open_view_split_vertical, _vim_open_view_split_vertical, true);
 
 CUSTOM_COMMAND_SIG(_vim_close_view) {
     close_panel(app);
 }
+VIM_VIEW_COMMAND(vim_close_view, _vim_close_view, true);
 
 
-#include "vim_window_movement.cpp"
-
-CUSTOM_COMMAND_SIG(_vim_focus_view_left) {
-    windmove_panel_left(app);
-}
-CUSTOM_COMMAND_SIG(_vim_focus_view_right) {
-    windmove_panel_right(app);
-}
-CUSTOM_COMMAND_SIG(_vim_focus_view_down) {
-    windmove_panel_down(app);
-}
-CUSTOM_COMMAND_SIG(_vim_focus_view_up) {
-    windmove_panel_up(app);
-}
-
-CUSTOM_COMMAND_SIG(_vim_swap_view_left) {
-    windmove_panel_swap_left(app);
-}
-CUSTOM_COMMAND_SIG(_vim_swap_view_right) {
-    windmove_panel_swap_right(app);
-}
-CUSTOM_COMMAND_SIG(_vim_swap_view_down) {
-    windmove_panel_swap_down(app);
-}
-CUSTOM_COMMAND_SIG(_vim_swap_view_up) {
-    windmove_panel_swap_up(app);
-}
-
-
-#define vim_swap_buffers_between_two_views  vim_window_command<_vim_swap_buffers_between_two_views, true>
-
-#define vim_cycle_view_focus    vim_window_command<_vim_cycle_view_focus, true>
-#define vim_rotate_view_buffers vim_window_command<_vim_rotate_view_buffers, true>
-
-#define vim_open_view_duplicate_split_vertical   vim_window_command<_vim_open_view_duplicate_split_vertical, true>
-#define vim_open_view_duplicate_split_horizontal vim_window_command<_vim_open_view_duplicate_split_horizontal, true>
-
-#define vim_open_view_split_horizontal vim_window_command<_vim_open_view_split_horizontal, true>
-#define vim_open_view_split_vertical   vim_window_command<_vim_open_view_split_vertical, true>
-
-#define vim_close_view  vim_window_command<_vim_close_view, true>
-
-#define vim_focus_view_left  vim_window_command<_vim_focus_view_left, true>
-#define vim_focus_view_right vim_window_command<_vim_focus_view_right, true>
-#define vim_focus_view_down  vim_window_command<_vim_focus_view_down, true>
-#define vim_focus_view_up    vim_window_command<_vim_focus_view_up, true>
-
-#define vim_swap_view_left  vim_window_command<_vim_swap_view_left, true>
-#define vim_swap_view_right vim_window_command<_vim_swap_view_right, true>
-#define vim_swap_view_down  vim_window_command<_vim_swap_view_down, true>
-#define vim_swap_view_up    vim_window_command<_vim_swap_view_up, true>
 
 //
 // @note Face commands / Font commands
@@ -2407,29 +2258,23 @@ CUSTOM_COMMAND_SIG(vim_set_big_face_size) {
 // @note File commands
 //
 
-#define vim_interactive_open_or_new            vim_window_command<interactive_open_or_new>
-#define vim_interactive_open_or_new__in_other  vim_chord_command<interactive_open_or_new_in_other>
-#define vim_interactive_fuzzy_find            vim_chord_command<interactive_fuzzy_find>
-#define vim_interactive_fuzzy_find__in_other  vim_chord_command<interactive_fuzzy_find_in_other>
-#define vim_interactive_open_or_new__or__fuzzy_find            vim_chord_command<interactive_open_or_new__or__fuzzy_find>
-#define vim_interactive_open_or_new__or__fuzzy_find__in_other  vim_chord_command<interactive_open_or_new__or__fuzzy_find__in_other>
-#define vim_interactive_open_or_new__or__switch_buffer            vim_chord_command<interactive_open_or_new__or__switch_buffer>
-#define vim_interactive_open_or_new__or__switch_buffer__in_other  vim_chord_command<interactive_open_or_new__or__switch_buffer__in_other>
-
 // @todo vim_open_matchin_file_cpp
-#define vim_open_matching_file_cpp__in_other  vim_window_command<open_matching_file_cpp>
+VIM_VIEW_COMMAND(vim_open_matching_file_cpp__in_other, open_matching_file_cpp);
 // @todo vim_open_file_in_quotes
-#define vim_open_file_in_quotes__in_other  vim_chord_command<open_file_in_quotes>
+VIM_VIEW_COMMAND(vim_open_file_in_quotes__in_other, open_file_in_quotes);
 
 
-#define vim_delete_file_query  vim_chord_command<delete_file_query>
-#define vim_rename_file_query  vim_chord_command<rename_file_query>
-#define vim_make_directory_query  vim_chord_command<make_directory_query>
+VIM_CHORD_COMMAND(vim_delete_file_query, delete_file_query);
+VIM_CHORD_COMMAND(vim_rename_file_query, rename_file_query);
+VIM_CHORD_COMMAND(vim_make_directory_query, make_directory_query);
+
 
 
 CUSTOM_COMMAND_SIG(interactive_open_or_new_in_other) {
     change_active_panel_send_command(app, interactive_open_or_new);
 }
+VIM_CHORD_COMMAND(vim_interactive_open_or_new, interactive_open_or_new);
+VIM_VIEW_COMMAND(vim_interactive_open_or_new__in_other, interactive_open_or_new_in_other);
 
 CUSTOM_COMMAND_SIG(interactive_open_or_new__or__switch_buffer) {
     if (current_project.loaded) {
@@ -2447,6 +2292,8 @@ CUSTOM_COMMAND_SIG(interactive_open_or_new__or__switch_buffer__in_other) {
         interactive_open_or_new_in_other(app);
     }
 }
+VIM_CHORD_COMMAND(vim_interactive_open_or_new__or__switch_buffer, interactive_open_or_new__or__switch_buffer);
+VIM_VIEW_COMMAND(vim_interactive_open_or_new__or__switch_buffer__in_other, interactive_open_or_new__or__switch_buffer__in_other);
 
 inline void
 vim_save_buffer(Application_Links *app, Scratch_Block *scratch, Buffer_ID buffer_id, String_Const_u8 postfix) {
