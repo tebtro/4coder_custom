@@ -97,6 +97,11 @@ CUSTOM_DOC("Input consumption loop for default view behavior")
         Vim_View_State *vim_state = scope_attachment(app, view_scope, view_vim_state_id, Vim_View_State);
         if (vim_state->execute_command_count == 0) { // :vim_view_state_is_initialized
             *vim_state = {};
+            
+            vim_state->chord_bar.prompt = string_u8_litexpr("");
+            vim_state->chord_bar.string = SCu8(vim_state->chord_bar_string_space, (u64)0);
+            vim_state->chord_bar.string_capacity = sizeof(vim_state->chord_bar_string_space);
+            
             // vim_state->is_initialized = true;
         }
     }
@@ -595,11 +600,11 @@ tebtro_render_caller(Application_Links *app, Frame_Info frame_info, View_ID view
     if (view_get_setting(app, view_id, ViewSetting_ShowFileBar, &showing_file_bar) && showing_file_bar) {
 #if BARS_ON_TOP
         Rect_f32_Pair pair = layout_file_bar_on_top(region, line_height);
-        draw_file_bar(app, view_id, is_active_view, buffer_id, face_id, pair.min);
+        vim_draw_file_bar(app, view_id, is_active_view, buffer_id, face_id, pair.min);
         region = pair.max;
 #else
         Rect_f32_Pair pair = layout_file_bar_on_bot(region, line_height);
-        draw_file_bar(app, view_id, is_active_view, buffer_id, face_id, pair.max);
+        vim_draw_file_bar(app, view_id, is_active_view, buffer_id, face_id, pair.max);
         region = pair.min;
 #endif
     }

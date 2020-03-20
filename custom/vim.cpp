@@ -113,14 +113,55 @@ vim_set_mode_and_command_map(Application_Links *app,
 #endif
 }
 
+
+function void
+vim_chord_bar_push_string(Application_Links *app, View_ID view_id, String_Const_u8 string) {
+    Managed_Scope view_scope = view_get_managed_scope(app, view_id);
+    Vim_View_State *vim_state = scope_attachment(app, view_scope, view_vim_state_id, Vim_View_State);
+    
+    if (!vim_state->chord_bar_active) {
+        if (start_query_bar(app, &vim_state->chord_bar, 0) == 0) {
+            NotImplemented;
+            return;
+        }
+    }
+    vim_state->chord_bar_active = true;
+    
+    String_u8 bar_string = Su8(vim_state->chord_bar.string, sizeof(vim_state->chord_bar_string_space));
+    string_append(&bar_string, string);
+    vim_state->chord_bar.string = bar_string.string;
+}
+function void
+vim_chord_bar_push_string(Application_Links *app, String_Const_u8 string) {
+    View_ID view_id = get_active_view(app, Access_Always);
+    vim_chord_bar_push_string(app, view_id, string);
+}
+
+function void
+vim_end_chord_bar(Application_Links *app, View_ID view_id) {
+    Managed_Scope view_scope = view_get_managed_scope(app, view_id);
+    Vim_View_State *vim_state = scope_attachment(app, view_scope, view_vim_state_id, Vim_View_State);
+    
+    end_query_bar(app, &vim_state->chord_bar, 0);
+    vim_state->chord_bar.string.size = 0;
+    // vim_state->chord_bar.string = SCu8(vim_state->chord_bar_string_space, (u64)0);
+    vim_state->chord_bar_active = false;
+}
+function void
+vim_end_chord_bar(Application_Links *app) {
+    View_ID view_id = get_active_view(app, Access_Always);
+    vim_end_chord_bar(app, view_id);
+}
+
+
 //
 // @note vim mode handling
 //
 
 function void
-vim_enter_mode(Application_Links *app,
-               Vim_Mode new_mode, Command_Map_ID new_map_id, Color_Table *color_table_ptr) {
+vim_enter_mode(Application_Links *app, Vim_Mode new_mode, Command_Map_ID new_map_id, Color_Table *color_table_ptr) {
     vim_set_mode_and_command_map(app, new_mode, vim_action_none, new_map_id, color_table_ptr);
+    vim_end_chord_bar(app);
     
 #if 0
     // :suppress_mouse
@@ -134,8 +175,6 @@ vim_enter_mode(Application_Links *app,
 }
 
 
-// @todo @incomplete
-// chord_bar
 CUSTOM_COMMAND_SIG(vim_enter_mode_normal) {
     // @todo @incomplete
     global_show_function_helper = true;
@@ -170,7 +209,6 @@ CUSTOM_COMMAND_SIG(vim_enter_mode_normal) {
 CUSTOM_COMMAND_SIG(vim_enter_mode_insert) {
     // @todo @incomplete
     // end_visual_selection
-    // end_chord_bar
     vim_enter_mode(app, vim_mode_insert, mapid_vim_mode_insert, &vim_global_state.color_tables.mode_insert);
 }
 CUSTOM_COMMAND_SIG(vim_enter_mode_insert_after) {
@@ -405,94 +443,80 @@ CUSTOM_COMMAND_SIG(vim_enter_chord_replace_single) {
     // @todo @incomplete
     // clear_register_selection
     vim_enter_chord(app, mapid_vim_chord_replace_single, &vim_global_state.color_tables.chord_replace_single);
+    vim_chord_bar_push_string(app, SCu8("r"));
 }
 
 CUSTOM_COMMAND_SIG(vim_enter_chord_delete) {
-    // @todo @incomplete
-    // chord_bar
     vim_enter_chord(app, vim_action_delete_range, mapid_vim_chord_delete, &vim_global_state.color_tables.chord_delete);
+    vim_chord_bar_push_string(app, SCu8("d"));
 }
 
 CUSTOM_COMMAND_SIG(vim_enter_chord_change) {
-    // @todo @incomplete
-    // chord_bar
     vim_enter_chord(app, vim_action_change_range, mapid_vim_chord_change, &vim_global_state.color_tables.chord_change);
+    vim_chord_bar_push_string(app, SCu8("c"));
 }
 
 CUSTOM_COMMAND_SIG(vim_enter_chord_yank) {
-    // @todo @incomplete
-    // chord_bar
     vim_enter_chord(app, vim_action_yank_range, mapid_vim_chord_yank, &vim_global_state.color_tables.chord_yank);
+    vim_chord_bar_push_string(app, SCu8("y"));
 }
 
 
 CUSTOM_COMMAND_SIG(vim_enter_chord_format) {
-    // @todo @incomplete
-    // chord_bar
     vim_enter_chord(app, vim_action_format_range, mapid_vim_chord_format, 0);
+    vim_chord_bar_push_string(app, SCu8("="));
 }
 
 CUSTOM_COMMAND_SIG(vim_enter_chord_indent_right) {
-    // @todo @incomplete
-    // chord_bar
     vim_enter_chord(app, vim_action_indent_right_range, mapid_vim_chord_indent_right, 0);
+    vim_chord_bar_push_string(app, SCu8(">"));
 }
 
 CUSTOM_COMMAND_SIG(vim_enter_chord_indent_left) {
-    // @todo @incomplete
-    // chord_bar
     vim_enter_chord(app, vim_action_indent_left_range, mapid_vim_chord_indent_left, 0);
+    vim_chord_bar_push_string(app, SCu8("<"));
 }
 
 
 CUSTOM_COMMAND_SIG(vim_enter_chord_move_right_to_found) {
-    // @todo @incomplete
-    // chord_bar
     vim_enter_chord(app, mapid_vim_chord_move_right_to_found, 0);
+    vim_chord_bar_push_string(app, SCu8("f"));
 }
 CUSTOM_COMMAND_SIG(vim_enter_chord_move_right_before_found) {
-    // @todo @incomplete
-    // chord_bar
     vim_enter_chord(app, mapid_vim_chord_move_right_before_found, 0);
+    vim_chord_bar_push_string(app, SCu8("t"));
 }
 CUSTOM_COMMAND_SIG(vim_enter_chord_move_left_to_found) {
-    // @todo @incomplete
-    // chord_bar
     vim_enter_chord(app, mapid_vim_chord_move_left_to_found, 0);
+    vim_chord_bar_push_string(app, SCu8("F"));
 }
 CUSTOM_COMMAND_SIG(vim_enter_chord_move_left_before_found) {
-    // @todo @incomplete
-    // chord_bar
     vim_enter_chord(app, mapid_vim_chord_move_left_before_found, 0);
+    vim_chord_bar_push_string(app, SCu8("T"));
 }
 
 
 CUSTOM_COMMAND_SIG(vim_enter_chord_g) {
-    // @todo @incomplete
-    // chord_bar
     vim_enter_chord(app, mapid_vim_chord_g, 0);
+    vim_chord_bar_push_string(app, SCu8("g"));
 }
 CUSTOM_COMMAND_SIG(vim_enter_chord_z) {
-    // @todo @incomplete
-    // chord_bar
     vim_enter_chord(app, mapid_vim_chord_z, 0);
+    vim_chord_bar_push_string(app, SCu8("z"));
 }
 
 
 CUSTOM_COMMAND_SIG(vim_enter_chord_mark) {
-    // @todo @incomplete
-    // chord_bar
     vim_enter_chord(app, mapid_vim_chord_mark, 0);
+    vim_chord_bar_push_string(app, SCu8("m"));
 }
 CUSTOM_COMMAND_SIG(vim_enter_chord_window) {
-    // @todo @incomplete
-    // chord_bar
     vim_enter_chord(app, mapid_vim_chord_window, 0);
+    vim_chord_bar_push_string(app, SCu8("w"));
 }
 CUSTOM_COMMAND_SIG(vim_enter_chord_choose_register) {
-    // @todo @incomplete
-    // chord_bar
     vim_enter_chord(app, mapid_vim_chord_choose_register, 0);
+    vim_chord_bar_push_string(app, SCu8("\""));
 }
 
 //

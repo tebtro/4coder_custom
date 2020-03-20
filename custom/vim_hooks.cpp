@@ -305,11 +305,11 @@ vim_render_caller(Application_Links *app, Frame_Info frame_info, View_ID view_id
     if (view_get_setting(app, view_id, ViewSetting_ShowFileBar, &showing_file_bar) && showing_file_bar) {
 #if BARS_ON_TOP
         Rect_f32_Pair pair = layout_file_bar_on_top(region, line_height);
-        draw_file_bar(app, view_id, is_active_view, buffer, face_id, pair.min);
+        vim_draw_file_bar(app, view_id, is_active_view, buffer, face_id, pair.min);
         region = pair.max;
 #else
         Rect_f32_Pair pair = layout_file_bar_on_bot(region, line_height);
-        draw_file_bar(app, view_id, is_active_view, buffer, face_id, pair.max);
+        vim_draw_file_bar(app, view_id, is_active_view, buffer, face_id, pair.max);
         region = pair.min;
 #endif
     }

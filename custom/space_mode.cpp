@@ -7,33 +7,33 @@
 
 CUSTOM_COMMAND_SIG(enter_space_mode) {
     vim_enter_chord(app, mapid_space_mode, 0);
-    // push_to_chord_bar(app, lit("<space>"));
+    vim_chord_bar_push_string(app, SCu8("<space>"));
 }
 
 
 CUSTOM_COMMAND_SIG(enter_space_mode_chord_b) {
     vim_enter_chord(app, mapid_space_mode_chord_b, 0);
-    // push_to_chord_bar(app, lit("b"));
+    vim_chord_bar_push_string(app, SCu8("b"));
 }
 
 CUSTOM_COMMAND_SIG(enter_space_mode_chord_f) {
     vim_enter_chord(app, mapid_space_mode_chord_f, 0);
-    // push_to_chord_bar(app, lit("f"));
+    vim_chord_bar_push_string(app, SCu8("f"));
 }
 
 CUSTOM_COMMAND_SIG(enter_space_mode_chord_p) {
     vim_enter_chord(app, mapid_space_mode_chord_p, 0);
-    // push_to_chord_bar(app, lit("p"));
+    vim_chord_bar_push_string(app, SCu8("p"));
 }
 
 CUSTOM_COMMAND_SIG(enter_space_mode_chord_q) {
     vim_enter_chord(app, mapid_space_mode_chord_q, 0);
-    // push_to_chord_bar(app, lit("q"));
+    vim_chord_bar_push_string(app, SCu8("q"));
 }
 
 CUSTOM_COMMAND_SIG(enter_space_mode_chord_w){
     vim_enter_chord(app, mapid_space_mode_chord_w, 0);
-    // push_to_chord_bar(app, lit("w"));
+    vim_chord_bar_push_string(app, SCu8("w"));
 }
 
 

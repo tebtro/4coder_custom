@@ -70,9 +70,7 @@ enum Vim_Action {
 
 struct Vim_View_State {
     // b32 is_initialized = false;
-    int execute_command_count = 1; // :vim_view_state_is_initialized
-    int predecimal_count = 0;
-    
+    // @note: Indicated by mode if it is not initialized.
     // @note The *current* vim mode. If a chord or action is pending, this will dictate
     //       what mode you return to once the action is completed.
     Vim_Mode mode = vim_mode_normal;
@@ -80,7 +78,15 @@ struct Vim_View_State {
     //       of chords.
     Vim_Action pending_action;
     
-    // @note
+    // @note: Query bar to display chord state
+    Query_Bar chord_bar = {};
+    u8 chord_bar_string_space[1024];
+    b32 chord_bar_active = false;
+    
+    int execute_command_count = 1; // :vim_view_state_is_initialized
+    int predecimal_count = 0;
+    
+    // @note Visual selection range
     Range_i64 selection_range;
     
     Color_Table *color_table_ptr;

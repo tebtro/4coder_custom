@@ -268,7 +268,7 @@ vim_draw_visual_mode_whitespaces(Application_Links *app, View_ID view_id, Face_I
 // @note Draw file bar
 //
 function void
-draw_file_bar(Application_Links *app, View_ID view_id, b32 is_active, Buffer_ID buffer, Face_ID face_id, Rect_f32 bar) {
+vim_draw_file_bar(Application_Links *app, View_ID view_id, b32 is_active, Buffer_ID buffer_id, Face_ID face_id, Rect_f32 bar) {
     Scratch_Block scratch(app);
     
     FColor bar_color = fcolor_zero();
@@ -287,13 +287,12 @@ draw_file_bar(Application_Links *app, View_ID view_id, b32 is_active, Buffer_ID 
     Buffer_Cursor cursor = view_compute_cursor(app, view_id, seek_pos(cursor_position));
     
     Fancy_Line list = {};
-    String_Const_u8 unique_name = push_buffer_unique_name(app, scratch, buffer);
+    String_Const_u8 unique_name = push_buffer_unique_name(app, scratch, buffer_id);
     push_fancy_string(scratch, &list, base_color, unique_name);
     push_fancy_stringf(scratch, &list, base_color, " - Row: %3.lld Col: %3.lld -", cursor.line, cursor.col);
     
-    Managed_Scope scope = buffer_get_managed_scope(app, buffer);
-    Line_Ending_Kind *eol_setting = scope_attachment(app, scope, buffer_eol_setting,
-                                                     Line_Ending_Kind);
+    Managed_Scope buffer_scope = buffer_get_managed_scope(app, buffer_id);
+    Line_Ending_Kind *eol_setting = scope_attachment(app, buffer_scope, buffer_eol_setting, Line_Ending_Kind);
     switch (*eol_setting){
         case LineEndingKind_Binary:
         {
@@ -311,8 +310,50 @@ draw_file_bar(Application_Links *app, View_ID view_id, b32 is_active, Buffer_ID 
         }break;
     }
     
+    Managed_Scope view_scope = view_get_managed_scope(app, view_id);
+    Vim_View_State *vim_state = scope_attachment(app, view_scope, view_vim_state_id, Vim_View_State);
+    // @note: Draw major mode
+    if (0) {
+        switch (vim_state->mode) {
+            case vim_mode_normal: {
+                push_fancy_string(scratch, &list, base_color, string_u8_litexpr(" <N>"));
+            } break;
+            case vim_mode_insert: {
+                push_fancy_string(scratch, &list, base_color, string_u8_litexpr(" <I>"));
+            } break;
+            case vim_mode_replace: {
+                push_fancy_string(scratch, &list, base_color, string_u8_litexpr(" <R>"));
+            } break;
+            case vim_mode_visual: {
+                push_fancy_string(scratch, &list, base_color, string_u8_litexpr(" <v>"));
+            } break;
+            case vim_mode_visual_line: {
+                push_fancy_string(scratch, &list, base_color, string_u8_litexpr(" <V>"));
+            } break;
+        }
+    }
+    else {
+        switch (vim_state->mode) {
+            case vim_mode_normal: {
+                push_fancy_string(scratch, &list, base_color, string_u8_litexpr(" --Normal--"));
+            } break;
+            case vim_mode_insert: {
+                push_fancy_string(scratch, &list, base_color, string_u8_litexpr(" --Insert--"));
+            } break;
+            case vim_mode_replace: {
+                push_fancy_string(scratch, &list, base_color, string_u8_litexpr(" --Replace--"));
+            } break;
+            case vim_mode_visual: {
+                push_fancy_string(scratch, &list, base_color, string_u8_litexpr(" --Visual--"));
+            } break;
+            case vim_mode_visual_line: {
+                push_fancy_string(scratch, &list, base_color, string_u8_litexpr(" --Visual-Line--"));
+            } break;
+        }
+    }
+    
     {
-        Dirty_State dirty = buffer_get_dirty_state(app, buffer);
+        Dirty_State dirty = buffer_get_dirty_state(app, buffer_id);
         u8 space[3];
         String_u8 str = Su8(space, 0, 3);
         if (dirty != 0){
