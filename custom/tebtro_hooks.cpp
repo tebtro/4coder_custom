@@ -73,16 +73,18 @@ CUSTOM_DOC("Tebtro custom command for responding to a startup event")
 }
 
 CUSTOM_COMMAND_SIG(tebtro_view_input_handler)
-CUSTOM_DOC("Input consumption loop for default view behavior")
-{
+CUSTOM_DOC("Input consumption loop for default view behavior") {
     Thread_Context *tctx = get_thread_context(app);
     Scratch_Block scratch(tctx);
+    
+    View_ID view_id = get_this_ctx_view(app, Access_Always);
+    Managed_Scope view_scope = view_get_managed_scope(app, view_id);
+    Vim_View_State *vim_state = scope_attachment(app, view_scope, view_vim_state_id, Vim_View_State);
     
     //
     // @note View initialization, begin_view
     //
     {
-        View_ID view_id = get_this_ctx_view(app, Access_Always);
         String_Const_u8 name = push_u8_stringf(scratch, "view %d", view_id);
         
         Profile_Global_List *list = get_core_profile_list(app);
@@ -93,8 +95,6 @@ CUSTOM_DOC("Input consumption loop for default view behavior")
         ctx.map_id = mapid_global;
         view_alter_context(app, view_id, &ctx);
         
-        Managed_Scope view_scope = view_get_managed_scope(app, view_id);
-        Vim_View_State *vim_state = scope_attachment(app, view_scope, view_vim_state_id, Vim_View_State);
         if (vim_state->execute_command_count == 0) { // :vim_view_state_is_initialized
             *vim_state = {};
             
@@ -135,8 +135,6 @@ CUSTOM_DOC("Input consumption loop for default view behavior")
         }
 #endif
         
-        View_ID view_id = get_this_ctx_view(app, Access_Always);
-        Managed_Scope view_scope = view_get_managed_scope(app, view_id);
         Command_Map_ID *map_id_ptr = scope_attachment(app, view_scope, view_map_id, Command_Map_ID);
         if (*map_id_ptr == 0) {
             *map_id_ptr = mapid_vim_mode_normal;
@@ -153,8 +151,7 @@ CUSTOM_DOC("Input consumption loop for default view behavior")
         }
         else {
             // NOTE(allen): before the command is called do some book keeping
-            Rewrite_Type *next_rewrite =
-                scope_attachment(app, view_scope, view_next_rewrite_loc, Rewrite_Type);
+            Rewrite_Type *next_rewrite = scope_attachment(app, view_scope, view_next_rewrite_loc, Rewrite_Type);
             *next_rewrite = Rewrite_None;
             if (fcoder_mode == FCoderMode_NotepadLike){
                 for (View_ID view_it = get_view_next(app, 0, Access_Always);
@@ -354,12 +351,13 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
     
     // @note Token colorizing
     if (token_array.tokens != 0) {
-#if 1
-        tebtro_draw_cpp_token_colors(app, text_layout_id, buffer_id, &token_array);
-        tebtro_draw_cpp_identifier_colors(app, text_layout_id, buffer_id, &token_array);
-#else
-        tebtro_draw_cpp_token_colors__only_comments(app, text_layout_id, buffer_id, &token_array);
-#endif
+        if (global_focus_mode_enabled) {
+            tebtro_draw_cpp_token_colors__only_comments(app, text_layout_id, buffer_id, &token_array);
+        }
+        else {
+            tebtro_draw_cpp_token_colors(app, text_layout_id, buffer_id, &token_array);
+            tebtro_draw_cpp_identifier_colors(app, text_layout_id, buffer_id, &token_array);
+        }
         
         // @note: Token under cursor highlight
         if (is_active_view) {
@@ -367,7 +365,7 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
         }
         
         // @note Scan for TODOs and NOTEs
-        if (global_config.use_comment_keyword) {
+        if (global_config.use_comment_keyword && !global_focus_mode_enabled) {
 #if 0
             Comment_Highlight_Pair pairs[] = {
                 {string_u8_litexpr("NOTE"), finalize_color(defcolor_comment_pop, 0)},

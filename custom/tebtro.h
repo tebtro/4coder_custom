@@ -2,6 +2,12 @@
 
 
 //
+// @note Zen / Focus mode
+//
+global b32 global_focus_mode_enabled = false;
+
+
+//
 // @note: Fonts / Faces
 //
 global Face_ID global_underlined_face_id = 0;

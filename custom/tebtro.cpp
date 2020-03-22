@@ -1,5 +1,14 @@
 #include "tebtro.h"
 
+
+//
+// @note Zen / Focus mode
+//
+CUSTOM_COMMAND_SIG(toggle_focus_mode) {
+    global_focus_mode_enabled = !global_focus_mode_enabled;
+}
+
+
 //
 // @note Buffer commands
 //

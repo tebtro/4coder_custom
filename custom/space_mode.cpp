@@ -205,7 +205,7 @@ static Whichkey_Command whichkey_window_commands[10] = {
         vim_focus_view_right, 0, 0
     },
 };
-static Whichkey_Command whichkey_commands[12] = {
+static Whichkey_Command whichkey_commands[13] = {
     {
         "switch project", "S",
         vim_switch_project, 0, 0
@@ -214,6 +214,11 @@ static Whichkey_Command whichkey_commands[12] = {
         "toggle_fullscreen",
         "Toggle fullscreen mode on or off. The change(s) do not take effect until the next frame.",
         toggle_fullscreen, 0, 0
+    },
+    {
+        "toggle_focus_mode",
+        "Toggle foces mode on or off. The change(s) do not take effect until the next frame.",
+        toggle_focus_mode, 0, 0
     },
     { " ", " ", vim_nop, 0, 0},
     {
