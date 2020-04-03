@@ -5,7 +5,9 @@
 //        4coder_fleury_cursor.cpp
 //
 function void
-vim_draw_vertical_line_highlight_range(Application_Links *app, View_ID view_id, Text_Layout_ID text_layout_id, Range_i64 range, ARGB_Color argb_color, f32 width_multiplier = 0.05f) {
+vim_draw_vertical_line_highlight_range(Application_Links *app, View_ID view_id, Text_Layout_ID text_layout_id, Range_i64 range, ARGB_Color argb_color, f32 width_multiplier = 0.1f) {
+    f32 roundness = 2.0f;
+    
     Rect_f32 view_rect = view_get_screen_rect(app, view_id);
     Rect_f32 clip = draw_set_clip(app, view_rect);
     
@@ -53,7 +55,7 @@ vim_draw_vertical_line_highlight_range(Application_Links *app, View_ID view_id, 
         center_rect.x1 = view_rect.x1;
         center_rect.y0 = min_rect.y1;
         center_rect.y1 = max_rect.y0;
-        draw_rectangle(app, center_rect, 3.0f, argb_color);
+        draw_rectangle(app, center_rect, roundness, argb_color);
     }
     else {
         Rect_f32 center_rect;
@@ -61,7 +63,7 @@ vim_draw_vertical_line_highlight_range(Application_Links *app, View_ID view_id, 
         center_rect.x1 = max_rect.x1;
         center_rect.y0 = min_rect.y1;
         center_rect.y1 = max_rect.y0;
-        draw_rectangle(app, center_rect, 3.0f, argb_color);
+        draw_rectangle(app, center_rect, roundness, argb_color);
     }
 #endif
     
@@ -81,8 +83,8 @@ vim_draw_vertical_line_highlight_range(Application_Links *app, View_ID view_id, 
     bottom_rect1.y1 = max_rect.y0;
     bottom_rect1.y0 = bottom_rect1.y1 - height;
     
-    draw_rectangle(app, top_rect1, 3.f, argb_color);
-    draw_rectangle(app, bottom_rect1, 3.f, argb_color);
+    draw_rectangle(app, top_rect1, roundness, argb_color);
+    draw_rectangle(app, bottom_rect1, roundness, argb_color);
     
     Rect_f32 top_rect2;
     top_rect2.x0 = min_rect.x1;
@@ -96,12 +98,12 @@ vim_draw_vertical_line_highlight_range(Application_Links *app, View_ID view_id, 
     bottom_rect2.y1 = max_rect.y1;
     bottom_rect2.y0 = bottom_rect2.y1 + height;
     
-    draw_rectangle(app, top_rect2, 3.f, argb_color);
-    draw_rectangle(app, bottom_rect2, 3.f, argb_color);
+    draw_rectangle(app, top_rect2, roundness, argb_color);
+    draw_rectangle(app, bottom_rect2, roundness, argb_color);
 #endif
     
-    draw_rectangle(app, left_rect, 3.f, argb_color);
-    draw_rectangle(app, right_rect, 3.f, argb_color);
+    draw_rectangle(app, left_rect,  roundness, argb_color);
+    draw_rectangle(app, right_rect, roundness, argb_color);
     
     draw_set_clip(app, clip);
 }
