@@ -358,6 +358,7 @@ tebtro_setup_mapping_dvorak_programmer(Mapping *mapping) {
         Bind(keyboard_macro_replay,           KeyCode_Minus, KeyCode_Alt);
         
         
+        Bind(vim_toggle_mouse_suppression, KeyCode_Space, KeyCode_Control);
         Bind(vim_toggle_mouse_suppression, KeyCode_Space, KeyCode_Alt);
     }
     

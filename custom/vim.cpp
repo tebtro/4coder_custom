@@ -177,7 +177,7 @@ vim_enter_mode(Application_Links *app, Vim_Mode new_mode, Command_Map_ID new_map
 
 CUSTOM_COMMAND_SIG(vim_enter_mode_normal) {
     // @todo @incomplete
-    global_show_function_helper = true;
+    global_show_function_helper = false;
     vim_enter_mode(app, vim_mode_normal, mapid_vim_mode_normal, &vim_global_state.color_tables.mode_normal);
     
 #if VIM_WINDOWS_AUTO_DISABLE_CAPSLOCK
@@ -1266,45 +1266,50 @@ vim_write_text_and_maybe_auto_close_and_auto_indent(Application_Links *app, Stri
     b32 check_for_closing_tag = false;
     i64 cursor_offset = 0;
     
-    b32 inside_quotes = false; // string and character quotes
     {
-        // @copynpaste refactor to local function
+        b32 inside_quotes = false; // string and character quotes
         Token *token = get_token_from_pos(app, buffer_id, cursor_pos);
         if (token && token->pos != cursor_pos) {
             if (token->kind == TokenBaseKind_LiteralString) {
-                inside_quotes = true;
+                if (token->sub_kind != TokenCppKind_LiteralStringRaw      &&
+                    token->sub_kind != TokenCppKind_LiteralStringWideRaw  &&
+                    token->sub_kind != TokenCppKind_LiteralStringUTF8Raw  &&
+                    token->sub_kind != TokenCppKind_LiteralStringUTF16Raw &&
+                    token->sub_kind != TokenCppKind_LiteralStringUTF32Raw) {
+                    inside_quotes = true;
+                }
             }
         }
-    }
-    // @note: Control characters / Escape sequences
-    if (inside_quotes) {
-        switch (input_string.str[0]) {
-            case '\n': {
-                insert_string = SCu8("\\n");
-                goto skip_auto_close;
-            } break;
-            case '\t': {
-                insert_string = SCu8("\\t");
-                goto skip_auto_close;
-            } break;
-            case '\v': {
-                insert_string = SCu8("\\v");
-                goto skip_auto_close;
-            } break;
-            case '\f': {
-                insert_string = SCu8("\\f");
-                goto skip_auto_close;
-            } break;
-            case '\r': {
-                insert_string = SCu8("\\r");
-                goto skip_auto_close;
-            } break;
+        // @note: Control characters / Escape sequences
+        if (inside_quotes) {
+            switch (input_string.str[0]) {
+                case '\n': {
+                    insert_string = SCu8("\\n");
+                    goto skip_auto_close;
+                } break;
+                case '\t': {
+                    insert_string = SCu8("\\t");
+                    goto skip_auto_close;
+                } break;
+                case '\v': {
+                    insert_string = SCu8("\\v");
+                    goto skip_auto_close;
+                } break;
+                case '\f': {
+                    insert_string = SCu8("\\f");
+                    goto skip_auto_close;
+                } break;
+                case '\r': {
+                    insert_string = SCu8("\\r");
+                    goto skip_auto_close;
+                } break;
+            }
         }
-    }
-    else {
-        if (input_string.str[0] == '\n') {
-            vim_improved_newline(app);
-            return;
+        else {
+            if (input_string.str[0] == '\n') {
+                vim_improved_newline(app);
+                return;
+            }
         }
     }
     
