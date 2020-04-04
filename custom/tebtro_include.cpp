@@ -194,6 +194,7 @@
 #include "tebtro_draw.cpp"
 #include "tebtro_hooks.cpp"
 #include "tebtro_file_fuzzy_search.cpp"
+#include "tebtro_jump_to_definition.cpp"
 #include "tebtro_map.cpp"
 
 //

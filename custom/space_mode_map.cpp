@@ -23,6 +23,8 @@ space_mode_setup_mapping(Mapping *mapping) {
         Bind(enter_space_mode_chord_q, KeyCode_Q); // quit
         Bind(enter_space_mode_chord_w, KeyCode_W); // window
         
+        Bind(vim_switch_project, KeyCode_S);
+        
         // @todo Chord for git commands
         Bind(magit_status, KeyCode_G);
     }

@@ -279,11 +279,13 @@ tebtro_setup_mapping_dvorak_programmer(Mapping *mapping) {
         
         // @note delete
         Bind(vim_enter_chord_delete, KeyCode_D);
-        Bind(vim_delete_line, KeyCode_D, KeyCode_Shift);
+        //Bind(vim_delete_line, KeyCode_D, KeyCode_Shift);
         
         // @note Jumps
-        Bind(vim_jump_to_definition, KeyCode_D, KeyCode_Control);
-        Bind(vim_jump_to_definition, KeyCode_D, KeyCode_Alt);
+        Bind(vim_tebtro_jump_to_definition, KeyCode_D, KeyCode_Control);
+        Bind(vim_tebtro_jump_to_definition, KeyCode_D, KeyCode_Alt);
+        Bind(vim_tebtro_jump_to_definition_under_cursor, KeyCode_D, KeyCode_Control, KeyCode_Shift);
+        Bind(vim_tebtro_jump_to_definition_under_cursor, KeyCode_D, KeyCode_Alt, KeyCode_Shift);
         
         // @note copy/yank
         Bind(vim_enter_chord_yank, KeyCode_Y);
@@ -331,8 +333,9 @@ tebtro_setup_mapping_dvorak_programmer(Mapping *mapping) {
         Bind(auto_indent_line_at_cursor, KeyCode_Tab, KeyCode_Shift);
 #if CODE_PEEK
         // @note Code peek
-        Bind(vim_code_peek,       KeyCode_Tab);
-        Bind(vim_close_code_peek, KeyCode_Tab, KeyCode_Shift);
+        Bind(vim_code_peek_open__or__next,     KeyCode_Tab);
+        Bind(vim_code_peek_open__or__previous, KeyCode_Tab, KeyCode_Shift);
+        Bind(vim_close_code_peek, KeyCode_Escape);
         Bind(vim_code_peek_go_same_panel, KeyCode_Backspace);
         Bind(vim_code_peek_go,            KeyCode_Backspace, KeyCode_Alt);
 #endif
