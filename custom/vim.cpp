@@ -1155,7 +1155,8 @@ CUSTOM_COMMAND_SIG(vim_toggle_mouse_suppression) {
 
 
 #if CODE_PEEK
-#define vim_code_peek  vim_chord_command<fleury_code_peek>
+#define vim_code_peek_open__or__next      vim_chord_command<code_peek_open__or__next>
+#define vim_code_peek_open__or__previous  vim_chord_command<code_peek_open__or__previous>
 #define vim_close_code_peek  vim_chord_command<fleury_close_code_peek>
 #define vim_code_peek_go  vim_chord_command<fleury_code_peek_go>
 #define vim_code_peek_go_same_panel  vim_chord_command<fleury_code_peek_go_same_panel>

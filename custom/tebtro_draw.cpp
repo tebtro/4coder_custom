@@ -476,6 +476,10 @@ tebtro_draw_cpp_token_colors(Application_Links *app, Text_Layout_ID text_layout_
         else if (token->kind == TokenBaseKind_Operator) {
             argb = 0xFFC7C1AD;
         }
+        
+        if (token->sub_kind == TokenCppKind_BrackOp || token->sub_kind == TokenCppKind_BrackCl) {
+            argb = 0xFFD9D2BD;
+        }
 #if 0
         if (token->sub_kind == TokenCppKind_Compare ||
             token->sub_kind == TokenCppKind_Eq      ||
