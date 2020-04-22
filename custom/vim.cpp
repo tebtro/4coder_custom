@@ -180,6 +180,15 @@ CUSTOM_COMMAND_SIG(vim_enter_mode_normal) {
     global_show_function_helper = false;
     vim_enter_mode(app, vim_mode_normal, mapid_vim_mode_normal, &vim_global_state.color_tables.mode_normal);
     
+    // left_adjust_view(app);
+    {
+        View_ID view_id = get_active_view(app, Access_ReadVisible);
+        i64 pos = view_get_cursor_pos(app, view_id);
+        Buffer_Scroll scroll = view_get_buffer_scroll(app, view_id);
+        scroll.target.pixel_shift.x = 0.0f;
+        view_set_buffer_scroll(app, view_id, scroll, SetBufferScroll_SnapCursorIntoView);
+    }
+    
 #if VIM_WINDOWS_AUTO_DISABLE_CAPSLOCK
     SHORT capslock_state = GetKeyState(VK_CAPITAL);
     bool capslock_is_toggled = (capslock_state & 1) != 0;
@@ -222,14 +231,25 @@ CUSTOM_COMMAND_SIG(vim_enter_mode_insert_after) {
     }
     vim_enter_mode_insert(app);
 }
-CUSTOM_COMMAND_SIG(vim_enter_mode_insert_line_start) {
-    seek_pos_of_visual_line(app, Side_Min); // :non_virtual_whitespace textual or visual line
+
+// :non_virtual_whitespace textual or visual
+CUSTOM_COMMAND_SIG(vim_enter_mode_insert_textual_line_start) {
+    seek_pos_of_textual_line(app, Side_Min);
     vim_enter_mode_insert(app);
 }
-CUSTOM_COMMAND_SIG(vim_enter_mode_insert_line_end) {
-    seek_pos_of_visual_line(app, Side_Max); // :non_virtual_whitespace textual or visual line
+CUSTOM_COMMAND_SIG(vim_enter_mode_insert_textual_line_end) {
+    seek_pos_of_textual_line(app, Side_Max);
     vim_enter_mode_insert(app);
 }
+CUSTOM_COMMAND_SIG(vim_enter_mode_insert_visual_line_start) {
+    seek_pos_of_visual_line(app, Side_Min);
+    vim_enter_mode_insert(app);
+}
+CUSTOM_COMMAND_SIG(vim_enter_mode_insert_visual_line_end) {
+    seek_pos_of_visual_line(app, Side_Max);
+    vim_enter_mode_insert(app);
+}
+
 CUSTOM_COMMAND_SIG(vim_newline_and_enter_mode_insert_after) {
     vim_improved_newline(app, true, false);
     vim_enter_mode_insert(app);
@@ -909,14 +929,22 @@ VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_move_left_one_after_whitespace, _vim_ntimes_
 seek_pos_of_visual_line
 seek_pos_of_textual_line
 */
-inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_once_move_to_line_start) {
+inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_once_move_to_textual_line_start) {
+    seek_pos_of_textual_line(app, Side_Min);
+}
+inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_once_move_to_textual_line_end) {
+    seek_pos_of_textual_line(app, Side_Max);
+}
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_move_to_textual_line_start, _vim_once_move_to_textual_line_start);
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_move_to_textual_line_end, _vim_once_move_to_textual_line_end);
+inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_once_move_to_visual_line_start) {
     seek_pos_of_visual_line(app, Side_Min);
 }
-inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_once_move_to_line_end) {
+inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_once_move_to_visual_line_end) {
     seek_pos_of_visual_line(app, Side_Max);
 }
-VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_move_to_line_start, _vim_once_move_to_line_start);
-VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_move_to_line_end, _vim_once_move_to_line_end);
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_move_to_visual_line_start, _vim_once_move_to_visual_line_start);
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_move_to_visual_line_end, _vim_once_move_to_visual_line_end);
 
 inline VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_once_move_to_file_start) {
     view_set_cursor_and_preferred_x(app, view_id, seek_pos(0));
@@ -1056,7 +1084,7 @@ CUSTOM_COMMAND_SIG(vim_move_to_line_start__or__vim_execute_command_count_add_pre
     VIM_GET_VIEW_ID_SCOPE_AND_VIM_STATE(app);
     
     if (vim_state->predecimal_count == 0) {
-        vim_move_to_line_start(app);
+        vim_move_to_textual_line_start(app);
     }
     else {
         vim_execute_command_count_add_predecimal_0(app);
@@ -1924,6 +1952,7 @@ CUSTOM_COMMAND_SIG(vim_paste_next) {
     
     Scratch_Block scratch(app);
     
+    clipboard_update_history_from_system(app, 0);
     i32 count = clipboard_count(0);
     if (count <= 0)  return;
     View_ID view_id = get_active_view(app, Access_ReadWriteVisible);
@@ -1976,6 +2005,7 @@ CUSTOM_COMMAND_SIG(vim_visual_paste) {
     VIM_GET_VIEW_ID_SCOPE_AND_VIM_STATE(app);
     if (vim_state->mode != vim_mode_visual && vim_state->mode != vim_mode_visual_line)  return;
     
+    clipboard_update_history_from_system(app, 0);
     i32 count = clipboard_count(0);
     if (count <= 0)  return;
     

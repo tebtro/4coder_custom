@@ -14,8 +14,10 @@ tebtro_setup_mapping(Mapping *mapping) {
     SelectMap(mapid_vim_movements); {
         Bind(nop, KeyCode_4, KeyCode_Shift);
         Bind(vim_execute_command_count_add_predecimal_0, KeyCode_0);
-        Bind(vim_move_to_line_start, KeyCode_H, KeyCode_Alt);
-        Bind(vim_move_to_line_end,   KeyCode_L, KeyCode_Alt);
+        Bind(vim_move_to_visual_line_start, KeyCode_H, KeyCode_Alt);
+        Bind(vim_move_to_visual_line_end,   KeyCode_L, KeyCode_Alt);
+        Bind(vim_move_to_textual_line_start, KeyCode_H, KeyCode_Control);
+        Bind(vim_move_to_textual_line_end,   KeyCode_L, KeyCode_Control);
         
         // @note scope selection
         Bind(vim_select_next_scope_absolute,       KeyCode_N);
@@ -131,8 +133,10 @@ tebtro_setup_mapping_dvorak_programmer(Mapping *mapping) {
         Bind(vim_move_to_file_start, KeyCode_K, KeyCode_Control);
         Bind(vim_move_to_file_end,   KeyCode_J, KeyCode_Control);
         
-        Bind(vim_move_to_line_start, KeyCode_H, KeyCode_Alt);
-        Bind(vim_move_to_line_end,   KeyCode_L, KeyCode_Alt);
+        Bind(vim_move_to_visual_line_start, KeyCode_H, KeyCode_Alt);
+        Bind(vim_move_to_visual_line_end,   KeyCode_L, KeyCode_Alt);
+        Bind(vim_move_to_textual_line_start, KeyCode_H, KeyCode_Control);
+        Bind(vim_move_to_textual_line_end,   KeyCode_L, KeyCode_Control);
         // @todo Should these be just in normal mode
         // @todo Remove whitespaces from the combined lines indentation
         // Bind(vim_combine_with_previous_line, KeyCode_H, KeyCode_Control);
@@ -301,8 +305,10 @@ tebtro_setup_mapping_dvorak_programmer(Mapping *mapping) {
         // @note Modes and chords
         Bind(vim_enter_mode_insert,            KeyCode_I);
         Bind(vim_enter_mode_insert_after,      KeyCode_A);
-        Bind(vim_enter_mode_insert_line_start, KeyCode_I, KeyCode_Shift);
-        Bind(vim_enter_mode_insert_line_end,   KeyCode_A, KeyCode_Shift);
+        Bind(vim_enter_mode_insert_visual_line_start, KeyCode_I, KeyCode_Shift);
+        Bind(vim_enter_mode_insert_visual_line_end,   KeyCode_A, KeyCode_Shift);
+        Bind(vim_enter_mode_insert_textual_line_start, KeyCode_I, KeyCode_Shift, KeyCode_Alt);
+        Bind(vim_enter_mode_insert_textual_line_end,   KeyCode_A, KeyCode_Shift, KeyCode_Alt);
         Bind(vim_newline_and_enter_mode_insert_after,  KeyCode_O);
         Bind(vim_newline_and_enter_mode_insert_before, KeyCode_O, KeyCode_Shift);
         
@@ -467,8 +473,10 @@ tebtro_setup_mapping_dvorak_programmer(Mapping *mapping) {
         Bind(vim_move_to_file_start, KeyCode_K, KeyCode_Control);
         Bind(vim_move_to_file_end,   KeyCode_J, KeyCode_Control);
         
-        Bind(vim_move_to_line_start, KeyCode_H, KeyCode_Alt, KeyCode_Control);
-        Bind(vim_move_to_line_end,   KeyCode_L, KeyCode_Alt, KeyCode_Control);
+        Bind(vim_move_to_visual_line_start, KeyCode_H, KeyCode_Alt, KeyCode_Control);
+        Bind(vim_move_to_visual_line_end,   KeyCode_L, KeyCode_Alt, KeyCode_Control);
+        Bind(vim_move_to_textual_line_start, KeyCode_H, KeyCode_Alt, KeyCode_Control, KeyCode_Shift);
+        Bind(vim_move_to_textual_line_end,   KeyCode_L, KeyCode_Alt, KeyCode_Control, KeyCode_Shift);
         
         Bind(vim_move_up_by_whitespace,   KeyCode_K, KeyCode_Alt, KeyCode_Control);
         Bind(vim_move_down_by_whitespace, KeyCode_J, KeyCode_Alt, KeyCode_Control);
