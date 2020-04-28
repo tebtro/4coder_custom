@@ -26,6 +26,14 @@ CUSTOM_ID(colors, defcolor_at_highlight);
 CUSTOM_ID(colors, defcolor_mark);
 CUSTOM_ID(colors, defcolor_text_default);
 CUSTOM_ID(colors, defcolor_comment);
+enum Comment_Pop_Sub_Kind {
+    COMMENT_POP_note = 0,
+    COMMENT_POP_todo,
+    COMMENT_POP_study,
+    COMMENT_POP_tag,
+    COMMENT_POP_correlation_tag,
+    COMMENT_POP_username,
+};
 CUSTOM_ID(colors, defcolor_comment_pop);
 CUSTOM_ID(colors, defcolor_keyword);
 CUSTOM_ID(colors, defcolor_str_constant);
@@ -45,6 +53,13 @@ CUSTOM_ID(colors, defcolor_back_cycle);
 CUSTOM_ID(colors, defcolor_text_cycle);
 CUSTOM_ID(colors, defcolor_line_numbers_back);
 CUSTOM_ID(colors, defcolor_line_numbers_text);
+
+CUSTOM_ID(colors, defcolor_type);
+CUSTOM_ID(colors, defcolor_type_function);
+CUSTOM_ID(colors, defcolor_type_macro);
+CUSTOM_ID(colors, defcolor_operator);
+CUSTOM_ID(colors, defcolor_square_bracket);
+
 
 struct Color_Table_Node{
     Color_Table_Node *next;

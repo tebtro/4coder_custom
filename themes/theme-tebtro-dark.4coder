@@ -1,7 +1,7 @@
 // Created by: Tebtro
 
 // background color
-defcolor_back = 0xFF072626; // 0xFF072626
+defcolor_back = 0xFF161616; // 0xFF072626
 // default foreground/text color
 defcolor_text_default = 0xFFA19C8C; // 0xFFBDB8A4;
 
@@ -22,18 +22,18 @@ defcolor_highlight = 0xFF0000FF; // 0xFF0000FF;
 defcolor_at_highlight = defcolor_text_default; // 0xFFFFFFFF; // 0; // defcolor_back;
 
 // margin colors
-defcolor_margin        = 0xFF062121;
-defcolor_margin_hover  = 0xFF062121;
-defcolor_margin_active = 0xFF062121;
+defcolor_margin        = 0xFF121212;
+defcolor_margin_hover  = 0xFF121212;
+defcolor_margin_active = 0xFF121212;
 
 // Line number margin colors
 defcolor_line_numbers_back = defcolor_back;
 defcolor_line_numbers_text = 0x40B3B3B3;
 
 // lister colors {margin_color, background_color}
-defcolor_list_item        = {0xFF262626, defcolor_back};
-defcolor_list_item_hover  = {0xFF333333, 0xFF051A1A}; // 0xFF0E4D4D
-defcolor_list_item_active = {0xFF5E5B05, 0xFF093333};
+defcolor_list_item        = {defcolor_margin,        defcolor_back};
+defcolor_list_item_hover  = {defcolor_margin_hover,  defcolor_margin};
+defcolor_list_item_active = {defcolor_margin_active, 0xFF323232};
 
 // comment colors
 defcolor_comment = 0xAA3fdf1f;

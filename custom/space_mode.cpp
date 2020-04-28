@@ -50,6 +50,23 @@ struct Whichkey_Command {
     i32 sub_command_count;
 };
 
+
+// :tebtro_theme_mode
+static Whichkey_Command tebtro_theme_modes_lister[3] = {
+    {
+        "theme_mode_default", "",
+        tebtro_set_default_theme_mode, 0, 0
+    },
+    {
+        "theme_mode_darker", "",
+        tebtro_set_darker_theme_mode, 0, 0
+    },
+    {
+        "theme_mode_light", "",
+        tebtro_set_light_theme_mode, 0, 0
+    },
+};
+
 // :buffer_commands
 static Whichkey_Command whichkey_buffer_commands[2] = {
     {
@@ -205,7 +222,7 @@ static Whichkey_Command whichkey_window_commands[10] = {
         vim_focus_view_right, 0, 0
     },
 };
-static Whichkey_Command whichkey_commands[13] = {
+static Whichkey_Command whichkey_commands[14] = {
     {
         "switch project", "S",
         vim_switch_project, 0, 0
@@ -219,6 +236,11 @@ static Whichkey_Command whichkey_commands[13] = {
         "toggle_focus_mode",
         "Toggle foces mode on or off. The change(s) do not take effect until the next frame.",
         toggle_focus_mode, 0, 0
+    },
+    // :tebtro_theme_mode
+    {
+        "change_theme_mode", "Change tebtro theme mode lister", 0,
+        tebtro_theme_modes_lister, ArrayCount(tebtro_theme_modes_lister)
     },
     { " ", " ", vim_nop, 0, 0},
     {

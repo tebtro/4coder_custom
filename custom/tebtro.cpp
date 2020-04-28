@@ -8,6 +8,22 @@ CUSTOM_COMMAND_SIG(toggle_focus_mode) {
     global_focus_mode_enabled = !global_focus_mode_enabled;
 }
 
+//
+// @note Tebtro theme mode :tebtro_theme_mode
+//
+internal void
+tebtro_set_theme_mode(Application_Links *app, Tebtro_Theme_Mode new_mode) {
+    global_tebtro_theme_mode = new_mode;
+    
+    Color_Table *colors = get_color_table_by_name(SCu8(global_tebtro_theme_mode_names[new_mode]));
+    set_active_color(colors);
+    
+    vim_setup_mode_and_chord_color_tables(app);
+}
+CUSTOM_COMMAND_SIG(tebtro_set_default_theme_mode) {tebtro_set_theme_mode(app, TEBTRO_THEME_MODE_default);}
+CUSTOM_COMMAND_SIG(tebtro_set_darker_theme_mode)  {tebtro_set_theme_mode(app, TEBTRO_THEME_MODE_darker); }
+CUSTOM_COMMAND_SIG(tebtro_set_light_theme_mode)   {tebtro_set_theme_mode(app, TEBTRO_THEME_MODE_light);  }
+
 
 //
 // @note Buffer commands

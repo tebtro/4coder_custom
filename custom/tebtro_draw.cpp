@@ -57,13 +57,13 @@ tebtro_draw_background_and_margin(Application_Links *app, View_ID view_id, Buffe
     ARGB_Color margin_argb = fcolor_resolve(margin_color);
     ARGB_Color back_argb = fcolor_resolve(back_color);
     
-    if (is_active_view && keyboard_macro_is_recording) {
-        margin_argb = 0xFFDC143C; // crimson red: 0xFFDC143C
-    }
-    
     Buffer_ID comp_buffer_id = get_comp_buffer(app);
     if (buffer_id == comp_buffer_id) {
         back_argb = 0xFF031212;
+    }
+    
+    if (is_active_view && keyboard_macro_is_recording) {
+        margin_argb = 0xFFDC143C; // crimson red: 0xFFDC143C
     }
     
     return(draw_background_and_margin(app, view_id, margin_argb, back_argb));
@@ -71,7 +71,7 @@ tebtro_draw_background_and_margin(Application_Links *app, View_ID view_id, Buffe
 
 
 //
-// @note Comment notation test
+// @note Comment notation test :comment_notations
 //
 // @todo(tebtro): Hello todo!
 // @note(tebtro): Hello note!
@@ -112,15 +112,15 @@ tebtro_draw_comment_highlights(Application_Links *app, Buffer_ID buffer_id, Text
     
     Tebtro_Comment_Highlight_Pair pairs[] = {
         // tags
-        { string_u8_litexpr("@note"),  0xFF00FF00 },
-        { string_u8_litexpr("@todo"),  0xFFFF0000 },
-        { string_u8_litexpr("@study"), 0xFFFFA500 },
-        { string_u8_litexpr("@"),      0xFFFFFF00 }, // every tag with an @
-        { string_u8_litexpr(":"),      0xFF00FFFF }, // correlation tag
+        { string_u8_litexpr("@note"),  finalize_color(defcolor_comment_pop, COMMENT_POP_note)  },
+        { string_u8_litexpr("@todo"),  finalize_color(defcolor_comment_pop, COMMENT_POP_todo)  },
+        { string_u8_litexpr("@study"), finalize_color(defcolor_comment_pop, COMMENT_POP_study) },
+        { string_u8_litexpr("@"),      finalize_color(defcolor_comment_pop, COMMENT_POP_tag)   },
+        { string_u8_litexpr(":"),      finalize_color(defcolor_comment_pop, COMMENT_POP_correlation_tag) },
         
         // User name
-        { global_config.user_name,             0xFFE84188, false },
-        { string_u8_litexpr("Robert Ortner"),  0xFFE84188, false },
+        { global_config.user_name,             finalize_color(defcolor_comment_pop, COMMENT_POP_username), false },
+        { string_u8_litexpr("Robert Ortner"),  finalize_color(defcolor_comment_pop, COMMENT_POP_username), false },
     };
     i32 pair_count = ArrayCount(pairs);
     
@@ -200,55 +200,78 @@ tebtro_draw_comment_highlights(Application_Links *app, Buffer_ID buffer_id, Text
 
 // @todo Use this and move the keyword stuff to here.
 function FColor
-tebtro_get_token_color_cpp(Token token){
+tebtro_get_token_color_cpp(Application_Links *app, Buffer_ID buffer_id, Token token) {
+    Scratch_Block scratch(app);
+    
     Managed_ID color = defcolor_text_default;
     switch (token.kind){
-        case TokenBaseKind_Preprocessor:
-        {
+        case TokenBaseKind_Preprocessor: {
             color = defcolor_preproc;
-        }break;
-        case TokenBaseKind_Keyword:
-        {
+        } break;
+        case TokenBaseKind_Keyword: {
             color = defcolor_keyword;
-        }break;
-        case TokenBaseKind_Comment:
-        {
+            
+            String_Const_u8 lexeme = push_token_lexeme(app, scratch, buffer_id, &token);
+            if (string_match(lexeme, SCu8("void"))  ||
+                string_match(lexeme, SCu8("bool"))  ||
+                string_match(lexeme, SCu8("char"))  ||
+                string_match(lexeme, SCu8("short")) ||
+                string_match(lexeme, SCu8("int"))   ||
+                string_match(lexeme, SCu8("long"))  ||
+                string_match(lexeme, SCu8("float")) ||
+                string_match(lexeme, SCu8("double"))) {
+                color = defcolor_type;
+            }
+        } break;
+        case TokenBaseKind_Operator: {
+            color = defcolor_operator;
+            
+            if (token.sub_kind == TokenCppKind_BrackOp || token.sub_kind == TokenCppKind_BrackCl) {
+                color = defcolor_square_bracket;
+            }
+#if 0
+            else if (token->sub_kind == TokenCppKind_Compare ||
+                     token->sub_kind == TokenCppKind_Eq      ||
+                     token->sub_kind == TokenCppKind_EqEq) {
+                argb = 0xFFF2EBD3;
+            }
+            else if (token->sub_kind == TokenCppKind_Minus ||
+                     token->sub_kind == TokenCppKind_MinusMinus) {
+                argb = 0xFFF2EBD3;
+            }
+#endif
+        } break;
+        case TokenBaseKind_Comment: {
             color = defcolor_comment;
-        }break;
-        case TokenBaseKind_LiteralString:
-        {
+        } break;
+        case TokenBaseKind_LiteralString: {
             color = defcolor_str_constant;
-        }break;
-        case TokenBaseKind_LiteralInteger:
-        {
+        } break;
+        case TokenBaseKind_LiteralInteger: {
             color = defcolor_int_constant;
-        }break;
-        case TokenBaseKind_LiteralFloat:
-        {
+        } break;
+        case TokenBaseKind_LiteralFloat: {
             color = defcolor_float_constant;
-        }break;
-        default:
-        {
-            switch (token.sub_kind){
+        } break;
+        
+        default: {
+            switch (token.sub_kind) {
                 case TokenCppKind_LiteralTrue:
-                case TokenCppKind_LiteralFalse:
-                {
+                case TokenCppKind_LiteralFalse: {
                     color = defcolor_bool_constant;
-                }break;
+                } break;
                 case TokenCppKind_LiteralCharacter:
                 case TokenCppKind_LiteralCharacterWide:
                 case TokenCppKind_LiteralCharacterUTF8:
                 case TokenCppKind_LiteralCharacterUTF16:
-                case TokenCppKind_LiteralCharacterUTF32:
-                {
+                case TokenCppKind_LiteralCharacterUTF32: {
                     color = defcolor_char_constant;
-                }break;
-                case TokenCppKind_PPIncludeFile:
-                {
+                } break;
+                case TokenCppKind_PPIncludeFile: {
                     color = defcolor_include;
-                }break;
+                } break;
             }
-        }break;
+        } break;
     }
     return(fcolor_id(color));
 }
@@ -457,40 +480,8 @@ tebtro_draw_cpp_token_colors(Application_Links *app, Text_Layout_ID text_layout_
         if (token->pos >= visible_range.one_past_last) {
             break;
         }
-        FColor color = get_token_color_cpp(*token);
+        FColor color = tebtro_get_token_color_cpp(app, buffer_id, *token);
         ARGB_Color argb = fcolor_resolve(color);
-        if (token->kind == TokenBaseKind_Keyword) {
-            String_Const_u8 lexeme = push_token_lexeme(app, scratch, buffer_id, token);
-            if (string_match(lexeme, SCu8("void"))  ||
-                string_match(lexeme, SCu8("bool"))  ||
-                string_match(lexeme, SCu8("char"))  ||
-                string_match(lexeme, SCu8("short")) ||
-                string_match(lexeme, SCu8("int"))   ||
-                string_match(lexeme, SCu8("long"))  ||
-                string_match(lexeme, SCu8("float")) ||
-                string_match(lexeme, SCu8("double"))) {
-                // :type_color
-                argb = 0xFF7DD695; // argb = 0xFFBAA227;
-            }
-        }
-        else if (token->kind == TokenBaseKind_Operator) {
-            argb = 0xFFC7C1AD;
-        }
-        
-        if (token->sub_kind == TokenCppKind_BrackOp || token->sub_kind == TokenCppKind_BrackCl) {
-            argb = 0xFFD9D2BD;
-        }
-#if 0
-        if (token->sub_kind == TokenCppKind_Compare ||
-            token->sub_kind == TokenCppKind_Eq      ||
-            token->sub_kind == TokenCppKind_EqEq) {
-            argb = 0xFFF2EBD3;
-        }
-        if (token->sub_kind == TokenCppKind_Minus ||
-            token->sub_kind == TokenCppKind_MinusMinus) {
-            argb = 0xFFF2EBD3;
-        }
-#endif
         paint_text_color(app, text_layout_id, Ii64_size(token->pos, token->size), argb);
         if (!token_it_inc_all(&it)) {
             break;
@@ -514,7 +505,7 @@ tebtro_draw_cpp_identifier_colors(Application_Links *app, Text_Layout_ID text_la
         }
         if (token->kind == TokenBaseKind_Identifier) {
             // @note Default is like for all other identifiers, so all other variable names.
-            ARGB_Color argb = fcolor_resolve(fcolor_id(defcolor_text_default));
+            Managed_ID color = defcolor_text_default;
             
             // @note lookup identifier
             String_Const_u8 lexeme = push_token_lexeme(app, scratch, buffer, token);
@@ -531,31 +522,23 @@ tebtro_draw_cpp_identifier_colors(Application_Links *app, Text_Layout_ID text_la
                 Code_Index_Identifier_Node *node = code_index_identifier_table_lookup(identifier_table, hash);
                 if (node != 0) {
                     switch (node->note_kind) {
-                        case CodeIndexNote_Type: { // :type_color
-                            // argb = 0xFFFF0000;
-                            // j: argb = 0xFF7DD695;
-                            // c: argb = 0xFFA08C54;
-                            argb = 0xFF7DD695; // argb = 0xFFBAA227;
+                        case CodeIndexNote_Type: {
+                            color = defcolor_type;
                             found = true;
                         } break;
                         case CodeIndexNote_Function: {
-                            // argb = 0xFF00FF00;
-                            // argb = 0xFFBDB8A4; // default text color
-                            // c: argb = 0xFF915849;
-                            argb = 0xFF915849;
+                            color = defcolor_type_function;
                             found = true;
                         } break;
                         case CodeIndexNote_Macro: {
-                            // argb = 0xFF0000FF;
-                            // j: argb = 0xFFC8D4EC;
-                            // c: argb = 0xFF4D716B;
-                            argb = 0xFF388AD9;
+                            color = defcolor_type_macro;
                             found = true;
                         } break;
                     }
                 }
             }
             
+            ARGB_Color argb = fcolor_resolve(fcolor_id(color));
             paint_text_color(app, text_layout_id, Ii64_size(token->pos, token->size), argb);
         }
         if (!token_it_inc_all(&it)){
