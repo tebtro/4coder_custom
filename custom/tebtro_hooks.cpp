@@ -316,17 +316,23 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
     // NOTE(allen): Cursor shape
     Face_Metrics face_metrics = get_face_metrics(app, face_id);
     f32 cursor_roundness = (face_metrics.normal_advance*0.5f)*0.9f;
-    f32 mark_thickness = 2.f;
+    f32 mark_thickness = 2.0f;
     
-    Color_Array colors_back_cycle = finalize_color_array(defcolor_back_cycle);
-    ARGB_Color  colors_back_cycle_adjusted[] = {0x0800A100, 0x0800AAFF, 0x0CFF7F00, 0x0CFF0000}; // blue value adjusted
-    ARGB_Color  colors_back_cycle_brighter[] = {0xCF00FF00, 0xFF00AAFF, 0xEFFF7F00, 0xEFFF0000};
-    Color_Array colors_text_cycle = finalize_color_array(defcolor_text_cycle);
+    // @todo Pull out into theme file
+    //
+    // search highlight color
+    // avy_search highlight color
+    // vim_visual_mode_whitespace color
+    // vertical_line_range_highlight color
+    //
+    // build_panel background color
+    //
     
     Token_Array token_array = get_token_array_from_buffer(app, buffer_id);
     
     // @note: Scope highlight
     if (global_config.use_scope_highlight) {
+        Color_Array colors_back_cycle = finalize_color_array(defcolor_scope_background_cycle);
 #if USE_RANGE_COLOR_START_DEFAULT
         draw_scope_highlight(app, buffer_id, text_layout_id, cursor_pos, colors_back_cycle.vals, colors_back_cycle.count);
 #else
@@ -410,15 +416,17 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
     
     // @note: Color parens
     if (global_config.use_paren_helper) {
+        Color_Array colors_paren_cycle = finalize_color_array(defcolor_parenthesis_cycle);
 #if USE_RANGE_COLOR_START_DEFAULT
-        draw_paren_highlight(app, buffer_id, text_layout_id, cursor_pos, colors_text_cycle.vals, colors_text_cycle.count);
+        draw_paren_highlight(app, buffer_id, text_layout_id, cursor_pos, colors_paren_cycle.vals, colors_paren_cycle.count);
 #else
-        tebtro_draw_paren_highlight(app, buffer_id, text_layout_id, cursor_pos, colors_text_cycle.vals, colors_text_cycle.count);
+        tebtro_draw_paren_highlight(app, buffer_id, text_layout_id, cursor_pos, colors_paren_cycle.vals, colors_paren_cycle.count);
 #endif
     }
     // @note: Color braces
     {
-        tebtro_draw_brace_highlight(app, buffer_id, text_layout_id, cursor_pos, colors_back_cycle_brighter, ArrayCount(colors_back_cycle_brighter));
+        Color_Array colors_scope_brace_cycle = finalize_color_array(defcolor_scope_brace_cycle);
+        tebtro_draw_brace_highlight(app, buffer_id, text_layout_id, cursor_pos, colors_scope_brace_cycle.vals, colors_scope_brace_cycle.count);
     }
     
     // @note Vim visual highlight
@@ -439,7 +447,8 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
     
     // @note: Scope vertical line highlight
     {
-        tebtro_draw_vertical_lines_scope_highlight(app, buffer_id, view_id, text_layout_id, view_region, cursor_pos, (ARGB_Color *)&colors_back_cycle_adjusted, ArrayCount(colors_back_cycle_adjusted));
+        Color_Array colors_scope_vertical_line_cycle = finalize_color_array(defcolor_scope_vertical_line_cycle);
+        tebtro_draw_vertical_lines_scope_highlight(app, buffer_id, view_id, text_layout_id, view_region, cursor_pos, colors_scope_vertical_line_cycle.vals, colors_scope_vertical_line_cycle.count);
     }
     
     // @note: Hex color preview
@@ -481,10 +490,8 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
     
     // @note: Scope brace annotations
     {
-        // (ARGB_Color *)&colors_back_cycle_adjusted, ArrayCount(colors_back_cycle_adjusted)
-        u32 color = 0xFF808080;
-        int color_count = 1;
-        tebtro_draw_scope_close_brace_annotations(app, view_id, view_region, buffer_id, text_layout_id, face_id, cursor_pos, (ARGB_Color *)&color, color_count);
+        Color_Array colors = finalize_color_array(defcolor_scope_close_brace_annotation_cycle);
+        tebtro_draw_scope_close_brace_annotations(app, view_id, view_region, buffer_id, text_layout_id, face_id, cursor_pos, colors.vals, colors.count);
     }
     
     // @note :avy_search

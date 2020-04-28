@@ -79,7 +79,26 @@ defcolor_base        = 0xFF000000;
 defcolor_pop1 = 0xFF1111DC;
 defcolor_pop2 = 0xFFE80505;
 
+
+//
+// Cycle colors for scope/parenthesis highlighting
+//
+// () parenthesis text highlight
+defcolor_parenthesis_cycle         = {0xFFA00000, 0xFF00A000, 0xFF0000A0, 0xFFA0A000};
+// {} scope background highlight
+defcolor_scope_background_cycle    = {0x10A00000, 0x1000A000, 0x100000A0, 0x10A0A000};
+// {} scope vertical line highlight
+defcolor_scope_vertical_line_cycle = defcolor_parenthesis_cycle;
+// {} scope brace text highlight
+defcolor_scope_brace_cycle         = defcolor_parenthesis_cycle;
+// "} ident()" scope close brace annotation text color
+defcolor_scope_close_brace_annotation_cycle = {0xFF808080};
+
+//
+// Default cycle colors     @todo Remove the default ones maybe
+// () pares highlight color
+defcolor_text_cycle = defcolor_parenthesis_cycle;
+// {} scope background highlight
+defcolor_back_cycle = defcolor_scope_brace_highlight;
 // cycle colors for scope/parenthesis highlighting
-defcolor_back_cycle = {0x10A00000, 0x1000A000, 0x100000A0, 0x10A0A000};
-defcolor_text_cycle = {0xFFA00000, 0xFF00A000, 0xFF0000A0, 0xFFA0A000};
 

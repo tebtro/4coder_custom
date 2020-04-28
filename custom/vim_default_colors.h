@@ -60,6 +60,12 @@ CUSTOM_ID(colors, defcolor_type_macro);
 CUSTOM_ID(colors, defcolor_operator);
 CUSTOM_ID(colors, defcolor_square_bracket);
 
+CUSTOM_ID(colors, defcolor_parenthesis_cycle);
+CUSTOM_ID(colors, defcolor_scope_background_cycle);
+CUSTOM_ID(colors, defcolor_scope_vertical_line_cycle);
+CUSTOM_ID(colors, defcolor_scope_brace_cycle);
+CUSTOM_ID(colors, defcolor_scope_close_brace_annotation_cycle);
+
 
 struct Color_Table_Node{
     Color_Table_Node *next;
