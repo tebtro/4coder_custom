@@ -1,7 +1,8 @@
 // Created by: Tebtro
 
-// background color
-defcolor_back = 0xFF072626; // 0xFF072626
+defcolor_back_default = 0xFF072626;
+// background color {default_back, build_panel_background, keyboard_macro_is_recording}
+defcolor_back = {defcolor_back_default, 0xFF031212, 0xFFDC143C}; // crimson red: 0xFFDC143C
 // default foreground/text color
 defcolor_text_default = 0xFFA19C8C; // 0xFFBDB8A4;
 
@@ -10,16 +11,27 @@ defcolor_mark = 0xFF808080;
 
 // cursor color
 defcolor_cursor = 0xFF90ee90;
-defcolor_at_cursor = defcolor_back;
+defcolor_at_cursor = defcolor_back_default;
 
 // highlight current cursor line background color
 defcolor_highlight_cursor_line = 0xFF191970;
 defcolor_highlight_token_under_cursor = 0xFF1A2898; // 0xFF1A30AC; // 0xFF1A303C; // 0xFF1C3039;
+defcolor_highlight_whitespaces = 0xAF004FCF;
+defcolor_highlight_range_vertical_line = 0x77CCCCCC; // 0xFF010808
 
 // highlight background color
 defcolor_highlight = 0xFF0000FF; // 0xFF0000FF;
 // highlight foreground/text color
-defcolor_at_highlight = defcolor_text_default; // 0xFFFFFFFF; // 0; // defcolor_back;
+defcolor_at_highlight = defcolor_text_default; // 0xFFFFFFFF; // 0; // defcolor_back_default;
+
+// Search highlight background color
+defcolor_search_highlight = 0xFFDDEE00;
+// Search highlight foreground/text color
+defcolor_at_search_highlight = 0xFFFF44DD;
+// Search occurance highlight background color
+defcolor_search_occurance_highlight = 0x22DDEE00;
+// Search occurance highlight foreground/text color
+defcolor_at_search_occurance_highlight = 0xFFF3FaFF;
 
 // margin colors
 defcolor_margin        = 0xFF062121;
@@ -27,11 +39,11 @@ defcolor_margin_hover  = 0xFF062121;
 defcolor_margin_active = 0xFF062121;
 
 // Line number margin colors
-defcolor_line_numbers_back = defcolor_back;
+defcolor_line_numbers_back = defcolor_back_default;
 defcolor_line_numbers_text = 0x40B3B3B3;
 
 // lister colors {margin_color, background_color}
-defcolor_list_item        = {0xFF262626, defcolor_back};
+defcolor_list_item        = {0xFF262626, defcolor_back_default};
 defcolor_list_item_hover  = {0xFF333333, 0xFF051A1A}; // 0xFF0E4D4D
 defcolor_list_item_active = {0xFF5E5B05, 0xFF093333};
 

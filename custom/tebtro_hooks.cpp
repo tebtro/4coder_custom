@@ -313,20 +313,10 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
     i64 cursor_pos = view_correct_cursor(app, view_id);
     i64 mark_pos   = view_correct_mark(app, view_id);
     
-    // NOTE(allen): Cursor shape
+    // @note: Cursor shape
     Face_Metrics face_metrics = get_face_metrics(app, face_id);
     f32 cursor_roundness = (face_metrics.normal_advance*0.5f)*0.9f;
     f32 mark_thickness = 2.0f;
-    
-    // @todo Pull out into theme file
-    //
-    // search highlight color
-    // avy_search highlight color
-    // vim_visual_mode_whitespace color
-    // vertical_line_range_highlight color
-    //
-    // build_panel background color
-    //
     
     Token_Array token_array = get_token_array_from_buffer(app, buffer_id);
     
@@ -434,15 +424,11 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
     
     // @note: Search highlight
     {
-#if 0
-        ARGB_Color argb_highlight = fcolor_resolve(fcolor_id(defcolor_highlight));
-        ARGB_Color argb_at_highlight = fcolor_resolve(fcolor_id(defcolor_at_highlight));
-#else
-        ARGB_Color argb_highlight = 0xFFDDEE00;
-        ARGB_Color argb_at_highlight = 0xFFFF44DD;
-#endif
-        b32 has_highlight_range = tebtro_draw_search_highlight(app, view_id, buffer_id, text_layout_id, cursor_roundness,
-                                                               argb_highlight, argb_at_highlight);
+        ARGB_Color argb_highlight    = fcolor_resolve(fcolor_id(defcolor_search_highlight));
+        ARGB_Color argb_at_highlight = fcolor_resolve(fcolor_id(defcolor_at_search_highlight));
+        ARGB_Color argb_occurance    = fcolor_resolve(fcolor_id(defcolor_search_occurance_highlight));
+        ARGB_Color argb_at_occurance = fcolor_resolve(fcolor_id(defcolor_at_search_occurance_highlight));
+        b32 has_highlight_range = tebtro_draw_search_highlight(app, view_id, buffer_id, text_layout_id, cursor_roundness, argb_highlight, argb_at_highlight, argb_occurance, argb_at_occurance);
     }
     
     // @note: Scope vertical line highlight
@@ -456,14 +442,14 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
     
     // @note Vertical line highlight range
     if (is_active_view) {
-        ARGB_Color argb_cursor_mark_range = 0x77CCCCCC; // 0xFF010808
+        ARGB_Color argb_cursor_mark_range = fcolor_resolve(fcolor_id(defcolor_highlight_range_vertical_line));
         vim_draw_vertical_line_highlight_range(app, view_id, text_layout_id, Ii64(cursor_pos, mark_pos), argb_cursor_mark_range);
     }
     // @note Vim cursor and mark
     vim_draw_cursor_mark(app, view_id, is_active_view, buffer_id, text_layout_id, cursor_roundness, mark_thickness);
     // @note Vim visual mode draw selection whitespaces
     {
-        ARGB_Color argb = 0xAF004FCF;
+        ARGB_Color argb = fcolor_resolve(fcolor_id(defcolor_highlight_whitespaces));
         vim_draw_visual_mode_whitespaces(app, view_id, face_id, buffer_id, text_layout_id, &token_array, argb);
     }
     
@@ -473,7 +459,7 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
         tebtro_draw_divider_comments(app, view_id, face_id, buffer_id, view_region, text_layout_id);
     }
     
-    // NOTE(allen): Fade ranges
+    // @note: Fade ranges
     paint_fade_ranges(app, text_layout_id, buffer_id, view_id);
     
     // @note: Put the actual text on the actual screen
@@ -580,7 +566,7 @@ tebtro_render_caller(Application_Links *app, Frame_Info frame_info, View_ID view
     
 #define BARS_ON_TOP false
     
-    // NOTE(allen): query bars
+    // @note: query bars
     {
         Query_Bar *space[32];
         Query_Bar_Ptr_Array query_bars = {};
@@ -600,7 +586,7 @@ tebtro_render_caller(Application_Links *app, Frame_Info frame_info, View_ID view
         }
     }
     
-    // NOTE(allen): file bar
+    // @note: file bar
     b64 showing_file_bar = false;
     if (view_get_setting(app, view_id, ViewSetting_ShowFileBar, &showing_file_bar) && showing_file_bar) {
 #if BARS_ON_TOP
@@ -626,7 +612,7 @@ tebtro_render_caller(Application_Links *app, Frame_Info frame_info, View_ID view
         animate_in_n_milliseconds(app, 0);
     }
     
-    // NOTE(allen): FPS hud
+    // @note: FPS hud
     if (show_fps_hud) {
         Rect_f32_Pair pair = layout_fps_hud_on_bottom(region, line_height);
         draw_fps_hud(app, frame_info, face_id, pair.max);
@@ -634,7 +620,7 @@ tebtro_render_caller(Application_Links *app, Frame_Info frame_info, View_ID view
         animate_in_n_milliseconds(app, 1000);
     }
     
-    // NOTE(allen): layout line numbers
+    // @note: layout line numbers
     Rect_f32 line_number_rect = {};
     if (global_config.show_line_number_margins) {
         Rect_f32_Pair pair = layout_line_number_margin(app, buffer_id, region, digit_advance);
@@ -648,11 +634,11 @@ tebtro_render_caller(Application_Links *app, Frame_Info frame_info, View_ID view
         animate_in_n_milliseconds(app, (u32)(vim_global_view_changed_time * 1000.0f));
     }
     
-    // NOTE(allen): begin buffer render
+    // @note: begin buffer render
     Buffer_Point buffer_point = scroll.position;
     Text_Layout_ID text_layout_id = text_layout_create(app, buffer_id, region, buffer_point);
     
-    // NOTE(allen): draw line numbers
+    // @note: draw line numbers
     if (global_config.show_line_number_margins) {
 #if 0
         draw_line_number_margin(app, view_id, buffer_id, face_id, text_layout_id, line_number_rect);
@@ -662,7 +648,7 @@ tebtro_render_caller(Application_Links *app, Frame_Info frame_info, View_ID view
 #endif
     }
     
-    // NOTE(allen): draw the buffer
+    // @note: draw the buffer
     tebtro_render_buffer(app, view_id, face_id, buffer_id, text_layout_id, region, frame_info, vim_state_ptr);
     
     text_layout_free(app, text_layout_id);

@@ -51,20 +51,22 @@ tebtro_draw_hex_color_preview(Application_Links* app, Buffer_ID buffer, Text_Lay
 
 function Rect_f32
 tebtro_draw_background_and_margin(Application_Links *app, View_ID view_id, Buffer_ID buffer_id, b32 is_active_view, b32 keyboard_macro_is_recording) {
-    FColor margin_color = get_panel_margin_color(is_active_view?UIHighlight_Active:UIHighlight_None);
-    FColor back_color = fcolor_id(defcolor_back);
-    
-    ARGB_Color margin_argb = fcolor_resolve(margin_color);
-    ARGB_Color back_argb = fcolor_resolve(back_color);
+    i32 back_sub_id = 0;
     
     Buffer_ID comp_buffer_id = get_comp_buffer(app);
     if (buffer_id == comp_buffer_id) {
-        back_argb = 0xFF031212;
+        back_sub_id = 1;
     }
     
     if (is_active_view && keyboard_macro_is_recording) {
-        margin_argb = 0xFFDC143C; // crimson red: 0xFFDC143C
+        back_sub_id = 2;
     }
+    
+    FColor back_color = fcolor_id(defcolor_back, back_sub_id);
+    FColor margin_color = get_panel_margin_color((is_active_view) ? UIHighlight_Active : UIHighlight_None);
+    
+    ARGB_Color margin_argb = fcolor_resolve(margin_color);
+    ARGB_Color back_argb = fcolor_resolve(back_color);
     
     return(draw_background_and_margin(app, view_id, margin_argb, back_argb));
 }
@@ -605,7 +607,7 @@ tebtro_draw_token_under_cursor_highlight(Application_Links *app, Text_Layout_ID 
 //
 inline b32
 tebtro_draw_search_highlight(Application_Links *app, View_ID view_id, Buffer_ID buffer_id, Text_Layout_ID text_layout_id, f32 roundness,
-                             ARGB_Color argb_highlight, ARGB_Color argb_at_highlight) {
+                             ARGB_Color argb_highlight, ARGB_Color argb_at_highlight, ARGB_Color argb_match, ARGB_Color argb_at_match) {
     Scratch_Block scratch(app);
     
     b32 has_highlight_range = false;
@@ -639,9 +641,6 @@ tebtro_draw_search_highlight(Application_Links *app, View_ID view_id, Buffer_ID 
                 String_Match *match = matches.first;
                 for (int i = 0; i < matches.count; ++i) {
                     Range_i64 match_range = match->range;
-                    
-                    ARGB_Color argb_match = 0x22DDEE00;
-                    ARGB_Color argb_at_match = 0xFFF3FaFF;
                     
                     draw_character_block(app, text_layout_id, match_range, roundness, argb_match);
                     paint_text_color(app, text_layout_id, match_range, argb_at_match);
