@@ -188,6 +188,8 @@ Fleury4PreviousCodePeek(void)
 static void
 Fleury4CodePeekGo(Application_Links *app, b32 same_panel)
 {
+    if (!global_code_peek_open)  return;
+    
     if(global_code_peek_selected_index >= 0 && global_code_peek_selected_index < global_code_peek_match_count &&
        global_code_peek_match_count > 0)
     {

@@ -273,6 +273,7 @@ tebtro_setup_mapping_dvorak_programmer(Mapping *mapping) {
         
 #if CALC_PLOT
         // @note Calc commands
+        // @todo Better keybinding for that, maybe enter when inside a comment
         Bind(vim_calc_write_result, KeyCode_Return, KeyCode_Control, KeyCode_Alt);
 #endif
         
@@ -331,8 +332,8 @@ tebtro_setup_mapping_dvorak_programmer(Mapping *mapping) {
         // @keycode_missing Bind(vim_enter_chord_indent_right, KeyCode_>);
         // @keycode_missing Bind(vim_enter_chord_indent_left,  KeyCode_<);
         
-        Bind(undo, KeyCode_U);
-        Bind(redo, KeyCode_R, KeyCode_Control);
+        Bind(vim_undo, KeyCode_U);
+        Bind(vim_redo, KeyCode_R, KeyCode_Control);
         
         
         Bind(auto_indent_range, KeyCode_Tab);

@@ -176,6 +176,11 @@
 #include "avy.cpp"
 
 //
+// code folding
+//
+#include "code_folding.cpp"
+
+//
 // vim
 //
 #include "vim_function_helper.cpp"

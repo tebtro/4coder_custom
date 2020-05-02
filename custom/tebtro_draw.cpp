@@ -77,6 +77,8 @@ tebtro_draw_background_and_margin(Application_Links *app, View_ID view_id, Buffe
 //
 // @todo(tebtro): Hello todo!
 // @note(tebtro): Hello note!
+// @note(rortner): Hello note!
+// @note(Robert Ortner): Hello note!
 // @study(tebtro): Hello note!
 // @copynpaste(Robert Ortner): Hello other notations.
 // @any_text_is_valid(But whitespaces are only allowed between parens): Hello Sailor
@@ -122,6 +124,7 @@ tebtro_draw_comment_highlights(Application_Links *app, Buffer_ID buffer_id, Text
         
         // User name
         { global_config.user_name,             finalize_color(defcolor_comment_pop, COMMENT_POP_username), false },
+        { string_u8_litexpr("rortner"),        finalize_color(defcolor_comment_pop, COMMENT_POP_username), false },
         { string_u8_litexpr("Robert Ortner"),  finalize_color(defcolor_comment_pop, COMMENT_POP_username), false },
     };
     i32 pair_count = ArrayCount(pairs);
@@ -540,6 +543,11 @@ tebtro_draw_cpp_identifier_colors(Application_Links *app, Text_Layout_ID text_la
                 }
             }
             
+            // @todo @cleanup auto should just be added to the lexer as a keyword.
+            if (string_match(lexeme, SCu8("auto"))) {
+                color = defcolor_keyword;
+            }
+            
             ARGB_Color argb = fcolor_resolve(fcolor_id(color));
             paint_text_color(app, text_layout_id, Ii64_size(token->pos, token->size), argb);
         }
@@ -576,6 +584,11 @@ tebtro_draw_token_under_cursor_highlight(Application_Links *app, Text_Layout_ID 
         if (token->kind == TokenBaseKind_LiteralString) {
             if (range.start == token->pos && range.end != (token->pos+token->size))    ++range.start;
             if (range.end   == (token->pos+token->size) && range.start != token->pos)  --range.end;
+            
+            if (range.start == cursor_pos || range.end == cursor_pos) {
+                range.start = token->pos;
+                range.end   = range.start + token->size;
+            }
         }
     }
     else {

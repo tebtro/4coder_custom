@@ -23,12 +23,12 @@ CUSTOM_DOC("Tebtro custom command for responding to a startup event")
     Buffer_ID scratch_buffer_id = get_buffer_by_name(app, string_u8_litexpr("*scratch*"), Access_Always);
     if (scratch_buffer_id != 0) {
         i64 size = buffer_get_size(app, scratch_buffer_id);
-        if (size == 0){
+        if (size == 0) {
             String_Const_u8 message = SCu8("Unfortunately, there’s a radio connected to my brain.");
             buffer_replace_range(app, scratch_buffer_id, Ii64(0, size), message);
         }
     }
-    if (global_config.automatically_load_project){
+    if (global_config.automatically_load_project) {
         load_project(app);
     }
     
@@ -283,6 +283,7 @@ BUFFER_HOOK_SIG(tebtro_begin_buffer) {
     if (use_virtual_whitespace) {
         if (use_lexer) {
             buffer_set_layout(app, buffer_id, layout_virt_indent_index_generic);
+            //buffer_set_layout(app, buffer_id, origami_layout_virt_indent_index_generic);
         }
         else{
             buffer_set_layout(app, buffer_id, layout_virt_indent_literal_generic);
@@ -779,9 +780,10 @@ tebtro_set_all_hooks(Application_Links *app){
     set_custom_hook(app, HookID_BufferEditRange, default_buffer_edit_range);
     set_custom_hook(app, HookID_BufferRegion, default_buffer_region);
     
-    set_custom_hook(app, HookID_Layout, layout_unwrapped);
+    // @note These get set in begin_buffer, apropriate to the file type.
+    //set_custom_hook(app, HookID_Layout, layout_unwrapped);
     //set_custom_hook(app, HookID_Layout, layout_wrap_anywhere);
-    //set_custom_hook(app, HookID_Layout, layout_wrap_whitespace);
+    set_custom_hook(app, HookID_Layout, layout_wrap_whitespace);
     //set_custom_hook(app, HookID_Layout, layout_virt_indent_unwrapped);
     //set_custom_hook(app, HookID_Layout, layout_unwrapped_small_blank_lines);
 }

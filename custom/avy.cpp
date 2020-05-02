@@ -496,6 +496,9 @@ avy_get_view_selection_from_user(Application_Links *app) {
                 }
             }
         }
+        if (it == build_footer_panel_view_id) {
+            valid_view = false;
+        }
 #endif
         if (!valid_view) {
             *dest = 0;
