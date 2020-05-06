@@ -51,6 +51,20 @@ CUSTOM_COMMAND_SIG(scroll_cursor_line_to_view_bottom) {
     scroll_cursor_line(app, 1);
 }
 
+//
+// @note Reset horizontal scoll
+//
+function void view_reset_horizontal_scroll(Application_Links *app, View_ID view_id) {
+    i64 pos = view_get_cursor_pos(app, view_id);
+    Buffer_Scroll scroll = view_get_buffer_scroll(app, view_id);
+    scroll.target.pixel_shift.x = 0.0f;
+    view_set_buffer_scroll(app, view_id, scroll, SetBufferScroll_SnapCursorIntoView);
+}
+function void view_reset_horizontal_scroll(Application_Links *app) {
+    View_ID view_id = get_active_view(app, Access_ReadVisible);
+    view_reset_horizontal_scroll(app, view_id);
+}
+
 
 //
 // @note token_or_word_under_cursor

@@ -180,14 +180,7 @@ CUSTOM_COMMAND_SIG(vim_enter_mode_normal) {
     global_show_function_helper = false;
     vim_enter_mode(app, vim_mode_normal, mapid_vim_mode_normal, &vim_global_state.color_tables.mode_normal);
     
-    // left_adjust_view(app);
-    {
-        View_ID view_id = get_active_view(app, Access_ReadVisible);
-        i64 pos = view_get_cursor_pos(app, view_id);
-        Buffer_Scroll scroll = view_get_buffer_scroll(app, view_id);
-        scroll.target.pixel_shift.x = 0.0f;
-        view_set_buffer_scroll(app, view_id, scroll, SetBufferScroll_SnapCursorIntoView);
-    }
+    view_reset_horizontal_scroll(app);
     
 #if VIM_WINDOWS_AUTO_DISABLE_CAPSLOCK
     SHORT capslock_state = GetKeyState(VK_CAPITAL);
@@ -1262,6 +1255,7 @@ CUSTOM_COMMAND_SIG(vim_replace_character_and_enter_mode_normal) {
 // @todo This needs some serious @Cleanup This gets called on every key you type.
 // @todo This needs some serious @Cleanup This gets called on every key you type.
 // @todo This needs some serious @Cleanup This gets called on every key you type.
+// @Speed
 function void
 vim_write_text_and_maybe_auto_close_and_auto_indent(Application_Links *app, String_Const_u8 input_string) {
     ProfileScope(app, "write_text_and_maybe_auto_close_and_auto_indent");
@@ -1326,163 +1320,167 @@ vim_write_text_and_maybe_auto_close_and_auto_indent(Application_Links *app, Stri
     }
     
     // :auto_close and check if need :auto_indent
-    if (!inside_quotes) {
-        switch (input_string.str[0]) {
-            case '(': {
-                insert_string = SCu8("()");
-                --cursor_offset;
-            } break;
+    switch (input_string.str[0]) {
+        case '(': {
+            if (inside_quotes) break; // @todo Should just be single quote!
+            insert_string = SCu8("()");
+            --cursor_offset;
+        } break;
+        
+        case '[': {
+            if (inside_quotes) break; // @todo Should just be single quote!
+            insert_string = SCu8("[]");
+            --cursor_offset;
+        } break;
+        
+        case '{': {
+            if (inside_quotes) break; // @todo Should just be single quote!
+            insert_string = SCu8("{}");
+            --cursor_offset;
             
-            case '[': {
-                insert_string = SCu8("[]");
-                --cursor_offset;
-            } break;
-            
-            case '{': {
-                insert_string = SCu8("{}");
-                --cursor_offset;
-                
-                // :auto_close_semicolon
-                // @note Check before the open brace for: struct, enum, union, defer, ...
-                Token_Array token_array = get_token_array_from_buffer(app, buffer_id);
-                if (token_array.tokens == 0)  break;//case '{':
-                Token_Iterator_Array it = token_iterator_pos(0, &token_array, cursor_pos);
-                i64 scope_depth = 0;
-                i64 paren_depth = 0;
-                for (;;) {
-                    // @note At start of for loop to skip token under cursor!
-                    // @note dec non whitespace and non comment
-                    if (!token_it_dec(&it)) {
-                        break;
-                    }
-                    Token *token = token_it_read(&it);
-                    if (!token)  break;
-                    
-                    switch (token->sub_kind) {
-                        case TokenCppKind_BraceCl: {
-                            ++scope_depth;
-                        } break;
-                        case TokenCppKind_BraceOp: {
-                            --scope_depth;
-                        } break;
-                        
-                        case TokenCppKind_ParenCl: {
-                            ++paren_depth;
-                        } break;
-                        case TokenCppKind_ParenOp: {
-                            --paren_depth;
-                        } break;
-                    }
-                    if (scope_depth < 0 || paren_depth < 0) {
-                        break;
-                    }
-                    if (scope_depth == 0 && paren_depth == 0) {
-                        if (token->sub_kind == TokenCppKind_Semicolon) {
-                            break;
-                        }
-                        
-                        switch (token->sub_kind) {
-                            case TokenCppKind_Identifier: {
-                                String_Const_u8 lexeme = push_token_lexeme(app, scratch, buffer_id, token);
-                                if (string_match(lexeme, SCu8("defer"))) {}
-                                else {
-                                    break;
-                                }
-                            }
-                            case TokenCppKind_Class:
-                            case TokenCppKind_Struct:
-                            case TokenCppKind_Enum:
-                            case TokenCppKind_Union: {
-                                insert_string = SCu8("{};");
-                                --cursor_offset;
-                            } break;
-                            
-                            case TokenCppKind_Case: {
-                                insert_string = SCu8("{} break;");
-                                cursor_offset -= 7;
-                            } break;
-                        }
-                    }
+            // :auto_close_semicolon
+            // @note Check before the open brace for: struct, enum, union, defer, ...
+            Token_Array token_array = get_token_array_from_buffer(app, buffer_id);
+            if (token_array.tokens == 0)  break;//case '{':
+            Token_Iterator_Array it = token_iterator_pos(0, &token_array, cursor_pos);
+            i64 scope_depth = 0;
+            i64 paren_depth = 0;
+            for (;;) {
+                // @note At start of for loop to skip token under cursor!
+                // @note dec non whitespace and non comment
+                if (!token_it_dec(&it)) {
+                    break;
                 }
-            } break;
-            case '<': {
-                insert_string = SCu8("<");
-                
-                Token_Array token_array = get_token_array_from_buffer(app, buffer_id);
-                if (token_array.tokens == 0)  break;
-                Token_Iterator_Array it = token_iterator_pos(0, &token_array, cursor_pos);
-                if (!token_it_dec_non_whitespace(&it))  break;
                 Token *token = token_it_read(&it);
                 if (!token)  break;
-                if (token->sub_kind == TokenCppKind_PPInclude) {
-                    insert_string = SCu8("<>");
-                    --cursor_offset;
+                
+                switch (token->sub_kind) {
+                    case TokenCppKind_BraceCl: {
+                        ++scope_depth;
+                    } break;
+                    case TokenCppKind_BraceOp: {
+                        --scope_depth;
+                    } break;
+                    
+                    case TokenCppKind_ParenCl: {
+                        ++paren_depth;
+                    } break;
+                    case TokenCppKind_ParenOp: {
+                        --paren_depth;
+                    } break;
                 }
-            } break;
-            case '*': {
-                String_Const_u8 next_char = push_buffer_range(app, scratch, buffer_id, Ii64_size(cursor_pos-1, 1));
-                if (next_char.str && next_char.str[0] == '/') {
-                    insert_string = SCu8("**/");
-                    cursor_offset -= 2;
+                if (scope_depth < 0 || paren_depth < 0) {
+                    break;
                 }
-                else {
-                    // check_for_closing_tag = true;
-                    // @todo closing_tag length is greater than 1. We are not doing that, and I don' think we need it for now.
-                }
-            } break;
-            
-            case '\'': {
-                // @note Minus 1, because the insert pos is like before the actual cursor pos.
-                Token *token = get_token_from_pos(app, buffer_id, cursor_pos-1);
-                if (token && token->kind == TokenBaseKind_Comment) {
-                    insert_string = SCu8("'");
-                    check_for_closing_tag = true;
-                }
-                else {
-                    String_Const_u8 prev_char = push_buffer_range(app, scratch, buffer_id, Ii64_size(cursor_pos-1, 1));
-                    if (prev_char.str && prev_char.str[0] == '\\') {
-                        insert_string = SCu8("'");
-                        check_for_closing_tag = false;
+                if (scope_depth == 0 && paren_depth == 0) {
+                    if (token->sub_kind == TokenCppKind_Semicolon) {
+                        break;
                     }
-                    else {
-                        insert_string = SCu8("''");
-                        --cursor_offset;
-                        check_for_closing_tag = true;
-                    }
-                }
-            } break;
-            case '\"': {
-                // @note Minus 1, because the insert pos is like before the actual cursor pos.
-                Token *token = get_token_from_pos(app, buffer_id, cursor_pos-1);
-                if (token && token->kind == TokenBaseKind_Comment) {
-                    insert_string = SCu8("\"");
-                    check_for_closing_tag = true;
-                }
-                else {
-                    String_Const_u8 prev_char = push_buffer_range(app, scratch, buffer_id, Ii64_size(cursor_pos-1, 1));
-                    if (prev_char.str && prev_char.str[0] == '\\') {
-                        insert_string = SCu8("\"");
-                        check_for_closing_tag = false;
-                    }
-                    else {
-                        insert_string = SCu8("\"\"");
-                        --cursor_offset;
-                        check_for_closing_tag = true;
+                    
+                    switch (token->sub_kind) {
+                        case TokenCppKind_Identifier: {
+                            String_Const_u8 lexeme = push_token_lexeme(app, scratch, buffer_id, token);
+                            if (string_match(lexeme, SCu8("defer"))) {}
+                            else {
+                                break;
+                            }
+                        }
+                        case TokenCppKind_Class:
+                        case TokenCppKind_Struct:
+                        case TokenCppKind_Enum:
+                        case TokenCppKind_Union: {
+                            insert_string = SCu8("{};");
+                            --cursor_offset;
+                        } break;
+                        
+                        case TokenCppKind_Case: {
+                            insert_string = SCu8("{} break;");
+                            cursor_offset -= 7;
+                        } break;
                     }
                 }
-            } break;
-            
-            case ')':
-            case ']':
-            case '}':
-            case '>':
-            case ';': {
-                check_for_closing_tag = true;
-            } break;
-            
-            default: {
-                do_auto_indent = true;
             }
+        } break;
+        case '<': {
+            insert_string = SCu8("<");
+            
+            if (inside_quotes) break; // @todo Should just be single quote!
+            
+            Token_Array token_array = get_token_array_from_buffer(app, buffer_id);
+            if (token_array.tokens == 0)  break;
+            Token_Iterator_Array it = token_iterator_pos(0, &token_array, cursor_pos);
+            if (!token_it_dec_non_whitespace(&it))  break;
+            Token *token = token_it_read(&it);
+            if (!token)  break;
+            if (token->sub_kind == TokenCppKind_PPInclude) {
+                insert_string = SCu8("<>");
+                --cursor_offset;
+            }
+        } break;
+        case '*': {
+            String_Const_u8 next_char = push_buffer_range(app, scratch, buffer_id, Ii64_size(cursor_pos-1, 1));
+            if (next_char.str && next_char.str[0] == '/') {
+                insert_string = SCu8("**/");
+                cursor_offset -= 2;
+            }
+            else {
+                // check_for_closing_tag = true;
+                // @todo closing_tag length is greater than 1. We are not doing that, and I don' think we need it for now.
+            }
+        } break;
+        
+        case '\'': {
+            // @note Minus 1, because the insert pos is like before the actual cursor pos.
+            Token *token = get_token_from_pos(app, buffer_id, cursor_pos-1);
+            if (token && token->kind == TokenBaseKind_Comment) {
+                insert_string = SCu8("'");
+                check_for_closing_tag = true;
+            }
+            else {
+                String_Const_u8 prev_char = push_buffer_range(app, scratch, buffer_id, Ii64_size(cursor_pos-1, 1));
+                if (prev_char.str && prev_char.str[0] == '\\') {
+                    insert_string = SCu8("'");
+                    check_for_closing_tag = false;
+                }
+                else {
+                    insert_string = SCu8("''");
+                    --cursor_offset;
+                    check_for_closing_tag = true;
+                }
+            }
+        } break;
+        case '\"': {
+            // @note Minus 1, because the insert pos is like before the actual cursor pos.
+            Token *token = get_token_from_pos(app, buffer_id, cursor_pos-1);
+            if (token && token->kind == TokenBaseKind_Comment) {
+                insert_string = SCu8("\"");
+                check_for_closing_tag = true;
+            }
+            else {
+                String_Const_u8 prev_char = push_buffer_range(app, scratch, buffer_id, Ii64_size(cursor_pos-1, 1));
+                if (prev_char.str && prev_char.str[0] == '\\') {
+                    insert_string = SCu8("\"");
+                    check_for_closing_tag = false;
+                }
+                else {
+                    insert_string = SCu8("\"\"");
+                    --cursor_offset;
+                    check_for_closing_tag = true;
+                }
+            }
+        } break;
+        
+        case ')':
+        case ']':
+        case '}':
+        case '>':
+        case ',':
+        case ';': {
+            check_for_closing_tag = true;
+        } break;
+        
+        default: {
+            do_auto_indent = true;
         }
     }
     skip_auto_close:;
@@ -2201,6 +2199,8 @@ vim_improved_newline(Application_Links *app, b32 below/* = true*/, b32 newline_a
         --new_cursor_pos;
     }
     view_set_cursor_and_preferred_x(app, view_id, seek_pos(new_cursor_pos));
+    // view horizontal scroll
+    view_reset_horizontal_scroll(app, view_id);
 }
 
 #if 0
