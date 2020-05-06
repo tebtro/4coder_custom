@@ -356,12 +356,8 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
             tebtro_draw_cpp_identifier_colors(app, text_layout_id, buffer_id, &token_array);
         }
         
-        // @note: Token under cursor highlight
-        if (is_active_view) {
-            tebtro_draw_token_under_cursor_highlight(app, text_layout_id, buffer_id, &token_array, cursor_pos, cursor_roundness);
-        }
-        
         // @note Scan for TODOs and NOTEs
+        // @todo Should we just render this for all text somehow, if we don't have an token_array
         if (global_config.use_comment_keyword && !global_focus_mode_enabled) {
 #if 0
             Comment_Highlight_Pair pairs[] = {
@@ -377,6 +373,12 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
     else {
         Range_i64 visible_range = text_layout_get_visible_range(app, text_layout_id);
         paint_text_color_fcolor(app, text_layout_id, visible_range, fcolor_id(defcolor_text_default));
+    }
+    
+    // @note: Token under cursor highlight
+    if (is_active_view) {
+        // @note We don't need to check if we have tokens, this gets handled inside this function itself.
+        tebtro_draw_token_under_cursor_highlight(app, text_layout_id, buffer_id, &token_array, cursor_pos, cursor_roundness);
     }
     
     // @note Vim :view_changed_flash_line

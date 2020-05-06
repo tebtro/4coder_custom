@@ -24,6 +24,15 @@ defcolor_highlight = 0xFF0044FF;
 // highlight foreground/text color
 defcolor_at_highlight = defcolor_back_default;
 
+// Search highlight background color
+defcolor_search_highlight = 0xFFDDEE00;
+// Search highlight foreground/text color
+defcolor_at_search_highlight = 0xFFFF44DD;
+// Search occurance highlight background color
+defcolor_search_occurance_highlight = 0x22DDEE00;
+// Search occurance highlight foreground/text color
+defcolor_at_search_occurance_highlight = 0xFFF3FaFF;
+
 // margin colors
 defcolor_margin        = 0xFF9E9E9E;
 defcolor_margin_hover  = 0xFF7E7E7E;

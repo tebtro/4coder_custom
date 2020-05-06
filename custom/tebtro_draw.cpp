@@ -563,38 +563,7 @@ tebtro_draw_cpp_identifier_colors(Application_Links *app, Text_Layout_ID text_la
 //
 inline void
 tebtro_draw_token_under_cursor_highlight(Application_Links *app, Text_Layout_ID text_layout_id, Buffer_ID buffer_id, Token_Array *token_array, i64 cursor_pos, f32 cursor_roundness) {
-    if (token_array == 0 || token_array->tokens == 0)  return;
-    
-    Token_Iterator_Array it = token_iterator_pos(0, token_array, cursor_pos);
-    Token *token = token_it_read(&it);
-    if (token == 0)  return;
-    if (token->kind == TokenBaseKind_Whitespace || token->kind == TokenBaseKind_EOF)  return;
-    
-    Range_i64 range = {};
-    if (token->kind == TokenBaseKind_Comment || token->kind == TokenBaseKind_LiteralString) {
-        Scratch_Block scratch(app);
-        // @copynpaset :token_or_word_range
-        String_Const_u8 lexeme = push_token_lexeme(app, scratch, buffer_id, token);
-        i64 i = 0;
-        for (i = cursor_pos; i >= token->pos && !character_is_whitespace(lexeme.str[i - token->pos]); --i);
-        range.start = i + 1;
-        for (i = cursor_pos; i < (token->pos+token->size) && !character_is_whitespace(lexeme.str[i - token->pos]); ++i);
-        range.end = i;
-        
-        if (token->kind == TokenBaseKind_LiteralString) {
-            if (range.start == token->pos && range.end != (token->pos+token->size))    ++range.start;
-            if (range.end   == (token->pos+token->size) && range.start != token->pos)  --range.end;
-            
-            if (range.start == cursor_pos || range.end == cursor_pos) {
-                range.start = token->pos;
-                range.end   = range.start + token->size;
-            }
-        }
-    }
-    else {
-        range = Ii64_size(token->pos, token->size);
-    }
-    
+    Range_i64 range = get_token_or_word_under_cursor_range(app, buffer_id, cursor_pos, token_array);
     
     // @note Draw background
     {

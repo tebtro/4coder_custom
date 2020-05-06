@@ -1095,38 +1095,6 @@ CUSTOM_COMMAND_SIG(vim_move_to_line_start__or__vim_execute_command_count_add_pre
 // @note Selection commands
 //
 
-inline Range_i64
-vim_get_token_or_word_under_cursor_range(Application_Links *app, Buffer_ID buffer_id, i64 cursor_pos, Token *token) {
-    Range_i64 range = Ii64(-1, -1);
-    
-    if (!token) {
-        // range = enclose_pos_alpha_numeric_underscore(app, buffer_id, cursor_pos);
-        range = enclose_pos_non_whitespace(app, buffer_id, cursor_pos);
-    }
-    else if (token->kind == TokenBaseKind_Whitespace || token->kind == TokenBaseKind_EOF) {
-        return range;
-    }
-    else if (token->kind == TokenBaseKind_Comment || token->kind == TokenBaseKind_LiteralString) {
-        Scratch_Block scratch(app);
-        String_Const_u8 lexeme = push_token_lexeme(app, scratch, buffer_id, token);
-        i64 i = 0;
-        for (i = cursor_pos; i >= token->pos && !character_is_whitespace(lexeme.str[i - token->pos]); --i);
-        range.start = i + 1;
-        for (i = cursor_pos; i < (token->pos+token->size) && !character_is_whitespace(lexeme.str[i - token->pos]); ++i);
-        range.end = i;
-        
-        if (token->kind == TokenBaseKind_LiteralString) {
-            if (range.start == token->pos && range.end != (token->pos+token->size))    ++range.start;
-            if (range.end   == (token->pos+token->size) && range.start != token->pos)  --range.end;
-        }
-    }
-    else {
-        range = Ii64_size(token->pos, token->size);
-    }
-    
-    return range;
-}
-
 CUSTOM_COMMAND_SIG(vim_select_token_or_word_under_cursor) {
     View_ID view_id = get_active_view(app, Access_ReadVisible);
     Buffer_ID buffer_id = view_get_buffer(app, view_id, Access_ReadVisible);
@@ -1134,7 +1102,7 @@ CUSTOM_COMMAND_SIG(vim_select_token_or_word_under_cursor) {
     i64 cursor_pos = view_get_cursor_pos(app, view_id);
     Token *token = get_token_from_pos(app, buffer_id, cursor_pos);
     
-    Range_i64 range = vim_get_token_or_word_under_cursor_range(app, buffer_id, cursor_pos, token);
+    Range_i64 range = get_token_or_word_under_cursor_range(app, buffer_id, cursor_pos, token);
     range.end = range.one_past_last - 1;
     if (range.start < 0 || range.end < 0)  return;
     
@@ -1217,8 +1185,8 @@ vim_isearch_token_or_word(Application_Links *app, Scan_Direction scan) {
     i64 cursor_pos = view_get_cursor_pos(app, view_id);
     Token *token = get_token_from_pos(app, buffer_id, cursor_pos);
     
-    Range_i64 range = vim_get_token_or_word_under_cursor_range(app, buffer_id, cursor_pos, token);
-    if (range.min < 0 || range.max < 0)  return;
+    Range_i64 range = get_token_or_word_under_cursor_range(app, buffer_id, cursor_pos, token);
+    if (range_size(range) <= 0)  return;
     
     Scratch_Block scratch(app);
     String_Const_u8 query = push_buffer_range(app, scratch, buffer_id, range);

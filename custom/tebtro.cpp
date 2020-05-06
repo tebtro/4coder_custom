@@ -29,6 +29,9 @@ CUSTOM_COMMAND_SIG(tebtro_set_light_theme_mode)   {tebtro_set_theme_mode(app, TE
 // @note Buffer commands
 //
 
+// @todo: The default clean all lines was updates in an update, repalce this with the default again?
+// @todo: The default clean all lines was updates in an update, repalce this with the default again?
+// @todo: The default clean all lines was updates in an update, repalce this with the default again?
 internal void
 tebtro_clean_all_lines(Application_Links *app, Buffer_ID buffer) {
     ProfileScope(app, "clean all lines");
