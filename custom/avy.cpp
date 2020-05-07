@@ -12,8 +12,10 @@
 // - avy_goto_view_and_swap_buffers
 // - avy_close_view
 //
+// - avy_render  Needs to be called in your render_buffer function.
 //
-// Options(Before including define those):
+//
+// Optional settings (Define those before including):
 // - #define AVY_KEY_LIST  "asdfghjkl"
 // - #define AVY_CLOSE_FIRST_QUERY_BAR_AFTER_INPUT  true
 // - #define AVY_HIDE_SECOND_QUERY_BAR_DURING_SELECTION  true
