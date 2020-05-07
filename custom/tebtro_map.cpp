@@ -124,6 +124,11 @@ tebtro_setup_mapping_dvorak_programmer(Mapping *mapping) {
         
         // :move_commands
         
+        Bind(vim_move_up,    KeyCode_Up);
+        Bind(vim_move_down,  KeyCode_Down);
+        Bind(vim_move_left,  KeyCode_Left);
+        Bind(vim_move_right, KeyCode_Right);
+        
         // @note move hjkl
         Bind(vim_move_up,    KeyCode_K);
         Bind(vim_move_down,  KeyCode_J);
@@ -192,8 +197,8 @@ tebtro_setup_mapping_dvorak_programmer(Mapping *mapping) {
         // Bind(vim_restore_cursor_mark_pos, KeyCode_S, KeyCode_Shift);
         
         // :selection
-        Bind(vim_select_token_or_word_under_cursor, KeyCode_T, KeyCode_Alt);
-        Bind(vim_visual_select_token_or_word_under_cursor, KeyCode_T, KeyCode_Alt, KeyCode_Shift);
+        Bind(vim_select_token_or_word_under_cursor, KeyCode_T, KeyCode_Control);
+        Bind(vim_visual_select_token_or_word_under_cursor, KeyCode_T, KeyCode_Control, KeyCode_Alt);
         
         // @note scope selection
         Bind(vim_select_next_scope_absolute,       KeyCode_N);
@@ -222,6 +227,7 @@ tebtro_setup_mapping_dvorak_programmer(Mapping *mapping) {
         // Bind(avy_search, KeyCode_A, KeyCode_Alt);
         Bind(vim_avy_goto_string, KeyCode_S, KeyCode_Alt);
         Bind(vim_avy_goto_char, KeyCode_C, KeyCode_Alt);
+        Bind(vim_avy_goto_char, KeyCode_Tab);
         
         // @note query_replace
         Bind(query_replace,     KeyCode_Q);
@@ -287,9 +293,7 @@ tebtro_setup_mapping_dvorak_programmer(Mapping *mapping) {
         //Bind(vim_delete_line, KeyCode_D, KeyCode_Shift);
         
         // @note Jumps
-        Bind(vim_tebtro_jump_to_definition, KeyCode_D, KeyCode_Control);
         Bind(vim_tebtro_jump_to_definition, KeyCode_D, KeyCode_Alt);
-        Bind(vim_tebtro_jump_to_definition_under_cursor, KeyCode_D, KeyCode_Control, KeyCode_Shift);
         Bind(vim_tebtro_jump_to_definition_under_cursor, KeyCode_D, KeyCode_Alt, KeyCode_Shift);
         
         // @note copy/yank
@@ -299,9 +303,9 @@ tebtro_setup_mapping_dvorak_programmer(Mapping *mapping) {
         // @note cut
         Bind(vim_delete_char, KeyCode_X);
         
-        Bind(copy,         KeyCode_Y, KeyCode_Shift); // KeyCode_Control);
-        Bind(delete_range, KeyCode_D, KeyCode_Shift); // KeyCode_Control);
-        Bind(cut,          KeyCode_X, KeyCode_Shift); // KeyCode_Control);
+        Bind(copy,         KeyCode_Y, KeyCode_Shift);
+        Bind(delete_range, KeyCode_D, KeyCode_Shift);
+        Bind(cut,          KeyCode_X, KeyCode_Shift);
         
         // @note Modes and chords
         Bind(vim_enter_mode_insert,            KeyCode_I);
@@ -346,6 +350,8 @@ tebtro_setup_mapping_dvorak_programmer(Mapping *mapping) {
         Bind(vim_code_peek_go_same_panel, KeyCode_Backspace);
         Bind(vim_code_peek_go,            KeyCode_Backspace, KeyCode_Alt);
 #endif
+        
+        Bind(vim_avy_goto_char, KeyCode_Tab);
         
         // @note :avy
         // Bind(avy_search, KeyCode_A, KeyCode_Alt);
@@ -454,17 +460,24 @@ tebtro_setup_mapping_dvorak_programmer(Mapping *mapping) {
         Bind(vim_enter_chord_z, KeyCode_Z, KeyCode_Control);
         
         // :autocomplete
+#if 0
         Bind(word_complete,               KeyCode_Tab, KeyCode_Shift);
         Bind(word_complete_drop_down,     KeyCode_Tab, KeyCode_Control);
+        //Bind(word_complete,               KeyCode_N,   KeyCode_Control);
         
-        Bind(auto_indent_range,          KeyCode_Tab, KeyCode_Alt);
-        Bind(auto_indent_line_at_cursor, KeyCode_Tab, KeyCode_Alt, KeyCode_Shift);
+        Bind(auto_indent_range,           KeyCode_Tab, KeyCode_Alt);
+        Bind(auto_indent_line_at_cursor,  KeyCode_Tab, KeyCode_Alt, KeyCode_Shift);
+#endif
         
         Bind(toggle_show_function_helper, KeyCode_Space, KeyCode_Control);
         Bind(toggle_show_function_helper, KeyCode_Space, KeyCode_Alt);
         
         
         // :move_commands
+        Bind(vim_move_up,    KeyCode_Up);
+        Bind(vim_move_down,  KeyCode_Down);
+        Bind(vim_move_left,  KeyCode_Left);
+        Bind(vim_move_right, KeyCode_Right);
         // @note move hjkl
         Bind(vim_move_up,    KeyCode_K, KeyCode_Alt);
         Bind(vim_move_down,  KeyCode_J, KeyCode_Alt);
@@ -509,6 +522,11 @@ tebtro_setup_mapping_dvorak_programmer(Mapping *mapping) {
         Bind(vim_enter_chord_move_right_before_found, KeyCode_T, KeyCode_Control);
         Bind(vim_enter_chord_move_left_to_found,      KeyCode_F, KeyCode_Shift, KeyCode_Control);
         Bind(vim_enter_chord_move_left_before_found,  KeyCode_T, KeyCode_Shift, KeyCode_Control);
+        
+        
+        Bind(vim_avy_goto_char, KeyCode_C, KeyCode_Alt);
+        Bind(vim_avy_goto_char, KeyCode_Tab, KeyCode_Shift);
+        Bind(word_complete, KeyCode_N, KeyCode_Control);
     }
     
 #if 0
