@@ -72,10 +72,27 @@ CUSTOM_DOC("Tebtro custom command for responding to a startup event")
 #endif
 }
 
+function Command_Map_ID
+tebtro_get_map_id(Application_Links *app, View_ID view_id) {
+    Command_Map_ID result = 0;
+    // :view_map_id
+    Managed_Scope view_scope = view_get_managed_scope(app, view_id);
+    Command_Map_ID *result_ptr = scope_attachment(app, view_scope, view_map_id, Command_Map_ID);
+    if (result_ptr != 0) {
+        if (*result_ptr == 0) {
+            *result_ptr = mapid_vim_mode_normal;
+        }
+        result = *result_ptr;
+    }
+    else {
+        result = mapid_vim_mode_normal;
+    }
+    return result;
+}
+
 CUSTOM_COMMAND_SIG(tebtro_view_input_handler)
 CUSTOM_DOC("Input consumption loop for default view behavior") {
-    Thread_Context *tctx = get_thread_context(app);
-    Scratch_Block scratch(tctx);
+    Scratch_Block scratch(app);
     
     View_ID view_id = get_this_ctx_view(app, Access_Always);
     Managed_Scope view_scope = view_get_managed_scope(app, view_id);
@@ -84,119 +101,56 @@ CUSTOM_DOC("Input consumption loop for default view behavior") {
     //
     // @note View initialization, begin_view
     //
-    {
-        String_Const_u8 name = push_u8_stringf(scratch, "view %d", view_id);
+    default_input_handler_init(app, scratch);
+    if (vim_state->execute_command_count == 0) { // :vim_view_state_is_initialized
+        *vim_state = {};
         
-        Profile_Global_List *list = get_core_profile_list(app);
-        ProfileThreadName(tctx, list, name);
+        vim_state->chord_bar.prompt = string_u8_litexpr("");
+        vim_state->chord_bar.string = SCu8(vim_state->chord_bar_string_space, (u64)0);
+        vim_state->chord_bar.string_capacity = sizeof(vim_state->chord_bar_string_space);
         
-        View_Context ctx = view_current_context(app, view_id);
-        ctx.mapping = &framework_mapping;
-        ctx.map_id = mapid_global;
-        view_alter_context(app, view_id, &ctx);
-        
-        if (vim_state->execute_command_count == 0) { // :vim_view_state_is_initialized
-            *vim_state = {};
-            
-            vim_state->chord_bar.prompt = string_u8_litexpr("");
-            vim_state->chord_bar.string = SCu8(vim_state->chord_bar_string_space, (u64)0);
-            vim_state->chord_bar.string_capacity = sizeof(vim_state->chord_bar_string_space);
-            
-            // vim_state->is_initialized = true;
-        }
+        // vim_state->is_initialized = true;
     }
     
     //
     // @note Handle input
     //
     for (;;) {
-        // NOTE(allen): Get the binding from the buffer's current map
+        // NOTE(allen): Get input
         User_Input input = get_next_input(app, EventPropertyGroup_Any, 0);
-        ProfileScopeNamed(app, "before view input", view_input_profile);
-        if (input.abort) {
+        if (input.abort){
             break;
         }
         
-        Event_Property event_properties = get_event_properties(&input.event);
+        ProfileScopeNamed(app, "before view input", view_input_profile);
         
-        // :suppress_mouse
+        // NOTE(allen): Mouse Suppression
+        Event_Property event_properties = get_event_properties(&input.event);
+        if (suppressing_mouse && (event_properties & EventPropertyGroup_AnyMouseEvent) != 0){
+            continue;
+        }
+        // @note(tebtro) :suppress_mouse
         if ((event_properties & EventPropertyGroup_AnyMouseEvent) != 0) {
             set_mouse_suppression(false);
             vim_global_mouse_last_event_time = 1.0f; // in seconds
         }
-        if (suppressing_mouse && (event_properties & EventPropertyGroup_AnyMouseEvent) != 0) {
+        
+        // NOTE(allen): Get map_id
+        Command_Map_ID map_id = tebtro_get_map_id(app, view_id);
+        
+        // NOTE(allen): Get binding
+        Command_Binding binding = map_get_binding_recursive(&framework_mapping, map_id, &input.event);
+        if (binding.custom == 0){
+            leave_current_input_unhandled(app);
             continue;
         }
         
-#if 0
-        if ((event_properties & EventPropertyGroup_AnyKeyboardEvent) != 0) {
-            int break_here = 0;
-            break_here = 0;
-        }
-#endif
-        
-        Command_Map_ID *map_id_ptr = scope_attachment(app, view_scope, view_map_id, Command_Map_ID);
-        if (*map_id_ptr == 0) {
-            *map_id_ptr = mapid_vim_mode_normal;
-        }
-        Command_Map_ID map_id = *map_id_ptr;
-        
-        Command_Binding binding = map_get_binding_recursive(&framework_mapping, map_id, &input.event);
-        
-        if (binding.custom == 0) {
-            // NOTE(allen): we don't have anything to do with this input,
-            // leave it marked unhandled so that if there's a follow up
-            // event it is not blocked.
-            leave_current_input_unhandled(app);
-        }
-        else {
-            // NOTE(allen): before the command is called do some book keeping
-            Rewrite_Type *next_rewrite = scope_attachment(app, view_scope, view_next_rewrite_loc, Rewrite_Type);
-            *next_rewrite = Rewrite_None;
-            if (fcoder_mode == FCoderMode_NotepadLike){
-                for (View_ID view_it = get_view_next(app, 0, Access_Always);
-                     view_it != 0;
-                     view_it = get_view_next(app, view_it, Access_Always)){
-                    Managed_Scope scope_it = view_get_managed_scope(app, view_it);
-                    b32 *snap_mark_to_cursor =
-                        scope_attachment(app, scope_it, view_snap_mark_to_cursor,
-                                         b32);
-                    *snap_mark_to_cursor = true;
-                }
-            }
-            
-            ProfileCloseNow(view_input_profile);
-            
-            // @note: Call the command
-#if USE_MULTIPLE_CURSORS
-            vim_multiple_cursor_handle_input_call_command(app, view_id, binding);
-#else
-            binding.custom(app);
-#endif
-            
-            // NOTE(allen): after the command is called do some book keeping
-            ProfileScope(app, "after view input");
-            
-            next_rewrite = scope_attachment(app, view_scope, view_next_rewrite_loc, Rewrite_Type);
-            if (next_rewrite != 0) {
-                Rewrite_Type *rewrite =
-                    scope_attachment(app, view_scope, view_rewrite_loc, Rewrite_Type);
-                *rewrite = *next_rewrite;
-                if (fcoder_mode == FCoderMode_NotepadLike) {
-                    for (View_ID view_it = get_view_next(app, 0, Access_Always);
-                         view_it != 0;
-                         view_it = get_view_next(app, view_it, Access_Always)) {
-                        Managed_Scope scope_it = view_get_managed_scope(app, view_it);
-                        b32 *snap_mark_to_cursor =
-                            scope_attachment(app, scope_it, view_snap_mark_to_cursor, b32);
-                        if (*snap_mark_to_cursor) {
-                            i64 pos = view_get_cursor_pos(app, view_it);
-                            view_set_mark(app, view_it, seek_pos(pos));
-                        }
-                    }
-                }
-            }
-        }
+        // NOTE(allen): Run the command and pre/post command stuff
+        default_pre_command(app, view_scope);
+        ProfileCloseNow(view_input_profile);
+        binding.custom(app);
+        ProfileScope(app, "after view input");
+        default_post_command(app, view_scope);
     }
 }
 
@@ -231,6 +185,7 @@ BUFFER_HOOK_SIG(tebtro_begin_buffer) {
                          string_match(ext, string_u8_litexpr("rs"))   ||
                          string_match(ext, string_u8_litexpr("cs"))   ||
                          string_match(ext, string_u8_litexpr("java")) ) {
+                    treat_as_code = true;
                     file_is_c_like = true;
                 }
                 
@@ -245,6 +200,8 @@ BUFFER_HOOK_SIG(tebtro_begin_buffer) {
     }
     
 #if 0
+    // @note(tebtro): I am storing the mapid on the view, because I want to be ablo to have multiple views of the same buffer open at the same time, and one view could be in insert mode and this shouldn't affect the other views.
+    // :view_map_id
     Command_Map_ID map_id = (treat_as_code)?(mapid_code):(mapid_file);
     Command_Map_ID *map_id_ptr = scope_attachment(app, buffer_scope, buffer_map_id, Command_Map_ID);
     *map_id_ptr = map_id;
@@ -266,7 +223,7 @@ BUFFER_HOOK_SIG(tebtro_begin_buffer) {
     
     String_Const_u8 buffer_name = push_buffer_base_name(app, scratch, buffer_id);
     if (string_match(buffer_name, string_u8_litexpr("*compilation*"))) {
-        wrap_lines = false;
+        wrap_lines = global_config.enable_output_wrapping;
     }
     
     if (use_lexer) {
@@ -308,16 +265,16 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
     ProfileScope(app, "render buffer");
     
     View_ID active_view = get_active_view(app, Access_Always);
-    b32 is_active_view = (active_view == view_id);
-    Rect_f32 prev_clip = draw_set_clip(app, view_region);
+    b32 is_active_view  = (active_view == view_id);
+    Rect_f32 prev_clip  = draw_set_clip(app, view_region);
     
     i64 cursor_pos = view_correct_cursor(app, view_id);
     i64 mark_pos   = view_correct_mark(app, view_id);
     
     // @note: Cursor shape
     Face_Metrics face_metrics = get_face_metrics(app, face_id);
-    f32 cursor_roundness = (face_metrics.normal_advance*0.5f)*0.9f;
-    f32 mark_thickness = 2.0f;
+    f32 cursor_roundness = face_metrics.normal_advance * global_config.cursor_roundness;
+    f32 mark_thickness   = (f32)global_config.mark_thickness;
     
     Token_Array token_array = get_token_array_from_buffer(app, buffer_id);
     
@@ -520,6 +477,32 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
     draw_set_clip(app, prev_clip);
 }
 
+#define BARS_ON_TOP false
+
+function Rect_f32
+tebtro_draw_query_bars(Application_Links *app, Rect_f32 region, View_ID view_id, Face_ID face_id) {
+    Face_Metrics face_metrics = get_face_metrics(app, face_id);
+    f32 line_height = face_metrics.line_height;
+    
+    Query_Bar *space[32];
+    Query_Bar_Ptr_Array query_bars = {};
+    query_bars.ptrs = space;
+    if (get_active_query_bars(app, view_id, ArrayCount(space), &query_bars)) {
+        for (i32 i = 0; i < query_bars.count; i += 1){
+#if BARS_ON_TOP
+            Rect_f32_Pair pair = layout_query_bar_on_top(region, line_height, 1);
+            draw_query_bar(app, query_bars.ptrs[i], face_id, pair.min);
+            region = pair.max;
+#else
+            Rect_f32_Pair pair = layout_query_bar_on_bot(region, line_height, 1);
+            draw_query_bar(app, query_bars.ptrs[i], face_id, pair.max);
+            region = pair.min;
+#endif
+        }
+    }
+    return region;
+}
+
 function void
 tebtro_render_caller(Application_Links *app, Frame_Info frame_info, View_ID view_id){
     ProfileScope(app, "render caller");
@@ -567,27 +550,8 @@ tebtro_render_caller(Application_Links *app, Frame_Info frame_info, View_ID view
     f32 line_height = face_metrics.line_height;
     f32 digit_advance = face_metrics.decimal_digit_advance;
     
-#define BARS_ON_TOP false
-    
     // @note: query bars
-    {
-        Query_Bar *space[32];
-        Query_Bar_Ptr_Array query_bars = {};
-        query_bars.ptrs = space;
-        if (get_active_query_bars(app, view_id, ArrayCount(space), &query_bars)) {
-            for (i32 i = 0; i < query_bars.count; i += 1){
-#if BARS_ON_TOP
-                Rect_f32_Pair pair = layout_query_bar_on_top(region, line_height, 1);
-                draw_query_bar(app, query_bars.ptrs[i], face_id, pair.min);
-                region = pair.max;
-#else
-                Rect_f32_Pair pair = layout_query_bar_on_bot(region, line_height, 1);
-                draw_query_bar(app, query_bars.ptrs[i], face_id, pair.max);
-                region = pair.min;
-#endif
-            }
-        }
-    }
+    region = tebtro_draw_query_bars(app, region, view_id, face_id);
     
     // @note: file bar
     b64 showing_file_bar = false;
@@ -603,10 +567,9 @@ tebtro_render_caller(Application_Links *app, Frame_Info frame_info, View_ID view
 #endif
     }
     
+    // @note: Buffer scrolling
     Buffer_Scroll scroll = view_get_buffer_scroll(app, view_id);
-    
-    Buffer_Point_Delta_Result delta = delta_apply(app, view_id,
-                                                  frame_info.animation_dt, scroll);
+    Buffer_Point_Delta_Result delta = delta_apply(app, view_id, frame_info.animation_dt, scroll);
     if (!block_match_struct(&scroll.position, &delta.point)) {
         block_copy_struct(&scroll.position, &delta.point);
         view_set_buffer_scroll(app, view_id, scroll, SetBufferScroll_NoCursorChange);
@@ -623,7 +586,7 @@ tebtro_render_caller(Application_Links *app, Frame_Info frame_info, View_ID view
         animate_in_n_milliseconds(app, 1000);
     }
     
-    // @note: layout line numbers
+    // @note: Layout line numbers
     Rect_f32 line_number_rect = {};
     if (global_config.show_line_number_margins) {
         Rect_f32_Pair pair = layout_line_number_margin(app, buffer_id, region, digit_advance);
@@ -647,7 +610,7 @@ tebtro_render_caller(Application_Links *app, Frame_Info frame_info, View_ID view
         draw_line_number_margin(app, view_id, buffer_id, face_id, text_layout_id, line_number_rect);
 #else
         // @note relative
-        draw_line_number_relative_margin(app, view_id, buffer_id, face_id, text_layout_id, line_number_rect);
+        draw_relative_line_number_margin(app, view_id, buffer_id, face_id, text_layout_id, line_number_rect);
 #endif
     }
     
@@ -658,53 +621,18 @@ tebtro_render_caller(Application_Links *app, Frame_Info frame_info, View_ID view
     draw_set_clip(app, prev_clip);
 }
 
-
 function void
-tebtro_tick(Application_Links *app, Frame_Info frame_info){
-    // :suppress_mouse
-    // @note Vim suppress mouse if not moving
-    if (vim_global_enable_mouse_suppression) {
-        if (vim_global_mouse_last_event_time > 0.0f) {
-            vim_global_mouse_last_event_time -= frame_info.literal_dt;
-            animate_in_n_milliseconds(app, (u32)(vim_global_mouse_last_event_time * 1000.0f));
-        }
-        if (vim_global_mouse_last_event_time <= 0.0f) {
-            set_mouse_suppression(true);
-        }
-    }
-    
-#if CALC_PLOT
-    // @note: Update calc (once per frame).
-    {
-        static i32 last_frame_index = -1;
-        if(last_frame_index != frame_info.index)
-        {
-            CalcUpdateOncePerFrame(frame_info);
-        }
-        last_frame_index = frame_info.index;
-    }
-#endif
-    
-    
+tebtro_code_index_update_tick(Application_Links *app) {
     Scratch_Block scratch(app);
-    
-    for (Buffer_Modified_Node *node = global_buffer_modified_set.first;
-         node != 0;
-         node = node->next){
+    for (Buffer_Modified_Node *node = global_buffer_modified_set.first; node != 0; node = node->next) {
         Temp_Memory_Block temp(scratch);
         Buffer_ID buffer_id = node->buffer;
         
-        Managed_Scope scope = buffer_get_managed_scope(app, buffer_id);
-        
         String_Const_u8 contents = push_whole_buffer(app, scratch, buffer_id);
-        Token_Array *tokens_ptr = scope_attachment(app, scope, attachment_tokens, Token_Array);
-        if (tokens_ptr == 0){
+        Token_Array tokens = get_token_array_from_buffer(app, buffer_id);
+        if (tokens.count == 0){
             continue;
         }
-        if (tokens_ptr->count == 0){
-            continue;
-        }
-        Token_Array tokens = *tokens_ptr;
         
         Arena arena = make_arena_system(KB(16));
         Code_Index_File *index = push_array_zero(&arena, Code_Index_File, 1);
@@ -716,8 +644,13 @@ tebtro_tick(Application_Links *app, Frame_Info frame_info){
         // Maybe switch to an enum.
         state.do_cpp_parse = true;
         generic_parse_full_input_breaks(index, &state, max_i32);
-        Code_Index_Identifier_Hash_Table *identifier_table = scope_attachment(app, scope, attachment_code_index_identifier_table, Code_Index_Identifier_Hash_Table);
-        *identifier_table = code_index_identifier_table_from_array(app, buffer_id, state.arena, index->note_array);
+        
+        // @note(tebtro): Update identifier lookup table
+        {
+            Managed_Scope scope = buffer_get_managed_scope(app, buffer_id);
+            Code_Index_Identifier_Hash_Table *identifier_table = scope_attachment(app, scope, attachment_code_index_identifier_table, Code_Index_Identifier_Hash_Table);
+            *identifier_table = code_index_identifier_table_from_array(app, buffer_id, state.arena, index->note_array);
+        }
         
         code_index_lock();
         code_index_set_file(buffer_id, arena, index);
@@ -726,14 +659,44 @@ tebtro_tick(Application_Links *app, Frame_Info frame_info){
     }
     
     buffer_modified_set_clear();
+}
+
+function void
+tebtro_tick(Application_Links *app, Frame_Info frame_info){
+    // @note Vim suppress mouse if not moving
+    // :suppress_mouse
+    if (vim_global_enable_mouse_suppression) {
+        if (vim_global_mouse_last_event_time > 0.0f) {
+            vim_global_mouse_last_event_time -= frame_info.literal_dt;
+            animate_in_n_milliseconds(app, (u32)(vim_global_mouse_last_event_time * 1000.0f));
+        }
+        if (vim_global_mouse_last_event_time <= 0.0f) {
+            set_mouse_suppression(true);
+        }
+    }
     
+    // @note: Update calc (once per frame).
+#if CALC_PLOT
+    {
+        static i32 last_frame_index = -1;
+        if(last_frame_index != frame_info.index)
+        {
+            CalcUpdateOncePerFrame(frame_info);
+        }
+        last_frame_index = frame_info.index;
+    }
+#endif
+    
+    // @note: Update code index
+    tebtro_code_index_update_tick(app);
+    
+    // @note: Update fade ranges
     if (tick_all_fade_ranges(app, frame_info.animation_dt)){
         animate_in_n_milliseconds(app, 0);
     }
 }
 
-BUFFER_HOOK_SIG(tebtro_file_save) {
-    // buffer_id
+BUFFER_HOOK_SIG(tebtro_file_save) { // (app, buffer_id)
     ProfileScope(app, "default file save");
     
     // @note Clean all lines

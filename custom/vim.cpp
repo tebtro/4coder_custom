@@ -2858,7 +2858,14 @@ run_lister(Application_Links *app, Lister *lister) {
             
             case InputEventKind_KeyStroke:
             {
-                bool has_mod_alt = has_modifier(mods, KeyCode_Alt);
+                if (has_modifier(&in.event.key.modifiers, KeyCode_Alt)) {
+                    if (in.event.key.code == KeyCode_K) {
+                        in.event.key.code = KeyCode_Up;
+                    }
+                    else if (in.event.key.code == KeyCode_J) {
+                        in.event.key.code = KeyCode_Down;
+                    }
+                }
                 
                 switch (in.event.key.code) {
                     case KeyCode_Return:
@@ -2886,11 +2893,6 @@ run_lister(Application_Links *app, Lister *lister) {
                         }
                     }break;
                     
-                    case KeyCode_K: {
-                        if (!has_mod_alt) {
-                            break;
-                        }
-                    }//FALLTHROUGH
                     case KeyCode_Up:
                     {
                         if (lister->handlers.navigate != 0) {
@@ -2904,11 +2906,6 @@ run_lister(Application_Links *app, Lister *lister) {
                         }
                     }break;
                     
-                    case KeyCode_J: {
-                        if (!has_mod_alt) {
-                            break;
-                        }
-                    }//FALLTHROUGH
                     case KeyCode_Down:
                     {
                         if (lister->handlers.navigate != 0) {

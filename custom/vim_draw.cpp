@@ -124,11 +124,6 @@ vim_draw_cursor_mark(Application_Links *app, View_ID view_id, b32 is_active_view
     Vim_View_State *vim_state = scope_attachment(app, view_scope, view_vim_state_id, Vim_View_State);
     b32 is_mode_insert = (vim_state->mode == vim_mode_insert);
     
-#if USE_MULTIPLE_CURSORS
-    // @note Draw multiple cursors
-    vim_draw_multiple_cursors(app, text_layout_id, cursor_roundness, is_mode_insert);
-#endif
-    
     // @note draw cursor mark
     i64 cursor_pos = view_get_cursor_pos(app, view_id);
     i64 mark_pos = view_get_mark_pos(app, view_id);
@@ -378,7 +373,7 @@ vim_draw_file_bar(Application_Links *app, View_ID view_id, b32 is_active, Buffer
 // @note Draw line numbers
 //
 function void
-draw_line_number_relative_margin(Application_Links *app, View_ID view_id, Buffer_ID buffer_id, Face_ID face_id, Text_Layout_ID text_layout_id, Rect_f32 margin) {
+draw_relative_line_number_margin(Application_Links *app, View_ID view_id, Buffer_ID buffer_id, Face_ID face_id, Text_Layout_ID text_layout_id, Rect_f32 margin) {
 #if 1
     draw_line_number_margin(app, view_id, buffer_id, face_id, text_layout_id, margin);
 #else

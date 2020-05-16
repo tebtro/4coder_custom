@@ -352,7 +352,7 @@ vim_render_caller(Application_Links *app, Frame_Info frame_info, View_ID view_id
         draw_line_number_margin(app, view_id, buffer, face_id, text_layout_id, line_number_rect);
 #else
         // @note relative
-        draw_line_number_relative_margin(app, view_id, buffer, face_id, text_layout_id, line_number_rect);
+        draw_relative_line_number_margin(app, view_id, buffer, face_id, text_layout_id, line_number_rect);
 #endif
     }
     

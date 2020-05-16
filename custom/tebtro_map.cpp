@@ -236,14 +236,6 @@ tebtro_setup_mapping_dvorak_programmer(Mapping *mapping) {
         Bind(query_replace_identifier,     KeyCode_Q, KeyCode_Control);
         
         
-#if USE_MULTIPLE_CURSORS
-        // :multiple_cursors
-        Bind(vim_add_multiple_cursor_down,  KeyCode_J, KeyCode_Control, KeyCode_Alt, KeyCode_Shift);
-        Bind(vim_remove_multiple_cursor_up, KeyCode_K, KeyCode_Control, KeyCode_Alt, KeyCode_Shift);
-        Bind(vim_multiple_cursor_search, KeyCode_S, KeyCode_Control, KeyCode_Alt);
-#endif
-        
-        
         Bind(vim_toggle_mouse_suppression, KeyCode_Space, KeyCode_Alt);
         Bind(vim_toggle_build_panel_height, KeyCode_Period);
     }
