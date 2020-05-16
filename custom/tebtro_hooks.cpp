@@ -124,15 +124,15 @@ CUSTOM_DOC("Input consumption loop for default view behavior") {
         
         ProfileScopeNamed(app, "before view input", view_input_profile);
         
-        // NOTE(allen): Mouse Suppression
         Event_Property event_properties = get_event_properties(&input.event);
-        if (suppressing_mouse && (event_properties & EventPropertyGroup_AnyMouseEvent) != 0){
-            continue;
-        }
         // @note(tebtro) :suppress_mouse
         if ((event_properties & EventPropertyGroup_AnyMouseEvent) != 0) {
             set_mouse_suppression(false);
             vim_global_mouse_last_event_time = 1.0f; // in seconds
+        }
+        // NOTE(allen): Mouse Suppression
+        if (suppressing_mouse && (event_properties & EventPropertyGroup_AnyMouseEvent) != 0){
+            continue;
         }
         
         // NOTE(allen): Get map_id
