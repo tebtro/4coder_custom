@@ -463,7 +463,7 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
     }
     
     // @note: Fade ranges
-    paint_fade_ranges(app, text_layout_id, buffer_id, view_id);
+    paint_fade_ranges(app, text_layout_id, buffer_id);
     
     // @note: Put the actual text on the actual screen
     draw_text_layout_default(app, text_layout_id);
@@ -727,7 +727,7 @@ tebtro_tick(Application_Links *app, Frame_Info frame_info){
     
     buffer_modified_set_clear();
     
-    if (tick_all_fade_ranges(frame_info.animation_dt)) {
+    if (tick_all_fade_ranges(app, frame_info.animation_dt)){
         animate_in_n_milliseconds(app, 0);
     }
 }

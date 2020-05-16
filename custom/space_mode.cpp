@@ -297,10 +297,10 @@ static Whichkey_Command whichkey_commands[14] = {
 
 function Lister_Result
 get_whichkey_from_user(Application_Links *app, Whichkey_Command *whichkeys, i32 whichkey_count, String_Const_u8 query) {
-    Scratch_Block scratch(app, Scratch_Share);
-    Lister *lister = begin_lister(app, scratch).current;
+    Scratch_Block scratch(app);
+    Lister_Block lister(app, scratch);
     lister_set_query(lister, query);
-    lister->handlers = lister_get_default_handlers();
+    lister_set_default_handlers(lister);
     
     Whichkey_Command *whichkey = whichkeys;
     for (i32 i = 0; i < whichkey_count; ++i, ++whichkey) {
@@ -320,8 +320,7 @@ CUSTOM_UI_COMMAND_SIG(whichkey_command_lister) {
     
     Custom_Command_Function *proc = 0;
     while (proc == 0) {
-        Lister_Result lister_result = get_whichkey_from_user(app, commands_list, command_count,
-                                                             SCu8("WhichKey: "));
+        Lister_Result lister_result = get_whichkey_from_user(app, commands_list, command_count, SCu8("WhichKey: "));
         if (lister_result.canceled)  break;
         
         Whichkey_Command *whichkey = (Whichkey_Command *)lister_result.user_data;

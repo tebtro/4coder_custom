@@ -379,6 +379,13 @@ vim_draw_file_bar(Application_Links *app, View_ID view_id, b32 is_active, Buffer
 //
 function void
 draw_line_number_relative_margin(Application_Links *app, View_ID view_id, Buffer_ID buffer_id, Face_ID face_id, Text_Layout_ID text_layout_id, Rect_f32 margin) {
+#if 1
+    draw_line_number_margin(app, view_id, buffer_id, face_id, text_layout_id, margin);
+#else
+    // @todo Update, this is old code
+    // @todo Update, this is old code
+    // @todo Update, this is old code
+    
     Rect_f32 prev_clip = draw_set_clip(app, margin);
     draw_rectangle_fcolor(app, margin, 0.f, fcolor_id(defcolor_line_numbers_back));
     
@@ -415,4 +422,5 @@ draw_line_number_relative_margin(Application_Links *app, View_ID view_id, Buffer
     }
     
     draw_set_clip(app, prev_clip);
+#endif
 }

@@ -1,8 +1,8 @@
 // Created by: Tebtro
 
 defcolor_back_default = 0xFF072626;
-// background color {default_back, build_panel_background, keyboard_macro_is_recording}
-defcolor_back = {defcolor_back_default, 0xFF031212, 0xFFDC143C}; // crimson red: 0xFFDC143C
+// background color {default_back, build_panel_background}
+defcolor_back = {defcolor_back_default, 0xFF031212};
 // default foreground/text color
 defcolor_text_default = 0xFFA19C8C; // 0xFFBDB8A4;
 
@@ -37,6 +37,7 @@ defcolor_at_search_occurance_highlight = 0xFFF3FaFF;
 defcolor_margin        = 0xFF062121;
 defcolor_margin_hover  = 0xFF062121;
 defcolor_margin_active = 0xFF062121;
+defcolor_margin_keyboard_macro_is_recording = 0xFFDC143C; // crimson red: 0xFFDC143C
 
 // Line number margin colors
 defcolor_line_numbers_back = defcolor_back_default;

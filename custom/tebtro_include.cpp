@@ -1,6 +1,11 @@
 #if !defined(TEBTRO_INCLUDE_CPP)
 
 
+#define VIM_USE_DEFAULT_RUN_LISTER 0
+#define VIM_USE_DEFAULT_ISEARCH 0
+#define VIM_USE_DEFAULT_QUERY_REPLACE_BASE 0
+
+
 #if VIM_WINDOWS_AUTO_DISABLE_CAPSLOCK
 #pragma comment(lib, "user32")
 #pragma warning(push)

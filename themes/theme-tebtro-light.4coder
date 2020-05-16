@@ -1,8 +1,8 @@
 // Modified theme-stb.4coder
 
 defcolor_back_default = 0xFFD6D6D6;
-// background color {default_back, build_panel_background, keyboard_macro_is_recording}
-defcolor_back = {defcolor_back_default, 0xFF969696, 0xFFDC143C}; // crimson red: 0xFFDC143C
+// background color {default_back, build_panel_background}
+defcolor_back = {defcolor_back_default, 0xFF969696};
 // default foreground/text color
 defcolor_text_default = 0xFF000000;
 
@@ -37,6 +37,7 @@ defcolor_at_search_occurance_highlight = 0xFFF3FaFF;
 defcolor_margin        = 0xFF9E9E9E;
 defcolor_margin_hover  = 0xFF7E7E7E;
 defcolor_margin_active = 0xFF5C5C5C;
+defcolor_margin_keyboard_macro_is_recording = 0xFFDC143C; // crimson red: 0xFFDC143C
 
 // Line number margin colors
 defcolor_line_numbers_back = 0xFF808080;

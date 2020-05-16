@@ -1935,7 +1935,6 @@ CUSTOM_COMMAND_SIG(vim_paste_next) {
     
     Scratch_Block scratch(app);
     
-    clipboard_update_history_from_system(app, 0);
     i32 count = clipboard_count(0);
     if (count <= 0)  return;
     View_ID view_id = get_active_view(app, Access_ReadWriteVisible);
@@ -1944,7 +1943,10 @@ CUSTOM_COMMAND_SIG(vim_paste_next) {
     
     Rewrite_Type *rewrite = scope_attachment(app, view_scope, view_rewrite_loc, Rewrite_Type);
     if (rewrite == 0)  return;
-    if (*rewrite != Rewrite_Paste)  return;
+    if (*rewrite != Rewrite_Paste){
+        vim_paste(app);
+        return;
+    }
     
     Rewrite_Type *next_rewrite = scope_attachment(app, view_scope, view_next_rewrite_loc, Rewrite_Type);
     *next_rewrite = Rewrite_Paste;
@@ -2832,7 +2834,8 @@ run_lister(Application_Links *app, Lister *lister) {
     
     for (;;) {
         User_Input in = get_next_input(app, EventPropertyGroup_Any, EventProperty_Escape);
-        if (has_modifier(&in.event.key.modifiers, KeyCode_Control)) {
+        Input_Modifier_Set *mods = &in.event.key.modifiers;
+        if (has_modifier(mods, KeyCode_Control)) {
             if (in.event.key.code == KeyCode_Space) {
                 in.abort = true;
             }
@@ -2855,14 +2858,7 @@ run_lister(Application_Links *app, Lister *lister) {
             
             case InputEventKind_KeyStroke:
             {
-                if (has_modifier(&in.event.key.modifiers, KeyCode_Alt)) {
-                    if (in.event.key.code == KeyCode_K) {
-                        in.event.key.code = KeyCode_Up;
-                    }
-                    else if (in.event.key.code == KeyCode_J) {
-                        in.event.key.code = KeyCode_Down;
-                    }
-                }
+                bool has_mod_alt = has_modifier(mods, KeyCode_Alt);
                 
                 switch (in.event.key.code) {
                     case KeyCode_Return:
@@ -2890,6 +2886,11 @@ run_lister(Application_Links *app, Lister *lister) {
                         }
                     }break;
                     
+                    case KeyCode_K: {
+                        if (!has_mod_alt) {
+                            break;
+                        }
+                    }//FALLTHROUGH
                     case KeyCode_Up:
                     {
                         if (lister->handlers.navigate != 0) {
@@ -2903,6 +2904,11 @@ run_lister(Application_Links *app, Lister *lister) {
                         }
                     }break;
                     
+                    case KeyCode_J: {
+                        if (!has_mod_alt) {
+                            break;
+                        }
+                    }//FALLTHROUGH
                     case KeyCode_Down:
                     {
                         if (lister->handlers.navigate != 0) {
@@ -3081,6 +3087,14 @@ vim_isearch(Application_Links *app, Scan_Direction start_scan, i64 first_pos, St
     if (start_query_bar(app, &bar, 0) == 0) {
         return;
     }
+    
+    Vec2_f32 old_margin = {};
+    Vec2_f32 old_push_in = {};
+    view_get_camera_bounds(app, view, &old_margin, &old_push_in);
+    
+    Vec2_f32 margin = old_margin;
+    margin.y = clamp_bot(200.f, margin.y);
+    view_set_camera_bounds(app, view, margin, old_push_in);
     
     i64 first_mark_pos = view_get_mark_pos(app, view);
     Range_i64 first_selection_range = vim_state->selection_range;
@@ -3287,11 +3301,6 @@ vim_isearch(Application_Links *app, Scan_Direction start_scan, i64 first_pos, St
         else if (do_scroll_wheel) {
             mouse_wheel_scroll(app);
         }
-#if 0
-        else{
-            leave_current_input_unhandled(app);
-        }
-#endif
     }
     
     view_disable_highlight_range(app, view);
@@ -3330,6 +3339,7 @@ vim_isearch(Application_Links *app, Scan_Direction start_scan, i64 first_pos, St
         }
     }
     
+    view_set_camera_bounds(app, view, old_margin, old_push_in);
 }
 function void
 isearch(Application_Links *app, Scan_Direction start_scan, i64 first_pos, String_Const_u8 query_init) {

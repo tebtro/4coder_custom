@@ -271,7 +271,7 @@ static Project_List_Item global_tebtro_project_list[3] = {
 
 function Project_List_Item
 get_project_from_user(Application_Links *app, Project_List_Item *project_list, i32 project_count, String_Const_u8 query) {
-    Scratch_Block scratch(app, Scratch_Share);
+    Scratch_Block scratch(app);
     Lister *lister = begin_lister(app, scratch).current;
     lister_set_query(lister, query);
     lister->handlers = lister_get_default_handlers();
@@ -294,7 +294,7 @@ CUSTOM_COMMAND_SIG(switch_project) {
     Project_List_Item result = get_project_from_user(app, global_tebtro_project_list, ArrayCount(global_tebtro_project_list), query);
     if (ArrayCount(result.path) <= 0)  return;
     
-    Scratch_Block scratch(app, Scratch_Share);
+    Scratch_Block scratch(app);
     Project_Parse_Result project_parse = parse_project__file_name(app, scratch, result.path);
     set_current_project(app, project_parse.project, project_parse.parsed);
 }

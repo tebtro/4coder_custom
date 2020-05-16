@@ -58,12 +58,12 @@ tebtro_draw_background_and_margin(Application_Links *app, View_ID view_id, Buffe
         back_sub_id = 1;
     }
     
-    if (is_active_view && keyboard_macro_is_recording) {
-        back_sub_id = 2;
-    }
-    
     FColor back_color = fcolor_id(defcolor_back, back_sub_id);
     FColor margin_color = get_panel_margin_color((is_active_view) ? UIHighlight_Active : UIHighlight_None);
+    
+    if (is_active_view && keyboard_macro_is_recording) {
+        margin_color = fcolor_id(defcolor_margin_keyboard_macro_is_recording);
+    }
     
     ARGB_Color margin_argb = fcolor_resolve(margin_color);
     ARGB_Color back_argb = fcolor_resolve(back_color);
@@ -1077,12 +1077,11 @@ tebtro_draw_scope_close_brace_annotations(Application_Links *app, View_ID view_i
         start_line.size -= first_open_paren_index;
         
         if (!is_out_of_bounds)  continue;
+        u32 flags = 0;
 #if 1
-        u32 flags = GlyphFlag_Rotate90;
-        Vec2_f32 delta = {0,1};
+        Vec2_f32 delta = {0.0f,1.0f};
 #else
-        u32 flags = ; // @todo Flag to rotate -90 degree?
-        Vec2_f32 delta = {1,0}; // {0,-1};
+        Vec2_f32 delta = {1.0f,0.0f}; // {0,-1};
         point.y += start_line.size * face_metrics.normal_advance;
 #endif
         draw_string_oriented(app, face_id, color_identifier, string_identifier, point, flags, delta);

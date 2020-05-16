@@ -14,6 +14,7 @@ CUSTOM_ID(colors, defcolor_back);
 CUSTOM_ID(colors, defcolor_margin);
 CUSTOM_ID(colors, defcolor_margin_hover);
 CUSTOM_ID(colors, defcolor_margin_active);
+CUSTOM_ID(colors, defcolor_margin_keyboard_macro_is_recording);
 CUSTOM_ID(colors, defcolor_list_item);
 CUSTOM_ID(colors, defcolor_list_item_hover);
 CUSTOM_ID(colors, defcolor_list_item_active);
