@@ -559,8 +559,17 @@ avy_goto_view(Application_Links *app, b32 do_buffer_swap) {
         if (do_buffer_swap) {
             Buffer_ID active_buffer_id = view_get_buffer(app, active_view_id, Access_Always);
             Buffer_ID target_buffer_id = view_get_buffer(app, target_view_id, Access_Always);
-            view_set_buffer(app, target_view_id, active_buffer_id, Access_Always);
-            view_set_buffer(app, active_view_id, target_buffer_id, Access_Always);
+            if (active_buffer_id != target_buffer_id) {
+                view_set_buffer(app, target_view_id, active_buffer_id, Access_Always);
+                view_set_buffer(app, active_view_id, target_buffer_id, Access_Always);
+            }
+            else {
+                Buffer_Scroll active_buffer_scroll = view_get_buffer_scroll(app, active_view_id);
+                Buffer_Scroll target_buffer_scroll = view_get_buffer_scroll(app, target_view_id);
+                Set_Buffer_Scroll_Rule rule = SetBufferScroll_SnapCursorIntoView;
+                view_set_buffer_scroll(app, active_view_id, target_buffer_scroll, rule);
+                view_set_buffer_scroll(app, target_view_id, active_buffer_scroll, rule);
+            }
         }
         view_set_active(app, target_view_id);
     }

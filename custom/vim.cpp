@@ -1088,9 +1088,9 @@ CUSTOM_COMMAND_SIG(vim_move_to_line_start__or__vim_execute_command_count_add_pre
 // @note Selection commands
 //
 
-CUSTOM_COMMAND_SIG(vim_select_token_or_word_under_cursor) {
-    View_ID view_id = get_active_view(app, Access_ReadVisible);
-    Buffer_ID buffer_id = view_get_buffer(app, view_id, Access_ReadVisible);
+VIM_NTIMES_CUSTOM_COMMAND_SIG(_vim_select_token_or_word_under_cursor) {
+    //View_ID view_id = get_active_view(app, Access_ReadVisible);
+    //Buffer_ID buffer_id = view_get_buffer(app, view_id, Access_ReadVisible);
     
     i64 cursor_pos = view_get_cursor_pos(app, view_id);
     Token *token = get_token_from_pos(app, buffer_id, cursor_pos);
@@ -1118,6 +1118,7 @@ CUSTOM_COMMAND_SIG(vim_select_token_or_word_under_cursor) {
     ++range.one_past_last;
     vim_exec_pending_action(app, range);
 }
+VIM_MOVE_COMMAND_EXECUTE_NTIMES(vim_select_token_or_word_under_cursor, _vim_select_token_or_word_under_cursor);
 
 CUSTOM_COMMAND_SIG(vim_visual_select_token_or_word_under_cursor) {
     VIM_GET_VIEW_ID_SCOPE_AND_VIM_STATE(app);
@@ -1126,7 +1127,7 @@ CUSTOM_COMMAND_SIG(vim_visual_select_token_or_word_under_cursor) {
     }
     
     vim_select_token_or_word_under_cursor(app);
-    vim_update_visual_range(app, view_id);
+    vim_update_visual_range(app, view_id, false);
 }
 
 //

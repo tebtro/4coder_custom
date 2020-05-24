@@ -98,6 +98,13 @@ get_token_or_word_under_cursor_range(Application_Links *app, Buffer_ID buffer_id
             //range = enclose_pos_non_whitespace(app, buffer_id, cursor_pos);
         }
     };
+    auto maybe_include_one_char_to_the_left = [app, buffer_id](Range_i64 *range) {
+        u8 ch = buffer_get_char(app, buffer_id, range->start - 1);
+        // :comment_notations
+        if (ch == ':' || ch == '@') {
+            range->start -= 1;
+        }
+    };
     
     if (token) {
         // @note: Token
@@ -122,6 +129,7 @@ get_token_or_word_under_cursor_range(Application_Links *app, Buffer_ID buffer_id
                     }
                 }
             }
+            maybe_include_one_char_to_the_left(&range);
         }
         else if (token->kind == TokenBaseKind_LiteralString) {
             if (cursor_pos == token->pos || cursor_pos == token->pos+token->size-1) {
@@ -152,6 +160,7 @@ get_token_or_word_under_cursor_range(Application_Links *app, Buffer_ID buffer_id
         else {
             range = do_boundary_search();
         }
+        maybe_include_one_char_to_the_left(&range);
     }
     
     Assert(range.start >= 0 && range.end >= 0);
