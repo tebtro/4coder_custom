@@ -436,13 +436,8 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
     
     // @note: Scope brace annotations
     {
-#if 0
-        Color_Array colors = finalize_color_array(defcolor_scope_close_brace_annotation_cycle);
-        tebtro_draw_scope_close_brace_annotations(app, view_id, view_region, buffer_id, text_layout_id, face_id, cursor_pos, colors.vals, colors.count);
-#else
         u32 flags = vertical_scope_annotation_flag_top_to_bottom | vertical_scope_annotation_flag_highlight | vertical_scope_annotation_flag_highlight_case_label;
         vertical_scope_annotation_draw(app, view_id, buffer_id, text_layout_id, flags);
-#endif
     }
     
     // @note :avy_search

@@ -105,7 +105,8 @@ defcolor_scope_vertical_line_cycle = defcolor_parenthesis_cycle;
 // {} scope brace text highlight
 defcolor_scope_brace_cycle         = defcolor_parenthesis_cycle;
 // "} ident()" scope close brace annotation text color
-defcolor_scope_close_brace_annotation_cycle = {0xFF808080};
+vertical_scope_annotation_text      = 0x80808080;
+vertical_scope_annotation_highlight = 0xC0808080;
 
 //
 // Default cycle colors     @todo Remove the default ones maybe

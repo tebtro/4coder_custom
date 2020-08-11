@@ -1,6 +1,10 @@
 //
+// @important: MODULE from
+// https://4coder.handmade.network/wiki/7394-%5Bmodule%5D_vertical_scope_annotation#vertical_scope_annotation.cpp
+//
 // @note(tebtro) Modifies:
 // Added indentation centering x:  float vertical_scope_annotation_x_centering = 0.1f;
+// Added draw horizontal annotation at scope close.
 //
 
 
