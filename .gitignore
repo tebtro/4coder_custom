@@ -36,3 +36,4 @@ custom/*
 !custom/vim*
 !custom/space*
 !custom/tebtro*
+!custom/vertical_scope_annotation.cpp

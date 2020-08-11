@@ -116,10 +116,10 @@ tebtro_draw_comment_highlights(Application_Links *app, Buffer_ID buffer_id, Text
     
     Tebtro_Comment_Highlight_Pair pairs[] = {
         // tags
-        { string_u8_litexpr("@note"),  finalize_color(defcolor_comment_pop, COMMENT_POP_note)  },
-        { string_u8_litexpr("@todo"),  finalize_color(defcolor_comment_pop, COMMENT_POP_todo)  },
-        { string_u8_litexpr("@study"), finalize_color(defcolor_comment_pop, COMMENT_POP_study) },
-        { string_u8_litexpr("@"),      finalize_color(defcolor_comment_pop, COMMENT_POP_tag)   },
+        { string_u8_litexpr("@note"),  finalize_color(defcolor_comment_pop, COMMENT_POP_note)            },
+        { string_u8_litexpr("@todo"),  finalize_color(defcolor_comment_pop, COMMENT_POP_todo)            },
+        { string_u8_litexpr("@study"), finalize_color(defcolor_comment_pop, COMMENT_POP_study)           },
+        { string_u8_litexpr("@"),      finalize_color(defcolor_comment_pop, COMMENT_POP_tag)             },
         { string_u8_litexpr(":"),      finalize_color(defcolor_comment_pop, COMMENT_POP_correlation_tag) },
         
         // User name

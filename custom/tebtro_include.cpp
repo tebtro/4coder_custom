@@ -142,6 +142,11 @@
 #include "4coder_default_hooks.cpp"
 
 //
+// vertical_scope_annotation
+//
+#include "vertical_scope_annotation.cpp"
+
+//
 // vim
 //
 #include "vim.h"
