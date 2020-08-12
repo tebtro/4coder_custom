@@ -64,18 +64,21 @@ defcolor_bool_constant  = defcolor_text_default;
 defcolor_include = defcolor_text_default;
 defcolor_preproc = defcolor_text_default;
 defcolor_special_character = 0xFF9A0000;
-defcolor_ghost_character = 0xFF6B6B6B;
+defcolor_ghost_character   = 0xFF6B6B6B;
 
-// Additional type, token colors
-defcolor_type           = defcolor_text_default;
-defcolor_type_function  = defcolor_text_default;
-defcolor_type_macro     = defcolor_text_default;
-defcolor_operator       = defcolor_text_default;
-defcolor_square_bracket = defcolor_text_default;
+// Type colors
+primitive_highlight_type     = 0xFF7DD695; // 0xFFBAA227; // 0xFFFF0000; // j: 0xFF7DD695; // c: 0xFFA08C54;
+primitive_highlight_function = 0xFF915849; // 0xFF00FF00; // 0xFFBDB8A4; default text color // c: 0xFF915849;
+primitive_highlight_macro    = 0xFF388AD9; // 0xFF0000FF; // j: 0xFFC8D4EC; // c: 0xFF4D716B;
+primitive_highlight_4coder_command = defcolor_type_function;
+
+// Operator colors
+defcolor_operator       = 0xFFC7C1AD;
+defcolor_square_bracket = 0xFFD9D2BD;
 
 // fade foreground/text colors
 defcolor_paste = 0xFF00B8B8;
-defcolor_undo = 0xFFB800B8;
+defcolor_undo  = 0xFFB800B8;
 
 // highlight junk/white colors
 defcolor_highlight_junk  = 0xFFFF7878;

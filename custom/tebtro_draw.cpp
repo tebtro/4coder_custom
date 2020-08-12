@@ -203,7 +203,6 @@ tebtro_draw_comment_highlights(Application_Links *app, Buffer_ID buffer_id, Text
 // @note Cpp token colorizing
 //
 
-// @todo Use this and move the keyword stuff to here.
 function FColor
 tebtro_get_token_color_cpp(Application_Links *app, Buffer_ID buffer_id, Token token) {
     Scratch_Block scratch(app);
@@ -225,7 +224,7 @@ tebtro_get_token_color_cpp(Application_Links *app, Buffer_ID buffer_id, Token to
                 string_match(lexeme, SCu8("long"))  ||
                 string_match(lexeme, SCu8("float")) ||
                 string_match(lexeme, SCu8("double"))) {
-                color = defcolor_type;
+                color = primitive_highlight_type;
             }
         } break;
         case TokenBaseKind_Operator: {
@@ -489,69 +488,6 @@ tebtro_draw_cpp_token_colors(Application_Links *app, Text_Layout_ID text_layout_
         ARGB_Color argb = fcolor_resolve(color);
         paint_text_color(app, text_layout_id, Ii64_size(token->pos, token->size), argb);
         if (!token_it_inc_all(&it)) {
-            break;
-        }
-    }
-}
-
-function void
-tebtro_draw_cpp_identifier_colors(Application_Links *app, Text_Layout_ID text_layout_id, Buffer_ID buffer, Token_Array *array) {
-    ProfileScope(app, "draw_cpp_identifier_colors");
-    Scratch_Block scratch(app);
-    
-    Range_i64 visible_range = text_layout_get_visible_range(app, text_layout_id);
-    i64 first_index = token_index_from_pos(array, visible_range.first);
-    Token_Iterator_Array it = token_iterator_index(0, array, first_index);
-    
-    for (;;) {
-        Token *token = token_it_read(&it);
-        if (token->pos >= visible_range.one_past_last){
-            break;
-        }
-        if (token->kind == TokenBaseKind_Identifier) {
-            // @note Default is like for all other identifiers, so all other variable names.
-            Managed_ID color = defcolor_text_default;
-            
-            // @note lookup identifier
-            String_Const_u8 lexeme = push_token_lexeme(app, scratch, buffer, token);
-            u64 hash = djb2(lexeme);
-            
-            b32 found = false;
-            for (Buffer_ID buffer_it = get_buffer_next(app, 0, Access_Always);
-                 (!found && buffer_it != 0);
-                 buffer_it = get_buffer_next(app, buffer_it, Access_Always)) {
-                Managed_Scope scope = buffer_get_managed_scope(app, buffer_it);
-                Code_Index_Identifier_Hash_Table *identifier_table = scope_attachment(app, scope, attachment_code_index_identifier_table, Code_Index_Identifier_Hash_Table);
-                if (!identifier_table)  continue;
-                if (identifier_table->count == 0)  continue;
-                Code_Index_Identifier_Node *node = code_index_identifier_table_lookup(identifier_table, hash);
-                if (node != 0) {
-                    switch (node->note_kind) {
-                        case CodeIndexNote_Type: {
-                            color = defcolor_type;
-                            found = true;
-                        } break;
-                        case CodeIndexNote_Function: {
-                            color = defcolor_type_function;
-                            found = true;
-                        } break;
-                        case CodeIndexNote_Macro: {
-                            color = defcolor_type_macro;
-                            found = true;
-                        } break;
-                    }
-                }
-            }
-            
-            // @todo @cleanup auto should just be added to the lexer as a keyword.
-            if (string_match(lexeme, SCu8("auto"))) {
-                color = defcolor_keyword;
-            }
-            
-            ARGB_Color argb = fcolor_resolve(fcolor_id(color));
-            paint_text_color(app, text_layout_id, Ii64_size(token->pos, token->size), argb);
-        }
-        if (!token_it_inc_all(&it)){
             break;
         }
     }

@@ -151,6 +151,10 @@
 // scope_highlight
 #include "scope_highlight.cpp"
 
+// primitive highlight
+function FColor tebtro_get_token_color_cpp(Application_Links *app, Buffer_ID buffer_id, Token token);
+#include "primitive_highlight.cpp"
+
 //
 // vim
 //

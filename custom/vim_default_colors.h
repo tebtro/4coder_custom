@@ -61,9 +61,6 @@ CUSTOM_ID(colors, defcolor_text_cycle);
 CUSTOM_ID(colors, defcolor_line_numbers_back);
 CUSTOM_ID(colors, defcolor_line_numbers_text);
 
-CUSTOM_ID(colors, defcolor_type);
-CUSTOM_ID(colors, defcolor_type_function);
-CUSTOM_ID(colors, defcolor_type_macro);
 CUSTOM_ID(colors, defcolor_operator);
 CUSTOM_ID(colors, defcolor_square_bracket);
 

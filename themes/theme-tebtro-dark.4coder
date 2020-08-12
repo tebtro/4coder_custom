@@ -54,31 +54,34 @@ defcolor_comment = 0xAA3fdf1f;
 defcolor_comment_pop = {0xFF00FF00, 0xFFFF0000, 0xFFFFA500, 0xFFFFFF00, 0xFF00FFFF, 0xFFE84188};
 
 // token foreground/text colors
-defcolor_keyword = 0xFFBF7C00; // j: 0xFFF3FaFF; // 0xFFBF7C00; // 0xCCCD950C;
-defcolor_str_constant = 0xFF0FAEAF; // 0xCC0fdfaf; // 0xFF0fdfaf; // 0xFF24D7A8; // 0xFF25AEA5
-defcolor_char_constant = defcolor_str_constant;
-defcolor_int_constant = 0xCC9FF1DE; // 0xFF9FF1DE;
+defcolor_keyword        = 0xFFBF7C00; // j: 0xFFF3FaFF; // 0xFFBF7C00; // 0xCCCD950C;
+defcolor_str_constant   = 0xFF0FAEAF; // 0xCC0fdfaf; // 0xFF0fdfaf; // 0xFF24D7A8; // 0xFF25AEA5
+defcolor_char_constant  = defcolor_str_constant;
+defcolor_int_constant   = 0xCC9FF1DE; // 0xFF9FF1DE;
 defcolor_float_constant = defcolor_int_constant;
-defcolor_bool_constant = defcolor_int_constant;
+defcolor_bool_constant  = defcolor_int_constant;
 
 defcolor_include = defcolor_str_constant;
 defcolor_preproc = 0xFFDAB98F;
 defcolor_special_character = 0xFFFF0000;
-defcolor_ghost_character = 0xFFBB0000;
+defcolor_ghost_character   = 0xFFBB0000;
 
-// Additional type, token colors
-defcolor_type          = 0xFF7DD695; // 0xFFBAA227; // 0xFFFF0000; // j: 0xFF7DD695; // c: 0xFFA08C54;
-defcolor_type_function = 0xFF915849; // 0xFF00FF00; // 0xFFBDB8A4; default text color // c: 0xFF915849;
-defcolor_type_macro    = 0xFF388AD9; // 0xFF0000FF; // j: 0xFFC8D4EC; // c: 0xFF4D716B;
+// Type colors
+primitive_highlight_type     = 0xFF7DD695; // 0xFFBAA227; // 0xFFFF0000; // j: 0xFF7DD695; // c: 0xFFA08C54;
+primitive_highlight_function = 0xFF915849; // 0xFF00FF00; // 0xFFBDB8A4; default text color // c: 0xFF915849;
+primitive_highlight_macro    = 0xFF388AD9; // 0xFF0000FF; // j: 0xFFC8D4EC; // c: 0xFF4D716B;
+primitive_highlight_4coder_command = defcolor_type_function;
+
+// Operator colors
 defcolor_operator       = 0xFFC7C1AD;
 defcolor_square_bracket = 0xFFD9D2BD;
 
 // fade foreground/text colors
 defcolor_paste = 0xFFFFBB00;
-defcolor_undo = 0xFF80005D;
+defcolor_undo  = 0xFF80005D;
 
 // highlight junk/white colors
-defcolor_highlight_junk = 0xFF3A0000;
+defcolor_highlight_junk  = 0xFF3A0000;
 defcolor_highlight_white = 0xFF003A3A;
 
 // bar background colors

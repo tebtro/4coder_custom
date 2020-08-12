@@ -304,8 +304,8 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
             tebtro_draw_cpp_token_colors__only_comments(app, text_layout_id, buffer_id, &token_array);
         }
         else {
-            tebtro_draw_cpp_token_colors(app, text_layout_id, buffer_id, &token_array);
-            tebtro_draw_cpp_identifier_colors(app, text_layout_id, buffer_id, &token_array);
+            // tebtro_draw_cpp_token_colors(app, text_layout_id, buffer_id, &token_array);
+            primitive_highlight_draw_cpp_token_colors(app, text_layout_id, &token_array, buffer_id);
         }
         
         //~ @note Scan for TODOs and NOTEs
@@ -612,46 +612,6 @@ tebtro_render_caller(Application_Links *app, Frame_Info frame_info, View_ID view
 }
 
 function void
-tebtro_code_index_update_tick(Application_Links *app) {
-    Scratch_Block scratch(app);
-    for (Buffer_Modified_Node *node = global_buffer_modified_set.first; node != 0; node = node->next) {
-        Temp_Memory_Block temp(scratch);
-        Buffer_ID buffer_id = node->buffer;
-        
-        String_Const_u8 contents = push_whole_buffer(app, scratch, buffer_id);
-        Token_Array tokens = get_token_array_from_buffer(app, buffer_id);
-        if (tokens.count == 0){
-            continue;
-        }
-        
-        Arena arena = make_arena_system(KB(16));
-        Code_Index_File *index = push_array_zero(&arena, Code_Index_File, 1);
-        index->buffer = buffer_id;
-        
-        Generic_Parse_State state = {};
-        generic_parse_init(app, &arena, contents, &tokens, &state);
-        // TODO(allen): Actually determine this in a fair way.
-        // Maybe switch to an enum.
-        state.do_cpp_parse = true;
-        generic_parse_full_input_breaks(index, &state, max_i32);
-        
-        // @note(tebtro): Update identifier lookup table
-        {
-            Managed_Scope scope = buffer_get_managed_scope(app, buffer_id);
-            Code_Index_Identifier_Hash_Table *identifier_table = scope_attachment(app, scope, attachment_code_index_identifier_table, Code_Index_Identifier_Hash_Table);
-            *identifier_table = code_index_identifier_table_from_array(app, buffer_id, state.arena, index->note_array);
-        }
-        
-        code_index_lock();
-        code_index_set_file(buffer_id, arena, index);
-        code_index_unlock();
-        buffer_clear_layout_cache(app, buffer_id);
-    }
-    
-    buffer_modified_set_clear();
-}
-
-function void
 tebtro_tick(Application_Links *app, Frame_Info frame_info){
     // @note Vim suppress mouse if not moving
     // :suppress_mouse
@@ -678,7 +638,7 @@ tebtro_tick(Application_Links *app, Frame_Info frame_info){
 #endif
     
     // @note: Update code index
-    tebtro_code_index_update_tick(app);
+    code_index_update_tick(app);
     
     // @note: Update fade ranges
     if (tick_all_fade_ranges(app, frame_info.animation_dt)){
