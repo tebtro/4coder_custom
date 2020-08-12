@@ -24,31 +24,33 @@ tebtro_jump_to_definition(Application_Links *app, bool use_ident_under_cursor = 
          buffer_id != 0;
          buffer_id = get_buffer_next(app, buffer_id, Access_Always)) {
         Code_Index_File *file = code_index_get_file(buffer_id);
-        if (file != 0) {
-            for (i32 i = 0; i < file->note_array.count; i += 1) {
-                Code_Index_Note *note = file->note_array.ptrs[i];
-                Tebtro_Tiny_Jump *jump = push_array(scratch, Tebtro_Tiny_Jump, 1);
-                jump->buffer_id = buffer_id;
-                jump->pos = note->pos.first;
-                
-                String_Const_u8 sort = {};
-                switch (note->note_kind) {
-                    case CodeIndexNote_Type: {
-                        sort = string_u8_litexpr("type");
-                    } break;
-                    case CodeIndexNote_Function: {
-                        sort = string_u8_litexpr("function");
-                    } break;
-                    case CodeIndexNote_Macro:{
-                        sort = string_u8_litexpr("macro");
-                    } break;
-                }
-                
-                String_Const_u8 buffer_name = push_buffer_unique_name(app, scratch, buffer_id);
-                
-                String_Const_u8 text = push_u8_stringf(scratch, "%.*s - <%.*s>", string_expand(sort), string_expand(buffer_name));
-                lister_add_item(lister, note->text, text, jump, 0);
+        if (!file)  continue;
+        
+        for (i32 i = 0; i < file->note_array.count; i += 1) {
+            Code_Index_Note *note = file->note_array.ptrs[i];
+            if (!note)  continue;
+            
+            Tebtro_Tiny_Jump *jump = push_array(scratch, Tebtro_Tiny_Jump, 1);
+            jump->buffer_id = buffer_id;
+            jump->pos = note->pos.first;
+            
+            String_Const_u8 sort = {};
+            switch (note->note_kind) {
+                case CodeIndexNote_Type: {
+                    sort = string_u8_litexpr("type");
+                } break;
+                case CodeIndexNote_Function: {
+                    sort = string_u8_litexpr("function");
+                } break;
+                case CodeIndexNote_Macro:{
+                    sort = string_u8_litexpr("macro");
+                } break;
             }
+            
+            String_Const_u8 buffer_name = push_buffer_unique_name(app, scratch, buffer_id);
+            String_Const_u8 text = push_u8_stringf(scratch, "%.*s - <%.*s>", string_expand(sort), string_expand(buffer_name));
+            
+            lister_add_item(lister, note->text, text, jump, 0);
         }
     }
     code_index_unlock();

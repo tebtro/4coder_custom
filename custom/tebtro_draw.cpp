@@ -541,6 +541,12 @@ tebtro_draw_search_highlight(Application_Links *app, View_ID view_id, Buffer_ID 
             Marker marker_range[2];
             if (managed_object_load_data(app, *highlight, 0, 2, marker_range)) {
                 Range_i64 range = Ii64(marker_range[0].pos, marker_range[1].pos);
+                if (range.min <= 0)  range.min = 0;
+                if (range.max <= 0)  range.max = range.min;
+                if (range_size(range) < 1) {
+                    view_disable_highlight_range(app, view_id);
+                    return false;
+                }
                 
                 // @note Draw all search items in visible range
                 Range_i64 visible_range = text_layout_get_visible_range(app, text_layout_id);
@@ -559,7 +565,15 @@ tebtro_draw_search_highlight(Application_Links *app, View_ID view_id, Buffer_ID 
                 String_Match *match = matches.first;
                 for (int i = 0; i < matches.count; ++i) {
                     Range_i64 match_range = match->range;
+                    if (match_range.min <= 0)  match_range.min = 0;
+                    if (match_range.max <= 0)  match_range.max = match_range.min;
+                    if (range_size(match_range) < 1) {
+                        continue;
+                    }
                     
+                    // @todo: When there is a whitespace inside the range.
+                    //        draw_character_block is not working correctly for 1 and 2 long matches
+                    //        test_layout_character_on_screen return FLT_MAX and -FLT_MAX
                     draw_character_block(app, text_layout_id, match_range, roundness, argb_match);
                     paint_text_color(app, text_layout_id, match_range, argb_at_match);
                     
@@ -567,11 +581,15 @@ tebtro_draw_search_highlight(Application_Links *app, View_ID view_id, Buffer_ID 
                 }
                 
                 // @note Draw active search item
+                // @todo: When there is a whitespace inside the range.
+                //        draw_character_block is not working correctly for 1 and 2 long matches
+                //        test_layout_character_on_screen return FLT_MAX and -FLT_MAX
                 draw_character_block(app, text_layout_id, range, roundness, argb_highlight);
                 paint_text_color(app, text_layout_id, range, argb_at_highlight);
             }
         }
     }
+    
     return has_highlight_range;
 }
 

@@ -1,13 +1,3 @@
-#ifdef FLEURY_CALC
-#include <stdlib.h>
-#include <string.h>
-#include "4coder_fleury_utilities.cpp"
-#include "4coder_fleury_ubiquitous.cpp"
-#include "4coder_fleury_plot.cpp"
-#include "4coder_fleury_calc.cpp"
-#endif
-
-
 
 CUSTOM_COMMAND_SIG(tebtro_startup)
 CUSTOM_DOC("Tebtro custom command for responding to a startup event")
