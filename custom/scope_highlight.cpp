@@ -209,29 +209,29 @@ function void scope_highlight_draw( Application_Links *app, Buffer_ID buffer, Te
                     if ( unwrapped_start < visible_range.min ) {
                         rect.y0 = region.y0;
                     } else  {
-                        rect.y0 = text_layout_character_on_screen( app, text_layout_id, unwrapped_start ).y0;
-                        
-                        if ( !include_brace_lines ) {
-                            rect.y0 += metrics.line_height;
-                        }
+                        Rect_f32 r = text_layout_character_on_screen( app, text_layout_id, unwrapped_start );
+                        rect.y0 = (include_brace_lines) ? r.y0 : r.y1;
                     }
                     
                     if ( range.max - 1 > visible_range.max ) {
                         rect.y1 = region.y1;
                     } else  {
-                        rect.y1 = text_layout_character_on_screen( app, text_layout_id, range.max - 1 ).y1;
-                        
-                        if ( !include_brace_lines ) {
-                            rect.y1 -= metrics.line_height;
-                        }
+                        Rect_f32 r = text_layout_character_on_screen( app, text_layout_id, range.max - 1 );
+                        rect.y1 = (include_brace_lines) ? r.y1 : r.y0;
                     }
                 }
             }
             
             // @note(tebtro): Draw the line a bit further in the y-directions.
             if ( !block_mode ) {
-                rect.y0 += metrics.line_height * 0.5f;
-                rect.y1 -= metrics.line_height * 0.4f;
+                if (include_brace_lines) {
+                    rect.y0 += metrics.line_height * 0.5f;
+                    rect.y1 -= metrics.line_height * 0.4f;
+                }
+                else {
+                    rect.y0 -= metrics.line_height * 0.5f;
+                    rect.y1 += metrics.line_height * 0.6f;
+                }
             }
             
             if ( draw ) {
