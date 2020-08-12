@@ -67,7 +67,8 @@ Plot2DBegin(Plot2DInfo *plot)
     
     if(plot->y_axis.data)
     {
-        draw_string_oriented(plot->app, plot->label_face_id, fcolor_resolve(fcolor_id(defcolor_comment)), plot->y_axis, V2f32(rect.x0 - 10, rect.y0 + 5), 0, V2f32(0.f, 1.f));
+        draw_string_oriented(plot->app, plot->label_face_id, fcolor_resolve(fcolor_id(defcolor_comment)), plot->y_axis,
+                             V2f32(rect.x0 - 10, rect.y0 + 5), 0, V2f32(0.f, 1.f));
     }
     
     plot->last_clip = draw_set_clip(plot->app, rect);
@@ -90,14 +91,14 @@ Plot2DBegin(Plot2DInfo *plot)
         tick_increment_x = powf(10.f, floorf(log10f(tick_increment_x)));
         tick_increment_y = powf(10.f, floorf(log10f(tick_increment_y)));
         
-        if(tick_increment_x <= 0)
-        {
-            tick_increment_x = 1;
-        }
-        if(tick_increment_y <= 0)
-        {
-            tick_increment_y = 1;
-        }
+		if(tick_increment_x <= 0)
+		{
+			tick_increment_x = 1;
+		}
+		if(tick_increment_y <= 0)
+		{
+			tick_increment_y = 1;
+		}
         
         // NOTE(rjf): Draw vertical lines.
         {

@@ -141,6 +141,7 @@
 
 #include "4coder_default_hooks.cpp"
 
+
 //
 // MODULES
 //
@@ -151,9 +152,31 @@
 // scope_highlight
 #include "scope_highlight.cpp"
 
-// primitive highlight
+// primitive_highlight
 function FColor tebtro_get_token_color_cpp(Application_Links *app, Buffer_ID buffer_id, Token token);
 #include "primitive_highlight.cpp"
+
+
+//
+// Fleury
+//
+// Source: https://github.com/ryanfleury/4coder_fleury
+//
+#include <cstdlib>  // rand
+#include "fleury_ubiquitous.cpp"
+#include "fleury_plot.cpp"
+#include "fleury_calc.cpp"
+
+// quick_calc
+#define CALC_PLOT 1
+#include "quick_calc.cpp"
+
+// Code Peek
+#define CODE_PEEK 0
+#if CODE_PEEK
+#include "vim_code_peek.cpp"
+#endif
+
 
 //
 // vim
@@ -164,17 +187,6 @@ function FColor tebtro_get_token_color_cpp(Application_Links *app, Buffer_ID buf
 // general
 //
 #include "tebtro_general.cpp"
-
-#define CODE_PEEK 0
-#if CODE_PEEK
-#include "vim_code_peek.cpp"
-#endif
-
-#define CALC_PLOT 1
-#if CALC_PLOT
-#include "vim_plot.cpp"
-#include "vim_calc.cpp"
-#endif
 
 //
 // magit

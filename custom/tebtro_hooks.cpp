@@ -60,12 +60,8 @@ CUSTOM_DOC("Tebtro custom command for responding to a startup event")
         global_italic_face_id = try_create_new_face(app, &desc);
     }
     
-#if CALC_PLOT
-    // @note: Open calc buffer
-    Buffer_ID calc_buffer = create_buffer(app, string_u8_litexpr("*calc*"), BufferCreate_NeverAttachToFile | BufferCreate_AlwaysNew);
-    buffer_set_setting(app, calc_buffer, BufferSetting_Unimportant, true);
-    buffer_set_setting(app, calc_buffer, BufferSetting_Unkillable, true);
-#endif
+    // @note: Quick-Calc startup
+    quick_calc_startup(app);
     
 #if !defined(BUILD_DEBUG)
     system_set_fullscreen(true);
@@ -396,7 +392,12 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
     }
     
     //~ @note Vim cursor and mark
+#if 0
     vim_draw_cursor_mark(app, view_id, is_active_view, buffer_id, text_layout_id, cursor_roundness, mark_thickness);
+#else
+    vim_draw_smooth_cursor_mark(app, view_id, is_active_view, buffer_id, text_layout_id, cursor_roundness, mark_thickness, frame_info);
+#endif
+    
     // @note Vim visual mode draw selection whitespaces
     {
         ARGB_Color argb = fcolor_resolve(fcolor_id(defcolor_highlight_whitespaces));
@@ -437,19 +438,8 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
         avy_render(app, view_id, buffer_id, text_layout_id, face_id, view_region, cursor_roundness, argb_background, argb_foreground);
     }
     
-#if CALC_PLOT
-    //~ @note: Interpret buffer as calc code, if it's the calc buffer.
-    {
-        Buffer_ID calc_buffer_id = get_buffer_by_name(app, string_u8_litexpr("*calc*"), AccessFlag_Read);
-        if(calc_buffer_id == buffer_id) {
-            Fleury4RenderCalcBuffer(app, buffer_id, view_id, text_layout_id, frame_info);
-        }
-    }
-    // @note: Render calc comments
-    {
-        Fleury4RenderCalcComments(app, buffer_id, view_id, text_layout_id, frame_info);
-    }
-#endif
+    //~ @note: Quick-Calc
+    quick_calc_draw(app, buffer_id, view_id, text_layout_id, frame_info);
     
     //~ @note: Function parameter helper
     if (vim_state->mode == vim_mode_insert && global_show_function_helper) {
@@ -626,16 +616,7 @@ tebtro_tick(Application_Links *app, Frame_Info frame_info){
     }
     
     // @note: Update calc (once per frame).
-#if CALC_PLOT
-    {
-        static i32 last_frame_index = -1;
-        if(last_frame_index != frame_info.index)
-        {
-            CalcUpdateOncePerFrame(frame_info);
-        }
-        last_frame_index = frame_info.index;
-    }
-#endif
+    quick_calc_tick(app, frame_info);
     
     // @note: Update code index
     code_index_update_tick(app);

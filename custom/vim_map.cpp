@@ -298,10 +298,8 @@ vim_setup_mapping(Mapping *mapping) {
         Bind(if_read_only_goto_position,            KeyCode_Return, KeyCode_Alt);
         Bind(view_jump_list_with_lister,            KeyCode_Return, KeyCode_Control);
         
-#if CALC_PLOT
         // @note Calc commands
-        Bind(vim_calc_write_result, KeyCode_Return, KeyCode_Control, KeyCode_Alt);
-#endif
+        Bind(quick_calc_write_result, KeyCode_Return, KeyCode_Control, KeyCode_Alt);
         
         // @note :paste
         Bind(vim_paste_after_and_indent, KeyCode_P);

@@ -145,6 +145,132 @@ vim_draw_cursor_mark(Application_Links *app, View_ID view_id, b32 is_active_view
     }
 }
 
+
+//
+// @note: Shooth cursor and mark
+//
+// Source: https://github.com/ryanfleury/4coder_fleury
+//
+
+static void
+vim_do_the_cursor_interpolation(Application_Links *app, Frame_Info frame_info,
+                                Rect_f32 *rect, Rect_f32 *last_rect, Rect_f32 target) {
+    *last_rect = *rect;
+    
+    float x_change = target.x0 - rect->x0;
+    float y_change = target.y0 - rect->y0;
+    
+    float cursor_size_x = (target.x1 - target.x0);
+    float cursor_size_y = (target.y1 - target.y0) * (1 + fabsf(y_change) / 80.f);
+    
+    b32 should_animate_cursor = !global_battery_saver;
+    if (should_animate_cursor) {
+        if (fabs(x_change) > 1.f || fabs(y_change) > 1.f) {
+            animate_in_n_milliseconds(app, 0);
+        }
+    }
+    else {
+        *rect = *last_rect = target;
+        cursor_size_y = target.y1 - target.y0;
+    }
+    
+    if (should_animate_cursor) {
+        rect->x0 += (x_change) * frame_info.animation_dt * 40.f;
+        rect->y0 += (y_change) * frame_info.animation_dt * 40.f;
+        rect->x1 = rect->x0 + cursor_size_x;
+        rect->y1 = rect->y0 + cursor_size_y;
+    }
+    
+    if (target.y0 > last_rect->y0) {
+        if (rect->y0 < last_rect->y0) {
+            rect->y0 = last_rect->y0;
+        }
+    }
+    else {
+        if (rect->y1 > last_rect->y1) {
+            rect->y1 = last_rect->y1;
+        }
+    }
+}
+
+function void
+vim_draw_smooth_cursor_mark(Application_Links *app, View_ID view_id, b32 is_active_view, Buffer_ID buffer_id,
+                            Text_Layout_ID text_layout_id, f32 cursor_roundness, f32 mark_outline_thickness, Frame_Info frame_info) {
+    Managed_Scope view_scope = view_get_managed_scope(app, view_id);
+    Vim_View_State *vim_state = scope_attachment(app, view_scope, view_vim_state_id, Vim_View_State);
+    b32 is_mode_insert = (vim_state->mode == vim_mode_insert);
+    
+    i64 cursor_pos = view_get_cursor_pos(app, view_id);
+    i64 mark_pos = view_get_mark_pos(app, view_id);
+    b32 cursor_before_mark = (cursor_pos <= mark_pos);
+    
+    //
+    // @note: Do the interpolation
+    //
+    Rect_f32 view_rect = view_get_screen_rect(app, view_id);
+    Rect_f32 clip = draw_set_clip(app, view_rect);
+    Range_i64 visible_range = text_layout_get_visible_range(app, text_layout_id);
+    
+    if (is_active_view) {
+        //~ Cursor
+        Rect_f32 target_cursor = text_layout_character_on_screen(app, text_layout_id, cursor_pos);
+        
+        if (cursor_pos < visible_range.start || cursor_pos > visible_range.end) {
+            f32 width = target_cursor.x1 - target_cursor.x0;
+            target_cursor.x0 = view_rect.x0;
+            target_cursor.x1 = target_cursor.x0 + width;
+        }
+        
+        vim_do_the_cursor_interpolation(app, frame_info, &global_cursor_rect,
+                                        &global_last_cursor_rect, target_cursor);
+        
+        //~ Mark
+        Rect_f32 target_mark = text_layout_character_on_screen(app, text_layout_id, mark_pos);
+        
+        if (mark_pos > visible_range.end) {
+            target_mark.x0 = 0;
+            target_mark.y0 = view_rect.y1;
+            target_mark.y1 = view_rect.y1;
+        }
+        
+        if (mark_pos < visible_range.start || mark_pos > visible_range.end) {
+            f32 width = target_mark.x1 - target_mark.x0;
+            target_mark.x0 = view_rect.x0;
+            target_mark.x1 = target_mark.x0 + width;
+        }
+        
+        vim_do_the_cursor_interpolation(app, frame_info, &global_mark_rect, &global_last_mark_rect,
+                                        target_mark);
+    }
+    //~
+    
+    // @note Draw cursor
+    if (is_active_view && is_mode_insert) {
+        //draw_character_i_bar(app, text_layout_id, cursor_pos, fcolor_id(defcolor_cursor));
+        global_cursor_rect.x1 = global_cursor_rect.x0 + 1.f;
+        draw_rectangle(app, global_cursor_rect, 0.f, fcolor_resolve(fcolor_id(defcolor_cursor)));
+    }
+    else if (is_active_view) {
+        //draw_character_block(app, text_layout_id, cursor_pos, cursor_roundness, fcolor_id(defcolor_cursor));
+        draw_rectangle(app, global_cursor_rect, cursor_roundness, fcolor_resolve(fcolor_id(defcolor_cursor)));
+        
+        paint_text_color_pos(app, text_layout_id, cursor_pos, fcolor_id(defcolor_at_cursor));
+    }
+    else {
+        //draw_character_wire_frame(app, text_layout_id, cursor_pos, cursor_roundness, mark_outline_thickness, fcolor_id(defcolor_cursor));
+        draw_rectangle_outline(app, global_cursor_rect, cursor_roundness, mark_outline_thickness, fcolor_resolve(fcolor_id(defcolor_cursor)));
+    }
+    
+    // @note Draw mark
+    if (!is_mode_insert) {
+        //draw_character_wire_frame(app, text_layout_id, mark_pos, cursor_roundness, mark_outline_thickness, fcolor_id(defcolor_mark));
+        draw_rectangle_outline(app, global_mark_rect, cursor_roundness, mark_outline_thickness, fcolor_resolve(fcolor_id(defcolor_mark)));
+    }
+    
+    draw_set_clip(app, clip);
+}
+
+
 //
 // @note Draw visual mode highlight
 //
