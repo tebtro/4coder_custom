@@ -4,7 +4,8 @@
 //
 // @note(tebtro) Modifies:
 // Don't draw range if start and end are on the same line. Otherwise there are visual bugs when the line wraps.
-// In line mode draw the vertical line a bit further in y-directions.
+// Added option to include brace lines in drawing.
+// Vertical line width depends on font_metric.normal_advance.
 //
 
 
@@ -117,6 +118,8 @@ CUSTOM_ID( colors, scope_highlight_line_cycle );
 CUSTOM_ID( colors, scope_highlight_block_cycle );
 
 function void scope_highlight_draw( Application_Links *app, Buffer_ID buffer, Text_Layout_ID text_layout_id, i64 pos, View_ID view, b32 block_mode ) {
+    // @note(tebtro)
+    b32 include_brace_lines = true;
     
     ProfileScope( app, "scope_highlight" );
     
@@ -186,7 +189,7 @@ function void scope_highlight_draw( Application_Links *app, Buffer_ID buffer, Te
                 if ( block_mode ) {
                     rect.x1 = region.x1;
                 } else {
-                    rect.x1 = rect.x0 + 1;
+                    rect.x1 = rect.x0 + (metrics.normal_advance * 0.1f); // @note(tebtro) + 1;
                 }
                 
                 if ( range.max - 1 > visible_range.min && range.min < visible_range.max ) {
@@ -206,21 +209,29 @@ function void scope_highlight_draw( Application_Links *app, Buffer_ID buffer, Te
                     if ( unwrapped_start < visible_range.min ) {
                         rect.y0 = region.y0;
                     } else  {
-                        rect.y0 = text_layout_character_on_screen( app, text_layout_id, unwrapped_start ).y0 + metrics.line_height;
+                        rect.y0 = text_layout_character_on_screen( app, text_layout_id, unwrapped_start ).y0;
+                        
+                        if ( !include_brace_lines ) {
+                            rect.y0 += metrics.line_height;
+                        }
                     }
                     
                     if ( range.max - 1 > visible_range.max ) {
                         rect.y1 = region.y1;
                     } else  {
-                        rect.y1 = text_layout_character_on_screen( app, text_layout_id, range.max - 1 ).y1 - metrics.line_height;
+                        rect.y1 = text_layout_character_on_screen( app, text_layout_id, range.max - 1 ).y1;
+                        
+                        if ( !include_brace_lines ) {
+                            rect.y1 -= metrics.line_height;
+                        }
                     }
                 }
             }
             
             // @note(tebtro): Draw the line a bit further in the y-directions.
             if ( !block_mode ) {
-                rect.y0 -= metrics.line_height * 0.5f;
-                rect.y1 += metrics.line_height * 0.5f;
+                rect.y0 += metrics.line_height * 0.5f;
+                rect.y1 -= metrics.line_height * 0.4f;
             }
             
             if ( draw ) {
