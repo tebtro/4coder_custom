@@ -271,30 +271,25 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
     i64 cursor_pos = view_correct_cursor(app, view_id);
     i64 mark_pos   = view_correct_mark(app, view_id);
     
-    // @note: Cursor shape
+    //~ @note: Cursor shape
     Face_Metrics face_metrics = get_face_metrics(app, face_id);
     f32 cursor_roundness = face_metrics.normal_advance * global_config.cursor_roundness;
     f32 mark_thickness   = (f32)global_config.mark_thickness;
     
     Token_Array token_array = get_token_array_from_buffer(app, buffer_id);
     
-    // @note: Scope highlight
+    //~ @note: Scope highlight
     if (global_config.use_scope_highlight) {
-        Color_Array colors_back_cycle = finalize_color_array(defcolor_scope_background_cycle);
-#if USE_RANGE_COLOR_START_DEFAULT
-        draw_scope_highlight(app, buffer_id, text_layout_id, cursor_pos, colors_back_cycle.vals, colors_back_cycle.count);
-#else
-        tebtro_draw_scope_highlight(app, buffer_id, text_layout_id, cursor_pos, colors_back_cycle.vals, colors_back_cycle.count);
-#endif
+        scope_highlight_draw(app, buffer_id, text_layout_id, cursor_pos, view_id, /*block_mode*/true);
     }
     
-    // @note Line highlight
+    //~ @note Line highlight
     if (global_config.highlight_line_at_cursor && is_active_view) {
         i64 line_number = get_line_number_from_pos(app, buffer_id, cursor_pos);
         draw_line_highlight(app, text_layout_id, line_number, fcolor_id(defcolor_highlight_cursor_line));
     }
     
-    // @note Draw whitespaces
+    //~ @note Draw whitespaces
     b64 show_whitespace = false;
     view_get_setting(app, view_id, ViewSetting_ShowWhitespace, &show_whitespace);
     if (show_whitespace) {
@@ -303,7 +298,7 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
         tebtro_draw_whitespaces(app, face_id, buffer_id, text_layout_id, &token_array, argb);
     }
     
-    // @note Token colorizing
+    //~ @note Token colorizing
     if (token_array.tokens != 0) {
         if (global_focus_mode_enabled) {
             tebtro_draw_cpp_token_colors__only_comments(app, text_layout_id, buffer_id, &token_array);
@@ -313,7 +308,7 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
             tebtro_draw_cpp_identifier_colors(app, text_layout_id, buffer_id, &token_array);
         }
         
-        // @note Scan for TODOs and NOTEs
+        //~ @note Scan for TODOs and NOTEs
         // @todo Should we just render this for all text somehow, if we don't have an token_array
         if (global_config.use_comment_keyword && !global_focus_mode_enabled) {
 #if 0
@@ -332,30 +327,31 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
         paint_text_color_fcolor(app, text_layout_id, visible_range, fcolor_id(defcolor_text_default));
     }
     
-    // @note: Token under cursor highlight
+    //~ @note: Token under cursor highlight
     if (is_active_view) {
         // @note We don't need to check if we have tokens, this gets handled inside this function itself.
         tebtro_draw_token_under_cursor_highlight(app, text_layout_id, buffer_id, &token_array, cursor_pos, cursor_roundness);
     }
     
-    // @note Vim :view_changed_flash_line
+    //~ @note Vim :view_changed_flash_line
     if (is_active_view && vim_global_view_changed_time > 0.0f) {
         i64 line_number = get_line_number_from_pos(app, buffer_id, cursor_pos);
         draw_line_highlight(app, text_layout_id, line_number, 0x5FD90BCC);
     }
     
+    //~
     if (global_config.use_error_highlight || global_config.use_jump_highlight) {
         Buffer_ID compilation_buffer = get_comp_buffer(app);
         
         if (global_config.use_error_highlight) {
-            // @note: Error highlight
+            //~ @note: Error highlight
             draw_jump_highlights(app, buffer_id, text_layout_id, compilation_buffer, fcolor_id(defcolor_highlight_junk));
             
-            // @note: Draw error annotations
+            //~ @note: Draw error annotations
             tebtro_draw_error_annotations(app, buffer_id, text_layout_id, face_id, compilation_buffer);
         }
         
-        // @note: Jump highlight
+        //~ @note: Jump highlight
         if (global_config.use_jump_highlight) {
             Buffer_ID jump_buffer = get_locked_jump_buffer(app);
             if (jump_buffer != compilation_buffer) {
@@ -364,25 +360,21 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
         }
     }
     
-    // @note: Color parens
+    //~ @note: Color parens
     if (global_config.use_paren_helper) {
         Color_Array colors_paren_cycle = finalize_color_array(defcolor_parenthesis_cycle);
-#if USE_RANGE_COLOR_START_DEFAULT
         draw_paren_highlight(app, buffer_id, text_layout_id, cursor_pos, colors_paren_cycle.vals, colors_paren_cycle.count);
-#else
-        tebtro_draw_paren_highlight(app, buffer_id, text_layout_id, cursor_pos, colors_paren_cycle.vals, colors_paren_cycle.count);
-#endif
     }
-    // @note: Color braces
+    //~ @note: Color braces
     {
         Color_Array colors_scope_brace_cycle = finalize_color_array(defcolor_scope_brace_cycle);
         tebtro_draw_brace_highlight(app, buffer_id, text_layout_id, cursor_pos, colors_scope_brace_cycle.vals, colors_scope_brace_cycle.count);
     }
     
-    // @note Vim visual highlight
+    //~ @note Vim visual highlight
     vim_draw_highlight(app, view_id, is_active_view, buffer_id, text_layout_id, cursor_roundness, mark_thickness);
     
-    // @note: Search highlight
+    //~ @note: Search highlight
     {
         ARGB_Color argb_highlight    = fcolor_resolve(fcolor_id(defcolor_search_highlight));
         ARGB_Color argb_at_highlight = fcolor_resolve(fcolor_id(defcolor_at_search_highlight));
@@ -391,21 +383,19 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
         b32 has_highlight_range = tebtro_draw_search_highlight(app, view_id, buffer_id, text_layout_id, cursor_roundness, argb_highlight, argb_at_highlight, argb_occurance, argb_at_occurance);
     }
     
-    // @note: Scope vertical line highlight
-    {
-        Color_Array colors_scope_vertical_line_cycle = finalize_color_array(defcolor_scope_vertical_line_cycle);
-        tebtro_draw_vertical_lines_scope_highlight(app, buffer_id, view_id, text_layout_id, view_region, cursor_pos, colors_scope_vertical_line_cycle.vals, colors_scope_vertical_line_cycle.count);
-    }
+    //~ @note: Scope vertical line highlight
+    scope_highlight_draw(app, buffer_id, text_layout_id, cursor_pos, view_id, /*block_mode*/false);
     
-    // @note: Hex color preview
+    //~ @note: Hex color preview
     tebtro_draw_hex_color_preview(app, buffer_id, text_layout_id, cursor_pos);
     
-    // @note Vertical line highlight range
+    //~ @note Vertical line highlight range
     if (is_active_view) {
         ARGB_Color argb_cursor_mark_range = fcolor_resolve(fcolor_id(defcolor_highlight_range_vertical_line));
         vim_draw_vertical_line_highlight_range(app, view_id, text_layout_id, Ii64(cursor_pos, mark_pos), argb_cursor_mark_range);
     }
-    // @note Vim cursor and mark
+    
+    //~ @note Vim cursor and mark
     vim_draw_cursor_mark(app, view_id, is_active_view, buffer_id, text_layout_id, cursor_roundness, mark_thickness);
     // @note Vim visual mode draw selection whitespaces
     {
@@ -413,19 +403,19 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
         vim_draw_visual_mode_whitespaces(app, view_id, face_id, buffer_id, text_layout_id, &token_array, argb);
     }
     
-    // @note: Divider comments
+    //~ @note: Divider comments
     {
         tebtro_draw_main_section_divider_comments(app, view_id, face_id, buffer_id, view_region, text_layout_id);
         tebtro_draw_divider_comments(app, view_id, face_id, buffer_id, view_region, text_layout_id);
     }
     
-    // @note: Fade ranges
+    //~ @note: Fade ranges
     paint_fade_ranges(app, text_layout_id, buffer_id);
     
-    // @note: Put the actual text on the actual screen
+    //~ @note: Put the actual text on the actual screen
     draw_text_layout_default(app, text_layout_id);
     
-    // @note: Render comment font styles
+    //~ @note: Render comment font styles
     {
         Face_ID underlined_face_id = 0;
         Face_ID strikethrough_face_id = 0;
@@ -434,13 +424,13 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
         tebtro_draw_comment_font_styles(app, text_layout_id, buffer_id, &token_array, underlined_face_id, strikethrough_face_id, bold_face_id, italic_face_id);
     }
     
-    // @note: Scope brace annotations
+    //~ @note: Scope brace annotations
     {
         u32 flags = vertical_scope_annotation_flag_top_to_bottom | vertical_scope_annotation_flag_highlight | vertical_scope_annotation_flag_highlight_case_label;
         vertical_scope_annotation_draw(app, view_id, buffer_id, text_layout_id, flags);
     }
     
-    // @note :avy_search
+    //~ @note :avy_search
     {
         ARGB_Color argb_background = 0xFFFFFF00;
         ARGB_Color argb_foreground = 0xFF000000;
@@ -448,7 +438,7 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
     }
     
 #if CALC_PLOT
-    // @note: Interpret buffer as calc code, if it's the calc buffer.
+    //~ @note: Interpret buffer as calc code, if it's the calc buffer.
     {
         Buffer_ID calc_buffer_id = get_buffer_by_name(app, string_u8_litexpr("*calc*"), AccessFlag_Read);
         if(calc_buffer_id == buffer_id) {
@@ -461,13 +451,13 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
     }
 #endif
     
-    // @note: Function parameter helper
+    //~ @note: Function parameter helper
     if (vim_state->mode == vim_mode_insert && global_show_function_helper) {
         vim_render_function_helper(app, view_id, buffer_id, text_layout_id, cursor_pos);
     }
     
 #if CODE_PEEK
-    // @note: Code peek
+    //~ @note: Code peek
     if (is_active_view) {
         global_last_cursor_rect = text_layout_character_on_screen(app, text_layout_id, cursor_pos);
         Fleury4RenderCodePeek(app, view_id, face_id, text_layout_id, buffer_id, frame_info);

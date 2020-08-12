@@ -142,9 +142,14 @@
 #include "4coder_default_hooks.cpp"
 
 //
-// vertical_scope_annotation
+// MODULES
 //
+
+// vertical_scope_annotation
 #include "vertical_scope_annotation.cpp"
+
+// scope_highlight
+#include "scope_highlight.cpp"
 
 //
 // vim
@@ -155,10 +160,6 @@
 // general
 //
 #include "tebtro_general.cpp"
-
-// @todo Remove this test code, its flashing too much when scrolling up/down.
-#define USE_RANGE_COLOR_START_DEFAULT 1
-
 
 #define CODE_PEEK 0
 #if CODE_PEEK

@@ -99,9 +99,9 @@ defcolor_pop2 = 0xFFE80505;
 // () parenthesis text highlight
 defcolor_parenthesis_cycle         = {0xFFA00000, 0xFF00A000, 0xFF0000A0, 0xFFA0A000};
 // {} scope background highlight
-defcolor_scope_background_cycle    = {0x10A00000, 0x1000A000, 0x100000A0, 0x10A0A000};
+scope_highlight_block_cycle        = {0x0800A100, 0x080000A1, 0x0CFF7F00, 0x0CFF0000};
 // {} scope vertical line highlight
-defcolor_scope_vertical_line_cycle = defcolor_parenthesis_cycle;
+scope_highlight_line_cycle         = {0x4000A100, 0x4000AAFF, 0x40FF7F00, 0x40FF0000};
 // {} scope brace text highlight
 defcolor_scope_brace_cycle         = defcolor_parenthesis_cycle;
 // "} ident()" scope close brace annotation text color

@@ -68,8 +68,6 @@ CUSTOM_ID(colors, defcolor_operator);
 CUSTOM_ID(colors, defcolor_square_bracket);
 
 CUSTOM_ID(colors, defcolor_parenthesis_cycle);
-CUSTOM_ID(colors, defcolor_scope_background_cycle);
-CUSTOM_ID(colors, defcolor_scope_vertical_line_cycle);
 CUSTOM_ID(colors, defcolor_scope_brace_cycle);
 
 
