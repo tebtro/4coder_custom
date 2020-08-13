@@ -177,6 +177,12 @@ function FColor tebtro_get_token_color_cpp(Application_Links *app, Buffer_ID buf
 #include "vim_code_peek.cpp"
 #endif
 
+//
+// My MODULES
+//
+
+// relative_line_number_mode
+#include "tebtro_relative_line_number_mode.cpp"
 
 //
 // vim

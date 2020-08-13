@@ -474,7 +474,7 @@ tebtro_draw_query_bars(Application_Links *app, Rect_f32 region, View_ID view_id,
 }
 
 function void
-tebtro_render_caller(Application_Links *app, Frame_Info frame_info, View_ID view_id){
+tebtro_render_caller(Application_Links *app, Frame_Info frame_info, View_ID view_id) {
     ProfileScope(app, "render caller");
     View_ID active_view_id = get_active_view(app, Access_Always);
     b32 is_active_view = (view_id == active_view_id);
@@ -559,7 +559,13 @@ tebtro_render_caller(Application_Links *app, Frame_Info frame_info, View_ID view
     // @note: Layout line numbers
     Rect_f32 line_number_rect = {};
     if (global_config.show_line_number_margins) {
-        Rect_f32_Pair pair = layout_line_number_margin(app, buffer_id, region, digit_advance);
+        Rect_f32_Pair pair;
+        if (global_use_relative_line_number_mode) {
+            pair = layout_relative_line_number_margin(app, view_id, buffer_id, region, digit_advance);
+        }
+        else {
+            pair = layout_line_number_margin(app, buffer_id, region, digit_advance);
+        }
         line_number_rect = pair.min;
         region = pair.max;
     }
@@ -576,12 +582,13 @@ tebtro_render_caller(Application_Links *app, Frame_Info frame_info, View_ID view
     
     // @note: draw line numbers
     if (global_config.show_line_number_margins) {
-#if 0
-        draw_line_number_margin(app, view_id, buffer_id, face_id, text_layout_id, line_number_rect);
-#else
-        // @note relative
-        draw_relative_line_number_margin(app, view_id, buffer_id, face_id, text_layout_id, line_number_rect);
-#endif
+        if (global_use_relative_line_number_mode) {
+            // @note relative
+            draw_relative_line_number_margin(app, view_id, buffer_id, face_id, text_layout_id, line_number_rect);
+        }
+        else {
+            draw_line_number_margin(app, view_id, buffer_id, face_id, text_layout_id, line_number_rect);
+        }
     }
     
     // @note: draw the buffer

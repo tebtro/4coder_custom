@@ -2302,6 +2302,7 @@ CUSTOM_COMMAND_SIG(vim_set_big_face_size) {
     vim_set_face_size(app, 22);
 }
 
+
 //
 // @note File commands
 //
