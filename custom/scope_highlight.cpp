@@ -3,9 +3,10 @@
 // https://4coder.handmade.network/wiki/7384-%5Bmodule%5D_scope_highlight
 //
 // @note(tebtro) Modifies:
-// Don't draw range if start and end are on the same line. Otherwise there are visual bugs when the line wraps.
-// Added option to include brace lines in drawing.
-// Vertical line width depends on font_metric.normal_advance.
+// - Don't draw range if start and end are on the same line. Otherwise there are visual bugs when the line wraps.
+// - Added option to include brace lines in drawing.
+// - Vertical line width depends on font_metric.normal_advance.
+// - Use cursor roundness for draw_rectangle.
 //
 
 
@@ -118,10 +119,21 @@ CUSTOM_ID( colors, scope_highlight_line_cycle );
 CUSTOM_ID( colors, scope_highlight_block_cycle );
 
 function void scope_highlight_draw( Application_Links *app, Buffer_ID buffer, Text_Layout_ID text_layout_id, i64 pos, View_ID view, b32 block_mode ) {
+    ProfileScope( app, "scope_highlight" );
+    
+    
+    // @note(tebtro): Use cursor roundness for draw_rectangle
+    f32 roundness = 0;
+    if (block_mode) {
+        Face_ID face_id = get_face_id(app, buffer);
+        Face_Metrics face_metrics = get_face_metrics(app, face_id);
+        f32 cursor_roundness = face_metrics.normal_advance * global_config.cursor_roundness;
+        roundness = cursor_roundness;
+    }
+    
     // @note(tebtro)
     b32 include_brace_lines = true;
     
-    ProfileScope( app, "scope_highlight" );
     
     Scratch_Block scratch( app );
     
@@ -236,7 +248,8 @@ function void scope_highlight_draw( Application_Links *app, Buffer_ID buffer, Te
             
             if ( draw ) {
                 if ( rect.x0 < rect.x1 && rect.y0 < rect.y1 ) {
-                    draw_rectangle( app, rect, 0, colors.vals[ color_index % colors.count ] );
+                    // @note(tebtro): roundness
+                    draw_rectangle( app, rect, roundness, colors.vals[ color_index % colors.count ] );
                 }
             }
             

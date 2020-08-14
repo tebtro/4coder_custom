@@ -103,7 +103,8 @@ defcolor_pop2 = 0xFFFF0000;
 // () parenthesis text highlight
 defcolor_parenthesis_cycle         = {0xFF00FF00, 0xFFFF0000, 0xFF00DDFF, 0xFFF0F000};
 // {} scope background highlight
-scope_highlight_block_cycle        = {0x0800A100, 0x080000A1, 0x0CFF7F00, 0x0CFF0000};
+//scope_highlight_block_cycle        = {0x0800A100, 0x080000A1, 0x0CFF7F00, 0x0CFF0000};  // with alpha
+scope_highlight_block_cycle        = {0xFF062924, 0xFF062429, 0xFF0E2824, 0xFF0E2424};  // pre blended with background
 // {} scope vertical line highlight
 scope_highlight_line_cycle         = {0x4000A100, 0x4000AAFF, 0x40FF7F00, 0x40FF0000};
 // {} scope brace text highlight
