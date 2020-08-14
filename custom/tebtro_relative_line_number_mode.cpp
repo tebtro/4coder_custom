@@ -57,9 +57,14 @@ tebtro_render_caller(Application_Links *app, Frame_Info frame_info, View_ID view
 #endif
 
 
+//
+// @note Commands
+//
+
 global b32 global_use_relative_line_number_mode = true;
 
-CUSTOM_COMMAND_SIG(toggle_relative_line_number_mode) {
+CUSTOM_COMMAND_SIG(toggle_relative_line_number_mode)
+CUSTOM_DOC("Toggle relative line number mode.") {
     global_use_relative_line_number_mode = !global_use_relative_line_number_mode;
 }
 
@@ -75,9 +80,34 @@ layout_relative_line_number_margin(Application_Links *app, View_ID view_id, Buff
         //        which is returned and used to create the actual text layout,
         //        which we would need to get real numbers.
         i64 current_line_number = get_line_number_from_pos(app, buffer_id, view_get_cursor_pos(app, view_id));
+#if 0
         line_count_digit_count = digit_count_from_integer(current_line_number, 10);
         // @note: Guessing that you probably won't fit more than 99 lines on the screen.
         if (line_count_digit_count < 2)  line_count_digit_count = 2;
+#else
+        // @note: Calculate the line counts with face_mecric.line_height
+        Face_ID face_id = get_face_id(app, buffer_id);
+        Face_Metrics face_metrics = get_face_metrics(app, face_id);
+        f32 line_height = face_metrics.line_height;
+        
+        i64 cursor_pos = view_get_cursor_pos(app, view_id);
+        Buffer_Cursor cursor = view_compute_cursor(app, view_id, seek_pos(cursor_pos));
+        Vec2_f32 p = view_relative_xy_of_pos(app, view_id, cursor.line, cursor.pos);
+        
+        i64 line_count;
+        {
+            f32 top_height = (p.y - rect.y0);
+            f32 bottom_height = (rect.y1 - p.y);
+            
+            i64 top_line_count = (i64)(top_height / line_height);
+            i64 bottom_line_count = (i64)(bottom_height / line_height);
+            
+            line_count = Max(top_line_count, bottom_line_count);
+        }
+        
+        line_count = Max(line_count, current_line_number);
+        line_count_digit_count = digit_count_from_integer(line_count, 10);
+#endif
     }
     return(layout_line_number_margin(rect, digit_advance, line_count_digit_count));
 }
@@ -105,7 +135,7 @@ draw_relative_line_number_margin(Application_Links *app, View_ID view_id, Buffer
     i64 line_count_digit_count;
     {
         i64 offset_start = current_line_number - line_number;
-        i64 offset_end   = one_past_last_line_number - current_line_number;
+        i64 offset_end   = one_past_last_line_number - 1 - current_line_number - 1;
         i64 highest = Max(current_line_number, Max(offset_start, offset_end));
         line_count_digit_count = digit_count_from_integer(highest, 10);
     }
