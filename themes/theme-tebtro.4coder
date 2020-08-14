@@ -115,6 +115,7 @@ vertical_scope_annotation_highlight = 0xC0808080;
 
 //
 // Default cycle colors     @todo Remove the default ones maybe
+//
 // () pares highlight color
 defcolor_text_cycle = defcolor_parenthesis_cycle;
 // {} scope background highlight

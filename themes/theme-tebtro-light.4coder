@@ -67,14 +67,14 @@ defcolor_special_character = 0xFF9A0000;
 defcolor_ghost_character   = 0xFF6B6B6B;
 
 // Type colors
-primitive_highlight_type     = 0xFF7DD695; // 0xFFBAA227; // 0xFFFF0000; // j: 0xFF7DD695; // c: 0xFFA08C54;
+primitive_highlight_type     = 0xFF5C9E6D; // 0xFFBAA227; // 0xFFFF0000; // j: 0xFF7DD695; // c: 0xFFA08C54;
 primitive_highlight_function = 0xFF915849; // 0xFF00FF00; // 0xFFBDB8A4; default text color // c: 0xFF915849;
 primitive_highlight_macro    = 0xFF388AD9; // 0xFF0000FF; // j: 0xFFC8D4EC; // c: 0xFF4D716B;
 primitive_highlight_4coder_command = defcolor_type_function;
 
 // Operator colors
-defcolor_operator       = 0xFFC7C1AD;
-defcolor_square_bracket = 0xFFD9D2BD;
+defcolor_operator       = 0xFF161616;
+defcolor_square_bracket = 0xFF161616;
 
 // fade foreground/text colors
 defcolor_paste = 0xFF00B8B8;
@@ -102,8 +102,8 @@ defcolor_pop2 = 0xFFE80505;
 // () parenthesis text highlight
 defcolor_parenthesis_cycle         = {0xFFA00000, 0xFF00A000, 0xFF0000A0, 0xFFA0A000};
 // {} scope background highlight
-//scope_highlight_block_cycle        = {0x0800A100, 0x080000A1, 0x0CFF7F00, 0x0CFF0000};  // with alpha
-scope_highlight_block_cycle        = {0xFF062924, 0xFF062429, 0xFF0E2824, 0xFF0E2424};  // pre blended with background
+scope_highlight_block_cycle        = {0x0800A100, 0x080000A1, 0x0CFF7F00, 0x0CFF0000};  // with alpha
+//scope_highlight_block_cycle        = {0xFF062924, 0xFF062429, 0xFF0E2824, 0xFF0E2424};  // pre blended with background
 // {} scope vertical line highlight
 scope_highlight_line_cycle         = {0x4000A100, 0x4000AAFF, 0x40FF7F00, 0x40FF0000};
 // {} scope brace text highlight
@@ -114,6 +114,7 @@ vertical_scope_annotation_highlight = 0xC0808080;
 
 //
 // Default cycle colors     @todo Remove the default ones maybe
+//
 // () pares highlight color
 defcolor_text_cycle = defcolor_parenthesis_cycle;
 // {} scope background highlight
