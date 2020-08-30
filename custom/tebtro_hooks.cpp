@@ -290,7 +290,7 @@ tebtro_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, B
             tebtro_draw_cpp_token_colors__only_comments(app, text_layout_id, buffer_id, &token_array);
         }
         else {
-            // tebtro_draw_cpp_token_colors(app, text_layout_id, buffer_id, &token_array);
+            //tebtro_draw_cpp_token_colors(app, text_layout_id, buffer_id, &token_array);
             primitive_highlight_draw_cpp_token_colors(app, text_layout_id, &token_array, buffer_id);
         }
         

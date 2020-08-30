@@ -208,9 +208,16 @@ tebtro_get_token_color_cpp(Application_Links *app, Buffer_ID buffer_id, Token to
     Scratch_Block scratch(app);
     
     Managed_ID color = defcolor_text_default;
+    
     switch (token.kind){
         case TokenBaseKind_Preprocessor: {
             color = defcolor_preproc;
+        } break;
+        case TokenBaseKind_Identifier: {
+            String_Const_u8 lexeme = push_token_lexeme(app, scratch, buffer_id, &token);
+            if (string_match(lexeme, SCu8("auto"))) {
+                color = defcolor_keyword;
+            }
         } break;
         case TokenBaseKind_Keyword: {
             color = defcolor_keyword;
@@ -230,13 +237,10 @@ tebtro_get_token_color_cpp(Application_Links *app, Buffer_ID buffer_id, Token to
         case TokenBaseKind_Operator: {
             color = defcolor_operator;
             
-            if (token.sub_kind == TokenCppKind_BrackOp || token.sub_kind == TokenCppKind_BrackCl) {
-                color = defcolor_square_bracket;
-            }
 #if 0
-            else if (token->sub_kind == TokenCppKind_Compare ||
-                     token->sub_kind == TokenCppKind_Eq      ||
-                     token->sub_kind == TokenCppKind_EqEq) {
+            if (token->sub_kind == TokenCppKind_Compare ||
+                token->sub_kind == TokenCppKind_Eq      ||
+                token->sub_kind == TokenCppKind_EqEq) {
                 argb = 0xFFF2EBD3;
             }
             else if (token->sub_kind == TokenCppKind_Minus ||
@@ -273,6 +277,10 @@ tebtro_get_token_color_cpp(Application_Links *app, Buffer_ID buffer_id, Token to
                 } break;
                 case TokenCppKind_PPIncludeFile: {
                     color = defcolor_include;
+                } break;
+                case TokenCppKind_BrackOp:
+                case TokenCppKind_BrackCl: {
+                    color = defcolor_square_bracket;
                 } break;
             }
         } break;
