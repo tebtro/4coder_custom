@@ -36,8 +36,13 @@ custom/*
 !custom/vim*
 !custom/space*
 !custom/tebtro*
+!custom/avy.cpp
 !custom/vertical_scope_annotation.cpp
 !custom/scope_highlight.cpp
+!custom/quick_calc.cpp
+!custom/primitive_highlight.cpp
+!custom/magit.cpp
+!custom/code_folding.cpp
 
 !custom/fleury_ubiquitous.cpp
 !custom/fleury_plot.cpp
