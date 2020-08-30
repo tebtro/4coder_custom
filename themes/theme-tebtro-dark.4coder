@@ -4,7 +4,7 @@ defcolor_back_default = 0xFF161616;
 // background color {default_back, build_panel_background}
 defcolor_back = {defcolor_back_default, 0xFF080808};
 // default foreground/text color
-defcolor_text_default = 0xFFA19C8C; // 0xFFBDB8A4;
+defcolor_text_default = 0xFFd3b58d; // 0xFF9d9f92; // j: 0xFFd3b58d; // 0xFFA19C8C; // 0xFFBDB8A4;
 
 // mark color
 defcolor_mark = 0xFF808080;
@@ -49,15 +49,15 @@ defcolor_list_item_hover  = {defcolor_margin_hover,  defcolor_margin};
 defcolor_list_item_active = {defcolor_margin_active, 0xFF323232};
 
 // comment colors
-defcolor_comment = 0xAA3fdf1f;
+defcolor_comment = 0xFF3fdf1f; // 0xAA3fdf1f;
 // :comment_notation = {@note, @todo, @study, @tag, :correlation_tag, username };
 defcolor_comment_pop = {0xFF00FF00, 0xFFFF0000, 0xFFFFA500, 0xFFFFFF00, 0xFF00FFFF, 0xFFE84188};
 
 // token foreground/text colors
-defcolor_keyword        = 0xFFBF7C00; // j: 0xFFF3FaFF; // 0xFFBF7C00; // 0xCCCD950C;
-defcolor_str_constant   = 0xFF0FAEAF; // 0xCC0fdfaf; // 0xFF0fdfaf; // 0xFF24D7A8; // 0xFF25AEA5
+defcolor_keyword        = 0xFFffffff; // 0xFFBF7C00; // j: 0xFFffffff; // 0xFFF3FaFF; // 0xFFBF7C00; // 0xCCCD950C;
+defcolor_str_constant   = 0xFF0fdfaf; // 0xFF0FAEAF; // 0xCC0fdfaf; // j: 0xFF0fdfaf; // 0xFF24D7A8; // 0xFF25AEA5
 defcolor_char_constant  = defcolor_str_constant;
-defcolor_int_constant   = 0xCC9FF1DE; // 0xFF9FF1DE;
+defcolor_int_constant   = 0xFFadd8e6; // 0xCC9FF1DE; // 0xFF9FF1DE;
 defcolor_float_constant = defcolor_int_constant;
 defcolor_bool_constant  = defcolor_int_constant;
 
@@ -67,14 +67,14 @@ defcolor_special_character = 0xFFFF0000;
 defcolor_ghost_character   = 0xFFBB0000;
 
 // Type colors
-primitive_highlight_type     = 0xFF7DD695; // 0xFFBAA227; // 0xFFFF0000; // j: 0xFF7DD695; // c: 0xFFA08C54;
-primitive_highlight_function = 0xFF915849; // 0xFF00FF00; // 0xFFBDB8A4; default text color // c: 0xFF915849;
-primitive_highlight_macro    = 0xFF388AD9; // 0xFF0000FF; // j: 0xFFC8D4EC; // c: 0xFF4D716B;
+primitive_highlight_type     = 0xFF90ee90; // 0xFF7DD695; // j: 0xFF90ee90; // c: 0xFFA08C54;
+primitive_highlight_function = 0xFFee9090; // 0xFF915849; // 0xFFBDB8A4; default text color // c: 0xFF915849;
+primitive_highlight_macro    = 0xFF9090ee; // 0xFF388AD9; // j: 0xFFC8D4EC; // c: 0xFF4D716B;
 primitive_highlight_4coder_command = defcolor_type_function;
 
 // Operator colors
-defcolor_operator       = 0xFFC7C1AD;
-defcolor_square_bracket = 0xFFD9D2BD;
+defcolor_operator       = 0xFFedcb9f; // 0xFFC7C1AD;
+defcolor_square_bracket = 0xFFffdbab; // 0xFFD9D2BD;
 
 // fade foreground/text colors
 defcolor_paste = 0xFFFFBB00;
@@ -108,8 +108,8 @@ scope_highlight_line_cycle         = {0x4000A100, 0x4000AAFF, 0x40FF7F00, 0x40FF
 // {} scope brace text highlight
 defcolor_scope_brace_cycle         = {0xCF00FF00, 0xFF00AAFF, 0xEFFF7F00, 0xEFFF0000};
 // "} ident()" scope close brace annotation text color
-vertical_scope_annotation_text      = 0x80808080;
-vertical_scope_annotation_highlight = 0xC0808080;
+vertical_scope_annotation_text      = 0xC0808080; // 0x80808080;
+vertical_scope_annotation_highlight = 0xC0A0A0A0; // 0xC0808080;
 
 //
 // Default cycle colors     @todo Remove the default ones maybe
