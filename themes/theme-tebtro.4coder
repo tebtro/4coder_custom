@@ -50,7 +50,7 @@ defcolor_list_item_hover  = {0xFF333333, 0xFF051A1A}; // 0xFF0E4D4D
 defcolor_list_item_active = {0xFF5E5B05, 0xFF093333};
 
 // comment colors
-defcolor_comment = 0xFF3fdf1f; // 0xAA3fdf1f;
+defcolor_comment = 0xDD3fdf1f; // 0xAA3fdf1f; // j: 0xFF3fdf1f;
 // :comment_notation = {@note, @todo, @study, @tag, :correlation_tag, username };
 defcolor_comment_pop = {0xFF00FF00, 0xFFFF0000, 0xFFFFA500, 0xFFFFFF00, 0xFF00FFFF, 0xFFE84188};
 
