@@ -396,10 +396,10 @@ BUFFER_HOOK_SIG(vim_new_file){
     
     Buffer_Insertion insert = begin_buffer_insertion_at_buffered(app, buffer_id, 0, scratch, KB(16));
     insertf(&insert,
-            "#ifndef %.*s\n"
-            "\n\n\n\n\n"
+            "#if !defined(%.*s)\n"
             "#define %.*s\n"
-            "#endif//%.*s\n",
+            "\n\n\n\n\n"
+            "#endif // %.*s\n",
             string_expand(guard),
             string_expand(guard),
             string_expand(guard));
