@@ -2633,6 +2633,65 @@ CUSTOM_COMMAND_SIG(vim_save_all_dirty_buffers_and_build) {
     vim_build_in_build_panel(app);
 }
 
+#if !defined(VIM_USE_DEFAULT_EXEC_PROJECT_COMMAND)
+#error "You need to #if 0 out the default 4coder query_replace_base function in 4coder_project_commands.cpp. And define VIM_USE_DEFAULT_EXEC_PROJECT_COMMAND 0."
+#endif
+#if !VIM_USE_DEFAULT_EXEC_PROJECT_COMMAND
+function void
+exec_project_command(Application_Links *app, Project_Command *command){
+    if (command->cmd.size > 0){
+        b32 footer_panel = command->footer_panel;
+        b32 save_dirty_files = command->save_dirty_files;
+        b32 cursor_at_end = command->cursor_at_end;
+        
+        if (save_dirty_files){
+            save_all_dirty_buffers(app);
+        }
+        
+        View_ID view = 0;
+        Buffer_Identifier buffer_id = {};
+        u32 flags = CLI_OverlapWithConflict|CLI_SendEndSignal;
+        if (cursor_at_end){
+            flags |= CLI_CursorAtEnd;
+        }
+        
+        b32 set_fancy_font = false;
+        if (command->out.size > 0){
+            buffer_id = buffer_identifier(command->out);
+            
+            if (footer_panel){
+                view = vim_get_or_open_build_panel(app);
+                vim_minimize_build_panel(app, view);
+                if (string_match(command->out, string_u8_litexpr("*compilation*"))){
+                    set_fancy_font = true;
+                }
+            }
+            else{
+                Buffer_ID buffer = buffer_identifier_to_id(app, buffer_id);
+                view = get_first_view_with_buffer(app, buffer);
+                if (view == 0){
+                    view = get_active_view(app, Access_Always);
+                }
+            }
+            
+            block_zero_struct(&prev_location);
+            lock_jump_buffer(app, command->out);
+        }
+        else{
+            // TODO(allen): fix the exec_system_command call so it can take a null buffer_id.
+            buffer_id = buffer_identifier(string_u8_litexpr("*dump*"));
+        }
+        
+        String_Const_u8 dir = current_project.dir;
+        String_Const_u8 cmd = command->cmd;
+        exec_system_command(app, view, buffer_id, dir, cmd, flags);
+        if (set_fancy_font){
+            set_fancy_compilation_buffer_font(app);
+        }
+    }
+}
+#endif // VIM_USE_DEFAULT_EXEC_PROJECT_COMMAND
+
 //
 // @note Vim statusbar
 //
