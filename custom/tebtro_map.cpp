@@ -197,7 +197,7 @@ tebtro_setup_mapping_dvorak_programmer(Mapping *mapping) {
         // Bind(vim_restore_cursor_mark_pos, KeyCode_S, KeyCode_Shift);
         
         // :selection
-        Bind(vim_select_token_or_word_under_cursor, KeyCode_T, KeyCode_Control);
+        Bind(vim_select_token_or_word_under_cursor,        KeyCode_T, KeyCode_Control);
         Bind(vim_visual_select_token_or_word_under_cursor, KeyCode_T, KeyCode_Control, KeyCode_Alt);
         
         // @note scope selection
@@ -217,8 +217,6 @@ tebtro_setup_mapping_dvorak_programmer(Mapping *mapping) {
         // Bind(vim_search_identifier_under_cursor, KeyCode_*); @keycode_missing
         Bind(search,         KeyCode_S, KeyCode_Control);
         Bind(reverse_search, KeyCode_R, KeyCode_Control);
-        // Bind(search_identifier,         KeyCode_Equal, KeyCode_Shift);
-        // Bind(reverse_search_identifier, KeyCode_Equal, KeyCode_Shift, KeyCode_Alt);
         Bind(vim_search_token_or_word,         KeyCode_4); // KeyCode_Plus
         Bind(vim_reverse_search_token_or_word, KeyCode_4, KeyCode_Alt); // KeyCode_Plus
         // Bind(nop, KeyCode_Equal, KeyCode_Shift);
@@ -230,11 +228,12 @@ tebtro_setup_mapping_dvorak_programmer(Mapping *mapping) {
         Bind(vim_avy_goto_char, KeyCode_Tab);
         
         // @note query_replace
-        Bind(query_replace,     KeyCode_Q);
-        Bind(replace_in_range,  KeyCode_Q, KeyCode_Shift);
-        Bind(replace_in_buffer, KeyCode_Q, KeyCode_Shift, KeyCode_Control);
-        Bind(query_replace_identifier,     KeyCode_Q, KeyCode_Control);
-        
+        Bind(query_replace,            KeyCode_Q);
+        Bind(query_replace_selection,  KeyCode_Q, KeyCode_Control);
+        Bind(query_replace_identifier, KeyCode_Q, KeyCode_Alt);
+        Bind(replace_in_range,         KeyCode_Q, KeyCode_Shift);
+        // @todo should be interactive Bind(replace_in_buffer,        KeyCode_Q, KeyCode_Alt);
+        // @todo should be interactive Bind(replace_in_all_buffers,   KeyCode_Q, KeyCode_Control);
         
         Bind(vim_toggle_mouse_suppression, KeyCode_Space, KeyCode_Alt);
         Bind(vim_toggle_build_panel_height, KeyCode_Period);
@@ -377,6 +376,7 @@ tebtro_setup_mapping_dvorak_programmer(Mapping *mapping) {
         // :search
         Bind(vim_search_visual_selection,         KeyCode_4); // KeyCode_Plus
         Bind(vim_reverse_search_visual_selection, KeyCode_4, KeyCode_Alt); // KeyCode_Plus
+        Bind(vim_query_replace_visual_selection,  KeyCode_Q);
         
         // @todo bind(context, '"', MDFR_NONE, enter_chord_switch_registers);
         
@@ -393,21 +393,10 @@ tebtro_setup_mapping_dvorak_programmer(Mapping *mapping) {
         // :paste
         Bind(vim_visual_paste_and_indent, KeyCode_P);
         Bind(vim_visual_paste_and_indent, KeyCode_P, KeyCode_Shift);
-        Bind(vim_paste_next_and_indent, KeyCode_P, KeyCode_Alt);
-        
-        /* @todo
-                query_replace_selection
-                vim_query_replace_in_visual_selection_range
-
-        // :move_selection
-        bind(context, 'H', MDFR_ALT, vim_move_visual_selection_left);
-        bind(context, 'L', MDFR_ALT, vim_move_visual_selection_right);
-        bind(context, 'K', MDFR_ALT, vim_move_visual_selection_up);
-        bind(context, 'J', MDFR_ALT, vim_move_visual_selection_down);
-        */
+        Bind(vim_paste_next_and_indent,   KeyCode_P, KeyCode_Alt);
         
         // :surround
-        Bind(vim_visual_surround_with_parenthesis, KeyCode_1); // KeyCode_OpenParenthesis
+        Bind(vim_visual_surround_with_parenthesis,      KeyCode_1); // KeyCode_OpenParenthesis
         Bind(vim_visual_remove_surrounding_parenthesis, KeyCode_2); // KeyCode_CloseParenthesis
         
         Bind(vim_visual_surround_with_braces,      KeyCode_5); // KeyCode_OpenBrace
@@ -417,18 +406,18 @@ tebtro_setup_mapping_dvorak_programmer(Mapping *mapping) {
         Bind(vim_visual_remove_surrounding_brackets, KeyCode_6); // KeyCode_CloseBracket
         
         Bind(vim_visual_surround_with_static_if,      KeyCode_Ex1); // KeyCode_Hashtag
-        Bind(vim_visual_remove_surrounding_static_if, KeyCode_Ex1, KeyCode_Control); // KeyCode_Hashtag, KeyCode_Control
+        Bind(vim_visual_remove_surrounding_static_if, KeyCode_Ex1, KeyCode_Alt); // KeyCode_Hashtag, KeyCode_Alt
         
         Bind(vim_visual_surround_with_double_quotes,        KeyCode_Quote, KeyCode_Shift); // KeyCode_DoubleQuote
-        Bind(vim_visual_remove_surround_with_double_quotes, KeyCode_Quote, KeyCode_Shift, KeyCode_Control); // KeyCode_DoubleQuote, KeyCode_Control
+        Bind(vim_visual_remove_surround_with_double_quotes, KeyCode_Quote, KeyCode_Shift, KeyCode_Alt); // KeyCode_DoubleQuote, KeyCode_Alt
         
         Bind(vim_visual_surround_with_single_quotes,        KeyCode_Quote); // KeyCode_SingleQuote
-        Bind(vim_visual_remove_surround_with_single_quotes, KeyCode_Quote, KeyCode_Control); // KeyCode_SingleQuote, KeyCode_Control
+        Bind(vim_visual_remove_surround_with_single_quotes, KeyCode_Quote, KeyCode_Alt); // KeyCode_SingleQuote, KeyCode_Alt
         
         Bind(vim_visual_comment_line_range,   KeyCode_ForwardSlash); // KeyCode_ForwardSlash
-        Bind(vim_visual_uncomment_line_range, KeyCode_ForwardSlash, KeyCode_Control); // KeyCode_BackwardSlash, KeyCode_Control
+        Bind(vim_visual_uncomment_line_range, KeyCode_ForwardSlash, KeyCode_Alt); // KeyCode_BackwardSlash, KeyCode_Alt
         Bind(vim_visual_surround_with_comment,        KeyCode_0); // KeyCode_Star
-        Bind(vim_visual_remove_surround_with_comment, KeyCode_0, KeyCode_Control); // KeyCode_Star, KeyCode_Control
+        Bind(vim_visual_remove_surround_with_comment, KeyCode_0, KeyCode_Alt); // KeyCode_Star, KeyCode_Alt
     }
     
     SelectMap(mapid_vim_mode_insert);

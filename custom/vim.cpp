@@ -1588,6 +1588,24 @@ CUSTOM_COMMAND_SIG(vim_reverse_search_visual_selection) {
     vim_isearch_visual_selection(app, Scan_Backward);
 }
 
+// :query_replace_selection
+CUSTOM_COMMAND_SIG(vim_query_replace_visual_selection) {
+    vim_enter_mode_normal(app);
+    
+    View_ID view = get_active_view(app, Access_ReadWriteVisible);
+    Buffer_ID buffer = view_get_buffer(app, view, Access_ReadWriteVisible);
+    if (buffer != 0){
+        Scratch_Block scratch(app);
+        Range_i64 range = get_view_range(app, view);
+        i64 buffer_size = buffer_get_size(app, buffer);
+        range.max = clamp_top(range.max + 1, buffer_size);
+        String_Const_u8 replace = push_buffer_range(app, scratch, buffer, range);
+        if (replace.size != 0){
+            query_replace_parameter(app, replace, range.min, true);
+        }
+    }
+}
+
 
 // :surround
 function void
